@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Upload Headshot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
+        <h1 class="text-xl font-bold text-slate-900 mb-2">Update Profile Photo</h1>
+        <p class="text-slate-500 text-sm mb-6">Choose a professional photo. Square images work best.</p>
+        
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="flex justify-center">
+                {% if agent.headshot %}
+                    <img src="{{ agent.headshot.url }}" class="w-32 h-32 rounded-full object-cover border-4 border-slate-100 shadow-inner">
+                {% else %}
+                    <div class="w-32 h-32 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 text-4xl font-bold">
+                        {{ agent.name|slice:":1" }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="relative">
+                <input type="file" name="headshot" id="file-upload" class="hidden" onchange="document.getElementById('file-label').innerText = this.files[0].name">
+                <label for="file-upload" class="cursor-pointer bg-blue-50 text-blue-600 font-bold py-3 px-6 rounded-xl hover:bg-blue-100 transition block border-2 border-blue-100 border-dashed">
+                    <span id="file-label">Click to Choose File</span>
+                </label>
+            </div>
+
+            <div class="flex gap-3 pt-4">
+                <a href="{% url 'dashboard' %}" class="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-xl">Cancel</a>
+                <button type="submit" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 shadow-lg">Save Photo</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

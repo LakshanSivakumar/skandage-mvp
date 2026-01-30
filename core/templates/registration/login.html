@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Login - Skandage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 h-screen flex items-center justify-center">
+
+    <div class="bg-white p-8 rounded-xl shadow-lg max-w-sm w-full border border-slate-200">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-slate-800">Welcome Back</h1>
+            <p class="text-slate-500 text-sm">Login to manage your profile</p>
+        </div>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+                <div class="bg-red-50 text-red-600 p-3 rounded text-sm text-center">
+                    Invalid username or password.
+                </div>
+            {% endif %}
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Username</label>
+                <input type="text" name="username" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Password</label>
+                <input type="password" name="password" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded transition">
+                Sign In
+            </button>
+            
+            <input type="hidden" name="next" value="{{ next }}">
+        </form>
+        
+        <div class="mt-6 text-center text-xs text-slate-400">
+            <p>&copy; 2026 Skandage Technologies</p>
+        </div>
+    </div>
+
+</body>
+</html>

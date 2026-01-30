@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Add Testimonial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style> body { font-family: 'Inter', sans-serif; } </style>
+</head>
+<body class="bg-slate-50 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 w-full max-w-md relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
+
+        <div class="mb-6 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+                <i class='bx bxs-message-square-add'></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-900">Add New Review</h1>
+                <p class="text-xs text-slate-500">Share what your clients say about you.</p>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-5">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">{{ field.label }}</label>
+                <div class="relative">
+                    {{ field }}
+                </div>
+                {% if field.help_text %}
+                    <p class="text-[10px] text-slate-400 mt-1 ml-1">{{ field.help_text }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="pt-2 flex gap-3">
+                <a href="{% url 'dashboard' %}" class="flex-1 py-3 rounded-lg font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 hover:text-slate-700 text-center transition">
+                    Cancel
+                </a>
+                <button type="submit" class="flex-1 py-3 rounded-lg font-bold text-white bg-slate-900 hover:bg-blue-600 shadow-lg hover:shadow-blue-500/30 transition flex items-center justify-center gap-2">
+                    <i class='bx bx-check'></i> Save Review
+                </button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
