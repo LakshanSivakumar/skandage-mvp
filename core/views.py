@@ -2,17 +2,28 @@ from django.shortcuts import render, get_object_or_404
 from .models import Agent, Testimonial
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
-from .forms import AgentProfileForm, TestimonialForm
+from .forms import AgentProfileForm, TestimonialForm, LeadForm # <--- Import LeadForm
 
 def agent_profile(request, slug):
-    # This tries to find the agent. If they don't exist, it shows a 404 error.
     agent = get_object_or_404(Agent, slug=slug)
-    print(f"DEBUG: Agent is {agent.name}, Tagline is: '{agent.tagline}'")
-    print(f"--- PUBLIC SITE VIEWING: Agent ID {agent.id} | Slug: {agent.slug} | Tagline: {agent.tagline}")
+    
+    # Handle the "Contact Me" form
+    if request.method == 'POST':
+        form = LeadForm(request.POST)
+        if form.is_valid():
+            lead = form.save(commit=False)
+            lead.agent = agent
+            lead.save()
+            # In a real app, we would send an email here using send_mail()
+            return redirect('agent_profile', slug=slug)
+    else:
+        form = LeadForm()
+
     context = {
         'agent': agent,
         'testimonials': agent.testimonials.all(),
         'services': agent.services.all(),
+        'form': form, # Pass the form to the template
     }
     return render(request, 'core/agent_profile.html', context)
 

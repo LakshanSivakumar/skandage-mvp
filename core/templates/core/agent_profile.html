@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ agent.name }} - Your Trusted Advisor</title>
+    <title>{{ agent.name }} - Trusted Advisor</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     
     <style>
         body { font-family: 'Lato', sans-serif; background-color: #fafaf9; } /* Stone-50 */
@@ -27,23 +28,23 @@
         
         /* Handwritten underline effect */
         .highlight-underline {
-    position: relative;
-    white-space: nowrap;
-    z-index: 10;
-}
+            position: relative;
+            white-space: nowrap;
+            z-index: 10;
+        }
 
-.highlight-underline::after {
-    content: '';
-    position: absolute;
-    left: -2px;
-    right: -2px;
-    bottom: 2px;
-    height: 35%; /* Height of the highlight */
-    background-color: #f59e0b; /* Amber-500 (Darker Gold) */
-    opacity: 0.8;
-    z-index: -1; /* Puts it BEHIND the text */
-    transform: rotate(-1deg); /* Slight organic tilt */
-}
+        .highlight-underline::after {
+            content: '';
+            position: absolute;
+            left: -2px;
+            right: -2px;
+            bottom: 2px;
+            height: 35%; /* Height of the highlight */
+            background-color: #f59e0b; /* Amber-500 (Darker Gold) */
+            opacity: 0.8;
+            z-index: -1; /* Puts it BEHIND the text */
+            transform: rotate(-1deg); /* Slight organic tilt */
+        }
     </style>
 </head>
 <body class="text-stone-800 antialiased pb-24">
@@ -80,15 +81,18 @@
                     <br>Helping families build <span class="highlight-underline text-stone-100">legacy & security.</span>
                 </p>
                 
+                {% if agent.tagline %}
                 <p class="text-xl text-stone-300 font-light italic opacity-80 mt-2">
-                    {{ agent.tagline }}
+                    "{{ agent.tagline }}"
                 </p>
+                {% endif %}
             </div>
         </div>
     </div>
 
     <div class="max-w-3xl mx-auto px-6 -mt-20 relative z-20 space-y-12">
 
+        {% if agent.bio %}
         <div class="paper-card p-8 md:p-10 rounded-2xl" data-aos="fade-up">
             <h2 class="text-2xl font-bold text-stone-900 mb-6 flex items-center gap-3">
                 <span class="w-8 h-1 bg-amber-500 rounded-full"></span>
@@ -98,6 +102,7 @@
                 {{ agent.bio|linebreaks }}
             </div>
         </div>
+        {% endif %}
 
         {% if services %}
         <div data-aos="fade-up">
@@ -115,30 +120,32 @@
             </div>
         </div>
         {% endif %}
+
         {% if agent.credentials.exists %}
-<div class="max-w-4xl mx-auto px-6 mb-16" data-aos="fade-up">
-    <div class="border-t border-b border-stone-200 py-8">
-        <h3 class="text-center text-xs font-bold text-stone-400 uppercase tracking-[0.2em] mb-8">
-            Professional Accolades & Certifications
-        </h3>
-        
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {% for cred in agent.credentials.all %}
-            <div class="group">
-                <div class="mx-auto w-12 h-12 mb-3 flex items-center justify-center text-amber-500 bg-amber-50 rounded-full group-hover:bg-amber-500 group-hover:text-white transition duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                    </svg>
-                </div>
+        <div class="max-w-4xl mx-auto mb-16" data-aos="fade-up">
+            <div class="border-t border-b border-stone-200 py-8">
+                <h3 class="text-center text-xs font-bold text-stone-400 uppercase tracking-[0.2em] mb-8">
+                    Professional Accolades & Certifications
+                </h3>
                 
-                <h4 class="font-bold text-stone-900 text-sm leading-tight">{{ cred.title }}</h4>
-                <p class="text-[10px] text-stone-500 uppercase mt-1 tracking-wide">{{ cred.issuer }} {{ cred.year }}</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                    {% for cred in agent.credentials.all %}
+                    <div class="group">
+                        <div class="mx-auto w-12 h-12 mb-3 flex items-center justify-center text-amber-500 bg-amber-50 rounded-full group-hover:bg-amber-500 group-hover:text-white transition duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z" />
+                            </svg>
+                        </div>
+                        
+                        <h4 class="font-bold text-stone-900 text-sm leading-tight">{{ cred.title }}</h4>
+                        <p class="text-[10px] text-stone-500 uppercase mt-1 tracking-wide">{{ cred.issuer }} {{ cred.year }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-            {% endfor %}
         </div>
-    </div>
-</div>
-{% endif %}
+        {% endif %}
+
         {% if testimonials %}
         <div data-aos="fade-up">
             <div class="text-center mb-10">
@@ -158,7 +165,9 @@
                     {% if review.screenshot %}
                     <div class="mb-6">
                         <div class="text-xs text-stone-400 uppercase tracking-widest mb-2 font-bold">Proof of Conversation</div>
-                        <img src="{{ review.screenshot.url }}" class="w-full max-w-xs rounded-lg border border-stone-200 opacity-90 hover:opacity-100 transition">
+                        <a href="{{ review.screenshot.url }}" target="_blank">
+                            <img src="{{ review.screenshot.url }}" class="w-full max-w-xs rounded-lg border border-stone-200 opacity-90 hover:opacity-100 transition">
+                        </a>
                     </div>
                     {% endif %}
 
@@ -177,10 +186,54 @@
         </div>
         {% endif %}
 
+        <section id="contact" class="scroll-mt-20 pt-10" data-aos="fade-up">
+            <div class="bg-[#1c1917] rounded-3xl p-8 md:p-12 relative overflow-hidden text-stone-100 shadow-2xl">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-amber-600 rounded-full mix-blend-screen filter blur-[80px] opacity-20 -translate-y-1/2 translate-x-1/2"></div>
+                
+                <div class="relative z-10">
+                    <div class="text-center mb-10">
+                        <h2 class="font-serif text-3xl md:text-4xl text-white mb-3">Let's Secure Your Legacy</h2>
+                        <p class="text-stone-400 font-light">Send me a message directly. I usually respond within 2 hours.</p>
+                    </div>
+
+                    <form method="post" class="space-y-4 max-w-lg mx-auto">
+                        {% csrf_token %}
+                        
+                        <div>
+                            <label class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1 block">Your Name</label>
+                            <input type="text" name="name" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1 block">Email</label>
+                                <input type="email" name="email" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1 block">Phone</label>
+                                <input type="text" name="phone" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1 block">How can I help?</label>
+                            <textarea name="message" rows="3" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-amber-900/50 flex items-center justify-center gap-2 mt-4 group">
+                            Send Message
+                            <i class='bx bx-send group-hover:translate-x-1 transition'></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
     </div>
 
-    <div class="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-4">
-        <a href="{{ agent.whatsapp_link }}" class="bg-stone-900 text-white pl-6 pr-8 py-3 rounded-full shadow-2xl flex items-center gap-3 transform hover:-translate-y-1 transition duration-300 border border-stone-700/50 group">
+    {% if agent.phone_number %}
+    <div class="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
+        <a href="https://wa.me/{{ agent.phone_number }}" target="_blank" class="pointer-events-auto bg-stone-900 text-white pl-6 pr-8 py-3 rounded-full shadow-2xl flex items-center gap-3 transform hover:-translate-y-1 transition duration-300 border border-stone-700/50 group">
             <div class="bg-[#25D366] p-1.5 rounded-full text-white group-hover:scale-110 transition">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
             </div>
@@ -190,6 +243,7 @@
             </div>
         </a>
     </div>
+    {% endif %}
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
@@ -197,7 +251,7 @@
             once: true,
             offset: 50,
             duration: 1000,
-            easing: 'ease-out-quad', // Softer easing than before
+            easing: 'ease-out-quad',
         });
     </script>
 </body>

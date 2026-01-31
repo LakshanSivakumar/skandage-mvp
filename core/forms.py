@@ -1,6 +1,6 @@
 from django import forms
 from .models import Agent
-from .models import Agent, Testimonial
+from .models import Agent, Testimonial, Lead
 class AgentProfileForm(forms.ModelForm):
     class Meta:
         model = Agent
@@ -33,3 +33,8 @@ class TestimonialForm(forms.ModelForm):
                 'class': 'block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer'
             }),
         }
+
+class LeadForm(forms.ModelForm):
+    class Meta:
+        model = Lead
+        fields = ['name', 'email', 'phone', 'message']
