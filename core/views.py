@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from .models import Agent, Testimonial
+from .models import Agent, Testimonial, Lead
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from .forms import AgentProfileForm, TestimonialForm, LeadForm # <--- Import LeadForm
@@ -7,15 +7,16 @@ from .forms import AgentProfileForm, TestimonialForm, LeadForm # <--- Import Lea
 def agent_profile(request, slug):
     agent = get_object_or_404(Agent, slug=slug)
     
-    # Handle the "Contact Me" form
     if request.method == 'POST':
         form = LeadForm(request.POST)
         if form.is_valid():
             lead = form.save(commit=False)
             lead.agent = agent
             lead.save()
-            # In a real app, we would send an email here using send_mail()
+            print("--- SUCCESS: Lead Saved! ---") # Debug Success
             return redirect('agent_profile', slug=slug)
+        else:
+            print("--- FORM FAILED: ", form.errors) # <--- THIS IS WHAT WE NEED
     else:
         form = LeadForm()
 
@@ -23,7 +24,8 @@ def agent_profile(request, slug):
         'agent': agent,
         'testimonials': agent.testimonials.all(),
         'services': agent.services.all(),
-        'form': form, # Pass the form to the template
+        'credentials': agent.credentials.all(), # Ensure this is passed if you use it
+        'form': form,
     }
     return render(request, 'core/agent_profile.html', context)
 
@@ -34,26 +36,29 @@ def dashboard(request):
         agent = request.user.agent
     except Agent.DoesNotExist:
         agent = Agent.objects.create(user=request.user, name=request.user.username)
+    
+    # 2. Always fetch leads (Now that we know agent exists)
+    # We do this OUTSIDE the try/except so it runs for everyone
+    leads = Lead.objects.filter(agent=agent).order_by('-created_at')
 
-    # 2. Handle the "Save" Action (POST)
+    # 3. Handle the Form
     if request.method == 'POST':
-        # We bind the form to the POST data and the existing agent instance
         form = AgentProfileForm(request.POST, request.FILES, instance=agent)
-        
         if form.is_valid():
             form.save()
-            return redirect('dashboard') # Success! Reload page.
-        else:
-            # If errors, we fall through to render the page with the error messages
-            pass 
-            
-    # 3. Handle the "View" Action (GET)
+            return redirect('dashboard') 
     else:
-        # Pre-fill the form with the current database values
         form = AgentProfileForm(instance=agent)
     
-    # 4. Render the Template
-    return render(request, 'core/dashboard.html', {'form': form})
+    # 4. Prepare Context (Combine everything)
+    context = {
+        'form': form,
+        'agent': agent,   # <--- Required for sidebar/stats
+        'leads': leads,   # <--- Required for the Inbox
+    }
+
+    # 5. Render
+    return render(request, 'core/dashboard.html', context)
 
 @login_required
 def add_testimonial(request):
@@ -120,3 +125,26 @@ def upload_headshot(request):
             agent.save()
         return redirect('dashboard')
     return render(request, 'core/upload_headshot.html', {'agent': agent})
+
+def domain_router(request):
+    """
+    The Traffic Controller:
+    1. Checks the domain name (e.g., 'benedict.skandage.com')
+    2. Extracts the subdomain ('benedict')
+    3. Serves the correct Agent Profile
+    """
+    host = request.get_host().split(':')[0] # Remove port number if present
+    
+    # List of "Reserved" subdomains that should act like the main site
+    reserved_domains = ['www', 'skandage', 'app', 'localhost', '127.0.0.1']
+    
+    # Get the subdomain (e.g., "benedict" from "benedict.skandage.com")
+    subdomain = host.split('.')[0]
+
+    if subdomain in reserved_domains:
+        # If it's the main site, show the Landing Page (or Login)
+        return render(request, 'core/index.html') # You need an index.html, or redirect to login
+    
+    else:
+        # It's an AGENT! Load their profile using the subdomain as the slug
+        return agent_profile(request, slug=subdomain)
