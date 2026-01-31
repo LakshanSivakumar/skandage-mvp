@@ -6,6 +6,7 @@ Django==6.0.1
 django-storages==1.14.6
 gunicorn==24.1.1
 jmespath==1.1.0
+Markdown==3.10.1
 packaging==26.0
 pillow==12.1.0
 psycopg2-binary==2.9.11
