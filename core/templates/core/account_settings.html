@@ -1,0 +1,106 @@
+{% extends 'core/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Account Settings</h2>
+        <p class="text-slate-500 mt-1">Manage your login credentials and security.</p>
+    </div>
+
+    <div class="space-y-8">
+        
+        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-lg text-slate-900 mb-6 flex items-center gap-2">
+                <i class='bx bxs-user-account text-blue-500 bg-blue-50 p-1.5 rounded-lg'></i>
+                Login Details
+            </h3>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                {% if user_form.non_field_errors %}
+                    <div class="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold border border-red-100 flex items-start gap-2">
+                        <i class='bx bxs-error-circle text-lg mt-0.5'></i>
+                        <div>{{ user_form.non_field_errors }}</div>
+                    </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Username</label>
+                        {{ user_form.username }}
+                        
+                        {% if user_form.username.errors %}
+                            <p class="text-red-500 text-xs font-bold mt-1.5 flex items-center gap-1.5">
+                                <i class='bx bxs-error-circle text-sm'></i> 
+                                {{ user_form.username.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Email Address</label>
+                        {{ user_form.email }}
+                        
+                        {% if user_form.email.errors %}
+                            <p class="text-red-500 text-xs font-bold mt-1.5 flex items-center gap-1.5">
+                                <i class='bx bxs-error-circle text-sm'></i> 
+                                {{ user_form.email.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="flex justify-end pt-2">
+                    <button type="submit" name="update_profile" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-200">
+                        Update Info
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-lg text-slate-900 mb-6 flex items-center gap-2">
+                <i class='bx bxs-lock-alt text-amber-500 bg-amber-50 p-1.5 rounded-lg'></i>
+                Change Password
+            </h3>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                {% for field in password_form %}
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">{{ field.label }}</label>
+                    
+                    <div class="relative">
+                        <input type="{{ field.field.widget.input_type }}" 
+                               name="{{ field.name }}" 
+                               id="{{ field.id_for_label }}"
+                               {% if field.field.required %}required{% endif %}
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition placeholder-slate-400">
+                    </div>
+                    
+                    {% if field.help_text %}
+                        <p class="text-[10px] text-slate-400 mt-1 font-medium leading-relaxed">{{ field.help_text }}</p>
+                    {% endif %}
+                    
+                    {% if field.errors %}
+                        <p class="text-red-500 text-xs font-bold mt-1.5 flex items-center gap-1.5">
+                            <i class='bx bxs-error-circle text-sm'></i>
+                            {{ field.errors.0 }}
+                        </p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <div class="flex justify-end border-t border-slate-100 pt-6 mt-2">
+                    <button type="submit" name="change_password" class="bg-white border border-slate-300 text-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-50 hover:text-red-600 hover:border-red-200 transition shadow-sm">
+                        Change Password
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

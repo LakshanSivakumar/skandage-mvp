@@ -1,0 +1,29 @@
+{% extends 'core/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="flex justify-between items-center mb-8">
+    <h2 class="text-2xl font-bold text-slate-900">Your Articles</h2>
+    <a href="{% url 'create_article' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2">
+        <i class='bx bx-plus'></i> Write New
+    </a>
+</div>
+
+<div class="grid gap-4">
+    {% for article in articles %}
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+        <div>
+            <h3 class="font-bold text-lg text-slate-900">{{ article.title }}</h3>
+            <p class="text-sm text-slate-500">Published: {{ article.created_at|date:"M d, Y" }}</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'article_detail' article.slug %}" target="_blank" class="px-3 py-1 text-slate-500 border rounded hover:bg-slate-50">View</a>
+            <a href="{% url 'edit_article' article.pk %}" class="px-3 py-1 text-blue-600 border border-blue-200 bg-blue-50 rounded hover:bg-blue-100">Edit</a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-10 text-slate-400">
+        <p>No articles written yet.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

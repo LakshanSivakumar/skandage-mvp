@@ -1,0 +1,61 @@
+{% extends 'core/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="max-w-xl mx-auto mt-8">
+    
+    <div class="mb-6 flex items-center gap-2 text-sm text-slate-500 font-medium">
+        <a href="{% url 'dashboard' %}" class="hover:text-blue-600 transition">Dashboard</a>
+        <i class='bx bx-chevron-right'></i>
+        <span>{{ title }}</span>
+    </div>
+
+    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">{{ title }}</h2>
+            <p class="text-slate-500 mt-1">Fill in the details below.</p>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium border border-red-100 flex items-start gap-2">
+                    <i class='bx bxs-error-circle text-lg mt-0.5'></i>
+                    <div>{{ form.non_field_errors }}</div>
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide">
+                    {{ field.label }}
+                </label>
+                
+                <div class="relative">
+                    {{ field }}
+                </div>
+
+                {% if field.help_text %}
+                    <p class="text-[10px] text-slate-400 font-medium">{{ field.help_text }}</p>
+                {% endif %}
+
+                {% if field.errors %}
+                    <p class="text-red-500 text-xs font-bold mt-1 flex items-center gap-1">
+                        <i class='bx bxs-error-circle'></i> {{ field.errors.0 }}
+                    </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="flex gap-4 pt-4">
+                <button type="submit" class="flex-1 bg-slate-900 text-white py-3.5 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-200">
+                    Save Changes
+                </button>
+                <a href="javascript:history.back()" class="px-6 py-3.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

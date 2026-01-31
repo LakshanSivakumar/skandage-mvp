@@ -1,52 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Edit Testimonial</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <style> body { font-family: 'Inter', sans-serif; } </style>
-</head>
-<body class="bg-slate-50 flex items-center justify-center min-h-screen p-4">
+{% extends 'core/dashboard_base.html' %}
 
-    <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 w-full max-w-md relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-2 bg-amber-500"></div>
-
-        <div class="mb-6 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center text-xl">
-                <i class='bx bxs-edit'></i>
-            </div>
-            <div>
-                <h1 class="text-xl font-bold text-slate-900">Edit Review</h1>
-                <p class="text-xs text-slate-500">Updating review for <span class="font-semibold text-slate-700">{{ testimonial.client_name }}</span></p>
-            </div>
-        </div>
-
-        <form method="post" enctype="multipart/form-data" class="space-y-5">
-            {% csrf_token %}
-            
-            {% for field in form %}
-            <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">{{ field.label }}</label>
-                {{ field }}
-                {% if field.name == 'screenshot' and field.value %}
-                    <div class="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded inline-block">
-                        Current: <a href="{{ field.value.url }}" target="_blank" class="underline">View Image</a>
-                    </div>
-                {% endif %}
-            </div>
-            {% endfor %}
-
-            <div class="pt-2 flex gap-3">
-                <a href="{% url 'dashboard' %}" class="flex-1 py-3 rounded-lg font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 hover:text-slate-700 text-center transition">
-                    Cancel
-                </a>
-                <button type="submit" class="flex-1 py-3 rounded-lg font-bold text-white bg-slate-900 hover:bg-amber-600 shadow-lg hover:shadow-amber-500/30 transition flex items-center justify-center gap-2">
-                    <i class='bx bxs-save'></i> Update
-                </button>
-            </div>
-        </form>
+{% block dashboard_content %}
+<div class="max-w-2xl mx-auto mt-6">
+    
+    <div class="mb-6 flex items-center gap-2 text-sm text-slate-500 font-medium">
+        <a href="{% url 'manage_testimonials' %}" class="hover:text-blue-600 transition">Testimonials</a>
+        <i class='bx bx-chevron-right'></i>
+        <span>Edit Review</span>
     </div>
 
-</body>
-</html>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        
+        <div class="bg-amber-50/50 p-8 border-b border-amber-100">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-2xl">
+                    <i class='bx bxs-pencil'></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Edit Review</h2>
+                    <p class="text-slate-500 text-sm">Updating review for <strong>{{ testimonial.client_name }}</strong></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-8">
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Client Name</label>
+                    {{ form.client_name }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Review Content</label>
+                    {{ form.review_text }}
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Proof / Screenshot</label>
+                    
+                    {% if form.instance.screenshot %}
+                    <div class="flex items-center gap-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                        <img src="{{ form.instance.screenshot.url }}" class="w-16 h-16 rounded-lg object-cover border border-slate-200">
+                        
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-slate-500 uppercase mb-0.5">Current Image</p>
+                            <p class="text-sm font-medium text-slate-900 truncate">{{ form.instance.screenshot.name }}</p>
+                            <a href="{{ form.instance.screenshot.url }}" target="_blank" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1 mt-1">
+                                View Full Size <i class='bx bx-link-external'></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:bg-slate-50 transition cursor-pointer group" onclick="document.getElementById('id_screenshot').click()">
+                        <div class="text-slate-300 group-hover:text-blue-500 transition mb-2">
+                            <i class='bx bxs-cloud-upload text-3xl'></i>
+                        </div>
+                        <p class="text-sm font-bold text-slate-600">
+                            {% if form.instance.screenshot %}Click to replace image{% else %}Click to upload screenshot{% endif %}
+                        </p>
+                        <p class="text-xs text-slate-400 mt-1">Supports JPG, PNG (Max 2MB)</p>
+                    </div>
+                    
+                    {{ form.screenshot }}
+                </div>
+
+                <div class="pt-4 flex gap-4">
+                    <button type="submit" class="flex-1 bg-slate-900 text-white py-3.5 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
+                        <i class='bx bx-save'></i> Update Review
+                    </button>
+                    <a href="{% url 'manage_testimonials' %}" class="px-6 py-3.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 border border-slate-200 transition">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

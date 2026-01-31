@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Write Article - Skandage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen p-6 flex items-center justify-center">
+
+    <div class="bg-white max-w-2xl w-full rounded-xl shadow-lg border border-slate-200 p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-slate-900">Write New Insight</h1>
+            <a href="{% url 'dashboard' %}" class="text-sm text-slate-500 hover:text-slate-800">Cancel</a>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Headline</label>
+                <input type="text" name="title" required placeholder="e.g., 5 Ways to Save on Taxes" 
+                       class="w-full text-xl font-bold border-b-2 border-slate-200 py-2 focus:outline-none focus:border-blue-600">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Cover Image (Optional)</label>
+                <input type="file" name="cover_image" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Article Content</label>
+                <textarea name="content" rows="12" required placeholder="Start typing your advice here..." 
+                          class="w-full bg-slate-50 p-4 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed"></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition shadow-lg">
+                Publish Article
+            </button>
+        </form>
+    </div>
+
+</body>
+</html>

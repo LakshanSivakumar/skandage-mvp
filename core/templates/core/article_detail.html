@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ article.title }} | Skandage Blog{% endblock %}
+
+{% block content %}
+<style>
+    /* Specific styles for articles */
+    .article-header {
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 2rem;
+    }
+
+    .article-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.025em;
+        line-height: 1.1;
+    }
+
+    .article-meta {
+        color: #6b7280;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .article-body {
+        font-size: 1.125rem;
+        color: #374151;
+        line-height: 1.8;
+    }
+
+    .article-body p {
+        margin-bottom: 1.5rem;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 3rem;
+        color: #2563eb; /* Skandage Blue */
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+    
+    .back-link:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+    }
+</style>
+
+<article>
+    <header class="article-header">
+        <h1 class="article-title">{{ article.title }}</h1>
+        
+        <div class="article-meta">
+            <span>By <strong>{{ agent.name|default:"Skandage Team" }}</strong></span>
+            <span>•</span>
+            <span>{{ article.created_at|date:"F j, Y" }}</span>
+        </div>
+    </header>
+
+    <div class="article-body">
+        {{ article.content|linebreaks }}
+    </div>
+
+    <a href="{% url 'agent_profile' agent.slug %}#articles" class="back-link">
+        ← Back to Profile
+    </a>
+</article>
+{% endblock %}

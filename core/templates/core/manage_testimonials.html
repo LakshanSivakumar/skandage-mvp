@@ -1,0 +1,56 @@
+{% extends 'core/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h2 class="text-2xl font-bold text-slate-900">Testimonials</h2>
+        <p class="text-slate-500 text-sm">Manage what clients say about you.</p>
+    </div>
+    <a href="{% url 'add_testimonial' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-700 transition">
+        <i class='bx bx-plus'></i> Add New
+    </a>
+</div>
+
+<div class="grid gap-4">
+    {% for t in testimonials %}
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between gap-4">
+        
+        <div class="flex gap-4">
+            <div class="w-12 h-12 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-slate-500 font-bold text-lg uppercase">
+                {{ t.client_name|slice:":1" }}
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-900">{{ t.client_name }}</h3>
+                <p class="text-slate-600 text-sm mt-1 italic">"{{ t.review_text|truncatechars:100 }}"</p>
+                
+                {% if t.screenshot %}
+                <div class="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded">
+                    <i class='bx bx-image'></i> Has Screenshot
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 self-start sm:self-center ml-16 sm:ml-0">
+            <a href="{% url 'edit_testimonial' t.pk %}" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit">
+                <i class='bx bx-pencil text-xl'></i>
+            </a>
+            
+            <a href="{% url 'delete_testimonial' t.pk %}" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete">
+                <i class='bx bx-trash text-xl'></i>
+            </a>
+        </div>
+
+    </div>
+    {% empty %}
+    <div class="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+        <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+            <i class='bx bxs-quote-alt-left'></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-700">No testimonials yet</h3>
+        <p class="text-slate-500 text-sm mb-4">Add your first client review to build trust.</p>
+        <a href="{% url 'add_testimonial' %}" class="text-blue-600 font-bold hover:underline">Add Review</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

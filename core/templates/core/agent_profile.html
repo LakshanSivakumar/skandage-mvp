@@ -1,4 +1,5 @@
 {% load static %}
+{% load markdown_extras %}
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
     <head>
@@ -20,6 +21,7 @@
         <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
         
         <style>
+            /* Existing styles */
             body { font-family: 'Lato', sans-serif; background-color: #fafaf9; }
             h1, h2, h3, .serif-font { font-family: 'Playfair Display', serif; }
             .hero-bg { background: linear-gradient(to bottom, #1c1917, #292524); }
@@ -33,44 +35,56 @@
                 content: ''; position: absolute; left: -2px; right: -2px; bottom: 2px; height: 35%;
                 background-color: #f59e0b; opacity: 0.8; z-index: -1; transform: rotate(-1deg);
             }
+            /* NEW Style for smooth expandable section */
+            .proof-container {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+                opacity: 0;
+            }
+            .proof-container.expanded {
+                max-height: 800px; /* Large enough to fit the image */
+                opacity: 1;
+            }
+            .rotate-icon { transition: transform 0.3s ease; }
+            .expanded .rotate-icon { transform: rotate(180deg); }
         </style>
     </head>
 <body class="text-stone-800 antialiased pb-24">
 
-    <div class="hero-bg text-stone-100 relative overflow-hidden pb-32 pt-16 rounded-b-[2.5rem]">
+    <div class="hero-bg text-stone-100 relative overflow-hidden pb-32 pt-20 rounded-b-[3rem]">
+        <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-orange-200 rounded-full mix-blend-overlay filter blur-[120px] opacity-10"></div>
         
-        <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-orange-200 rounded-full mix-blend-overlay filter blur-[100px] opacity-10"></div>
-        
-        <div class="max-w-4xl mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center md:items-start gap-10 text-center md:text-left">
+        <div class="max-w-6xl mx-auto px-8 relative z-10 flex flex-col md:flex-row items-center md:items-center gap-12 text-center md:text-left">
             
             <div class="relative shrink-0" data-aos="fade-right" data-aos-duration="1000">
                 <div class="absolute -inset-3 bg-white/10 rounded-[2rem] -rotate-3 blur-sm"></div>
                 {% if agent.headshot %}
-                    <img src="{{ agent.headshot.url }}" class="relative w-48 h-48 md:w-56 md:h-56 rounded-[1.5rem] object-cover shadow-2xl border-4 border-stone-800/50">
+                    <img src="{{ agent.headshot.url }}" class="relative w-48 h-48 md:w-64 md:h-64 rounded-[2rem] object-cover shadow-2xl border-4 border-stone-800/50">
                 {% else %}
-                    <div class="relative w-48 h-48 rounded-[1.5rem] bg-stone-700 flex items-center justify-center text-6xl font-serif text-stone-500">
+                    <div class="relative w-48 h-48 md:w-64 md:h-64 rounded-[2rem] bg-stone-700 flex items-center justify-center text-7xl font-serif text-stone-500">
                         {{ agent.name|slice:":1" }}
                     </div>
                 {% endif %}
                 
-                <div class="absolute -bottom-4 -right-4 bg-white text-stone-900 px-4 py-2 rounded-xl shadow-lg border border-stone-100 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <div class="absolute -bottom-5 -right-5 bg-white text-stone-900 px-5 py-2.5 rounded-xl shadow-lg border border-stone-100 flex items-center gap-2">
+                    <i class='bx bxs-badge-check text-yellow-500 text-xl'></i>
                     <span class="text-xs font-bold tracking-wide uppercase">Trusted</span>
                 </div>
             </div>
 
-            <div class="flex flex-col justify-center pt-4" data-aos="fade-up" data-aos-delay="200">
-                <h1 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">
+            <div class="flex flex-col justify-center pt-4 max-w-2xl" data-aos="fade-up" data-aos-delay="200">
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
                     Hello, I'm <br class="hidden md:block">
                     <span class="text-amber-100">{{ agent.name }}</span>
                 </h1>
-                <p class="text-xl text-stone-300 font-light mb-6 max-w-lg">
+                <p class="text-xl md:text-2xl text-stone-300 font-light mb-6 leading-relaxed">
                     {{ agent.title }} at <span class="font-semibold text-white">{{ agent.company }}</span>. 
                     <br>Helping families build <span class="highlight-underline text-stone-100">legacy & security.</span>
                 </p>
                 
                 {% if agent.tagline %}
-                <p class="text-xl text-stone-300 font-light italic opacity-80 mt-2">
+                <p class="text-lg text-stone-400 font-light italic opacity-80 border-l-2 border-stone-600 pl-4">
                     "{{ agent.tagline }}"
                 </p>
                 {% endif %}
@@ -78,94 +92,143 @@
         </div>
     </div>
 
-    <div class="max-w-3xl mx-auto px-6 -mt-20 relative z-20 space-y-12">
+    <div class="max-w-6xl mx-auto px-6 -mt-24 relative z-20 space-y-16">
 
-        {% if agent.bio %}
-        <div class="paper-card p-8 md:p-10 rounded-2xl" data-aos="fade-up">
-            <h2 class="text-2xl font-bold text-stone-900 mb-6 flex items-center gap-3">
-                <span class="w-8 h-1 bg-amber-500 rounded-full"></span>
-                My Story
-            </h2>
-            <div class="prose prose-stone prose-lg text-stone-600 leading-relaxed font-light">
-                {{ agent.bio|linebreaks }}
-            </div>
-        </div>
-        {% endif %}
-
-        {% if services %}
-        <div data-aos="fade-up">
-            <h3 class="text-center font-serif text-2xl text-stone-800 mb-8 italic">How I can help you</h3>
-            <div class="grid gap-6 sm:grid-cols-2">
-                {% for service in services %}
-                <div class="bg-white p-6 rounded-xl border border-stone-100 hover:border-amber-200 shadow-sm hover:shadow-md transition duration-300">
-                    <div class="text-amber-600 mb-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    </div>
-                    <h4 class="font-bold text-stone-900 text-lg mb-2">{{ service.title }}</h4>
-                    <p class="text-stone-500 text-sm leading-relaxed">{{ service.description }}</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 paper-card p-10 md:p-12 rounded-3xl" data-aos="fade-up">
+                <h2 class="text-3xl font-bold text-stone-900 mb-8 flex items-center gap-4">
+                    <span class="w-10 h-1 bg-amber-500 rounded-full"></span>
+                    My Story
+                </h2>
+                <div class="prose prose-stone prose-lg text-stone-600 leading-relaxed font-light max-w-none">
+                    {{ agent.bio|markdown|safe }}
                 </div>
+            </div>
+
+            {% if agent.credentials.exists %}
+            <div class="lg:col-span-1 space-y-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="bg-stone-900 text-stone-300 p-8 rounded-3xl border border-stone-800 shadow-xl">
+                    <h3 class="text-xs font-bold text-amber-500 uppercase tracking-[0.2em] mb-6 border-b border-stone-800 pb-4">
+                        Accolades
+                    </h3>
+                    <div class="space-y-6">
+                        {% for cred in agent.credentials.all %}
+                        <div class="flex items-start gap-4 group">
+                            <div class="mt-1 text-amber-500 group-hover:text-white transition">
+                                <i class='bx bxs-trophy text-lg'></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-base leading-tight group-hover:text-amber-400 transition">{{ cred.title }}</h4>
+                                <p class="text-xs text-stone-500 uppercase mt-1 font-bold">{{ cred.issuer }} {{ cred.year }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if services %}
+                <div class="bg-white p-8 rounded-3xl border border-stone-200 shadow-sm">
+                    <h3 class="text-xs font-bold text-stone-400 uppercase tracking-[0.2em] mb-6">Expertise</h3>
+                    <ul class="space-y-3">
+                        {% for service in services %}
+                        <li class="flex items-center gap-3 text-stone-700">
+                            <i class='bx bx-check-circle text-amber-600 text-xl'></i>
+                            <span class="font-medium">{{ service.title }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        {% if articles %}
+        <section data-aos="fade-up">
+            <div class="flex items-end justify-between mb-10 px-2">
+                <div>
+                    <h3 class="font-serif text-4xl text-stone-900 mb-2">Expert Insights</h3>
+                    <p class="text-stone-500">Thoughts on finance, life, and planning.</p>
+                </div>
+                <div class="hidden md:block h-px bg-stone-200 flex-1 ml-10 mb-2"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for article in articles %}
+                <a href="{% url 'article_detail' article.slug %}" class="group block bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 transition duration-300">
+                    {% if article.cover_image %}
+                        <div class="h-56 overflow-hidden">
+                            <img src="{{ article.cover_image.url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                        </div>
+                    {% else %}
+                        <div class="h-56 bg-stone-100 flex items-center justify-center text-stone-300">
+                            <i class='bx bx-news text-5xl'></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="p-8">
+                        <div class="text-xs text-amber-600 font-bold uppercase mb-3 tracking-wide">
+                            {{ article.created_at|date:"M d, Y" }}
+                        </div>
+                        <h4 class="font-serif text-2xl font-bold text-stone-900 mb-3 group-hover:text-amber-600 transition leading-tight">
+                            {{ article.title }}
+                        </h4>
+                        <p class="text-stone-500 text-base line-clamp-3 mb-4 leading-relaxed">
+                            {{ article.content|striptags|truncatewords:20 }}
+                        </p>
+                        <div class="text-stone-900 text-sm font-bold flex items-center gap-2 group-hover:gap-3 transition-all">
+                            Read Article <i class='bx bx-right-arrow-alt'></i>
+                        </div>
+                    </div>
+                </a>
                 {% endfor %}
             </div>
-        </div>
-        {% endif %}
-
-        {% if agent.credentials.exists %}
-        <div class="max-w-4xl mx-auto mb-16" data-aos="fade-up">
-            <div class="border-t border-b border-stone-200 py-8">
-                <h3 class="text-center text-xs font-bold text-stone-400 uppercase tracking-[0.2em] mb-8">
-                    Professional Accolades & Certifications
-                </h3>
-                
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                    {% for cred in agent.credentials.all %}
-                    <div class="group">
-                        <div class="mx-auto w-12 h-12 mb-3 flex items-center justify-center text-amber-500 bg-amber-50 rounded-full group-hover:bg-amber-500 group-hover:text-white transition duration-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z" />
-                            </svg>
-                        </div>
-                        
-                        <h4 class="font-bold text-stone-900 text-sm leading-tight">{{ cred.title }}</h4>
-                        <p class="text-[10px] text-stone-500 uppercase mt-1 tracking-wide">{{ cred.issuer }} {{ cred.year }}</p>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+        </section>
         {% endif %}
 
         {% if testimonials %}
         <div data-aos="fade-up">
-            <div class="text-center mb-10">
-                <h3 class="font-serif text-3xl text-stone-900">Kind Words</h3>
-                <p class="text-stone-500 mt-2">Real stories from families I've protected</p>
+            <div class="text-center mb-12">
+                <h3 class="font-serif text-4xl text-stone-900">Kind Words</h3>
+                <p class="text-stone-500 mt-3 text-lg font-light">Real stories from families I've protected</p>
             </div>
 
-            <div class="space-y-8">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
                 {% for review in testimonials %}
-                <div class="bg-[#fffbf7] p-8 rounded-xl shadow-sm border border-stone-100 relative" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
-                    <div class="absolute -top-4 left-8 bg-amber-500 text-white w-8 h-8 flex items-center justify-center rounded-full text-xl serif-font">“</div>
-                    
-                    <p class="text-stone-700 text-lg italic leading-relaxed mb-6 font-serif">
-                        {{ review.review_text }}
-                    </p>
-                    
-                    {% if review.screenshot %}
-                    <div class="mb-6">
-                        <div class="text-xs text-stone-400 uppercase tracking-widest mb-2 font-bold">Proof of Conversation</div>
-                        <a href="{{ review.screenshot.url }}" target="_blank">
-                            <img src="{{ review.screenshot.url }}" class="w-full max-w-xs rounded-lg border border-stone-200 opacity-90 hover:opacity-100 transition">
-                        </a>
+                <div class="bg-[#fffbf7] p-10 rounded-3xl shadow-sm border border-stone-100 relative hover:shadow-md transition-all duration-300" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                    <div class="absolute -top-5 -left-2 text-amber-200 opacity-50 transform rotate-12">
+                        <i class='bx bxs-quote-left text-6xl'></i>
                     </div>
-                    {% endif %}
+                    
+                    <div class="relative z-10">
+                        <p class="text-stone-700 text-lg italic leading-loose mb-8 font-serif">
+                            "{{ review.review_text }}"
+                        </p>
+                        
+                        {% if review.screenshot %}
+                        <div class="mb-6">
+                            <button onclick="toggleProof('proof-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold text-stone-500 uppercase tracking-wider hover:text-amber-600 transition border border-stone-200 px-4 py-2 rounded-lg bg-white shadow-sm group">
+                                <i class='bx bx-image text-lg text-amber-500'></i> 
+                                <span>Show Verified Proof</span>
+                                <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
+                            </button>
+                        </div>
+                        
+                        <div id="proof-{{ forloop.counter }}" class="proof-container mb-6">
+                            <div class="bg-stone-100 p-2 rounded-2xl border border-stone-200/50">
+                                <img src="{{ review.screenshot.url }}" class="w-full rounded-xl shadow-inner" alt="Proof for review by {{ review.client_name }}">
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
 
-                    <div class="flex items-center gap-4 border-t border-stone-200/50 pt-4">
-                        <div class="w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center text-stone-600 font-bold font-serif">
+                    <div class="flex items-center gap-4 pt-6 border-t border-stone-200/50 relative z-10">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-stone-200 to-stone-300 flex items-center justify-center text-stone-600 font-bold font-serif text-xl shadow-inner">
                             {{ review.client_name|slice:":1" }}
                         </div>
                         <div>
-                            <div class="font-bold text-stone-900">{{ review.client_name }}</div>
-                            <div class="text-xs text-stone-500">Verified Client</div>
+                            <div class="font-bold text-stone-900 text-lg">{{ review.client_name }}</div>
+                            <div class="text-xs text-amber-600 font-bold uppercase tracking-wide">Verified Client</div>
                         </div>
                     </div>
                 </div>
@@ -174,41 +237,56 @@
         </div>
         {% endif %}
 
-        <section id="contact" class="scroll-mt-20 pt-10" data-aos="fade-up">
-            <div class="bg-[#1c1917] rounded-3xl p-8 md:p-12 relative overflow-hidden text-stone-100 shadow-2xl">
-                <div class="absolute top-0 right-0 w-64 h-64 bg-amber-600 rounded-full mix-blend-screen filter blur-[80px] opacity-20 -translate-y-1/2 translate-x-1/2"></div>
+        <section id="contact" class="scroll-mt-20 pt-10 pb-10" data-aos="fade-up">
+             <div class="bg-[#1c1917] rounded-[3rem] p-10 md:p-16 relative overflow-hidden text-stone-100 shadow-2xl">
+                <div class="absolute top-0 right-0 w-96 h-96 bg-amber-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 translate-x-1/2 -translate-y-1/2"></div>
+                <div class="absolute bottom-0 left-0 w-96 h-96 bg-stone-700 rounded-full mix-blend-screen filter blur-[100px] opacity-20 -translate-x-1/2 translate-y-1/2"></div>
                 
-                <div class="relative z-10">
-                    <div class="text-center mb-10">
-                        <h2 class="font-serif text-3xl md:text-4xl text-white mb-3">Let's Secure Your Legacy</h2>
-                        <p class="text-stone-400 font-light">Send me a message directly. I usually respond within 2 hours.</p>
+                <div class="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
+                    
+                    <div>
+                        <h2 class="font-serif text-4xl md:text-5xl text-white mb-6 leading-tight">Let's Secure Your <br> <span class="text-amber-500">Legacy Today.</span></h2>
+                        <p class="text-stone-400 font-light text-xl mb-8 leading-relaxed">
+                            Have questions about your coverage or investment planning? Send me a message directly. I usually respond within 2 hours.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-4 text-stone-300">
+                                <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-amber-500"><i class='bx bxs-envelope'></i></div>
+                                <span>Direct Email Support</span>
+                            </div>
+                            <div class="flex items-center gap-4 text-stone-300">
+                                <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-amber-500"><i class='bx bxl-whatsapp'></i></div>
+                                <span>WhatsApp Priority Chat</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <form action="{% url 'agent_profile' agent.slug %}" method="post" class="space-y-4 max-w-lg mx-auto">
+                    <form action="{% url 'agent_profile' agent.slug %}" method="post" class="bg-white/5 p-8 rounded-3xl border border-white/10 backdrop-blur-sm space-y-5">
                         {% csrf_token %}
                         
-                        <div>
-                            <label class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1 block">Your Name</label>
-                            <input type="text" name="name" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
+                        <div class="grid md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2 block">Name</label>
+                                <input type="text" name="name" required class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 focus:bg-black/40 transition">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2 block">Phone</label>
+                                <input type="text" name="phone" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 focus:bg-black/40 transition">
+                            </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1 block">Email</label>
-                                <input type="email" name="email" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1 block">Phone</label>
-                                <input type="text" name="phone" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
-                            </div>
+                        <div>
+                            <label class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2 block">Email Address</label>
+                            <input type="email" name="email" required class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 focus:bg-black/40 transition">
                         </div>
                         
                         <div>
-                            <label class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1 block">How can I help?</label>
-                            <textarea name="message" rows="3" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"></textarea>
+                            <label class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2 block">How can I help?</label>
+                            <textarea name="message" rows="3" required class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 focus:bg-black/40 transition"></textarea>
                         </div>
                         
-                        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-amber-900/50 flex items-center justify-center gap-2 mt-4 group">
+                        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold text-lg py-4 rounded-xl transition shadow-lg shadow-amber-900/50 flex items-center justify-center gap-2 mt-2 group">
                             Send Message
                             <i class='bx bx-send group-hover:translate-x-1 transition'></i>
                         </button>
@@ -220,14 +298,14 @@
     </div>
 
     {% if agent.phone_number %}
-    <div class="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-        <a href="https://wa.me/{{ agent.phone_number }}" target="_blank" class="pointer-events-auto bg-stone-900 text-white pl-6 pr-8 py-3 rounded-full shadow-2xl flex items-center gap-3 transform hover:-translate-y-1 transition duration-300 border border-stone-700/50 group">
-            <div class="bg-[#25D366] p-1.5 rounded-full text-white group-hover:scale-110 transition">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+    <div class="fixed bottom-8 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
+        <a href="https://wa.me/{{ agent.phone_number }}" target="_blank" class="pointer-events-auto bg-stone-900 text-white pl-6 pr-8 py-3.5 rounded-full shadow-2xl flex items-center gap-4 transform hover:-translate-y-1 hover:scale-105 transition duration-300 border border-stone-700/50 group">
+            <div class="bg-[#25D366] p-2 rounded-full text-white shadow-lg group-hover:rotate-12 transition">
+                <i class='bx bxl-whatsapp text-xl'></i>
             </div>
             <div class="flex flex-col text-left">
-                <span class="text-[10px] text-stone-400 uppercase tracking-wider font-bold">Let's connect</span>
-                <span class="text-sm font-semibold">WhatsApp Me</span>
+                <span class="text-[10px] text-stone-400 uppercase tracking-wider font-bold">Have a question?</span>
+                <span class="text-base font-bold">WhatsApp Me</span>
             </div>
         </a>
     </div>
@@ -238,9 +316,23 @@
         AOS.init({
             once: true,
             offset: 50,
-            duration: 1000,
-            easing: 'ease-out-quad',
+            duration: 800,
+            easing: 'ease-out-cubic',
         });
+
+        // NEW SCRIPT for toggling proof images
+        function toggleProof(elementId, button) {
+            const container = document.getElementById(elementId);
+            container.classList.toggle('expanded');
+            button.classList.toggle('expanded');
+            
+            const textSpan = button.querySelector('span');
+            if (container.classList.contains('expanded')) {
+                textSpan.textContent = "Hide Verified Proof";
+            } else {
+                textSpan.textContent = "Show Verified Proof";
+            }
+        }
     </script>
 </body>
 </html>

@@ -20,8 +20,19 @@ class Agent(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        # 1. Generate basic slug if missing or if name changed
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            
+            # 2. Check if this slug exists in DB (exclude self)
+            while Agent.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            
+            self.slug = slug
+            
         super().save(*args, **kwargs)
 
     def whatsapp_link(self):
@@ -69,3 +80,21 @@ class Lead(models.Model):
 
     def __str__(self):
         return f"Lead from {self.name}"
+    
+class Article(models.Model):
+    agent = models.ForeignKey(Agent, related_name='articles', on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True, blank=True) # For the URL (e.g., /article/how-to-save)
+    cover_image = models.ImageField(upload_to='article_headers/', blank=True, null=True)
+    content = models.TextField(help_text="Write your article here.")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        # Auto-generate URL from title if empty
+        if not self.slug:
+            base_slug = slugify(self.title)
+            self.slug = f"{base_slug}-{self.agent.id}" # Append ID to ensure uniqueness
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
