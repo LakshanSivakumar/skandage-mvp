@@ -85,7 +85,7 @@
                 </div>
                 <div class="overflow-hidden">
                     <div class="text-sm font-bold text-slate-900 truncate">{{ request.user.username }}</div>
-                    <a href="/accounts/logout" class="text-xs text-red-500 hover:text-red-600 font-medium">Sign Out</a>
+                    <a href="{% url 'logout' %}" class="text-xs text-red-500 hover:text-red-600 font-medium">Sign Out</a>
                 </div>
             </div>
         </div>

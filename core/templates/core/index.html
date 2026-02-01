@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skandage Agent Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            bg: '#020617',       
+                            surface: '#0f172a',  
+                            cyan: '#22d3ee',     
+                            cyanHover: '#06b6d4' 
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { 
+            background-color: #020617;
+            background-image: radial-gradient(circle at 50% 0%, #112631 0%, #020617 60%);
+            min-height: 100vh;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .glass-panel { 
+            background: rgba(15, 23, 42, 0.6); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-cyan selection:text-slate-900">
+
+    <nav class="w-full z-50 pt-6 px-6">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="{% static 'core/logo.png' %}" 
+                     alt="Skandage Logo" 
+                     class="h-8 w-auto object-contain"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                
+                <span class="font-bold text-xl tracking-tight text-white hidden">Skandage</span>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                {% if user.is_authenticated %}
+                    <span class="text-slate-400 text-sm font-medium hidden sm:block">Signed in as <span class="text-white">{{ user.username }}</span></span>
+                    <a href="{% url 'logout' %}" class="text-sm font-bold text-slate-400 hover:text-white transition">Sign Out</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="text-sm font-bold text-white hover:text-brand-cyan transition">Agent Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex items-center justify-center p-6">
+        
+        <div class="max-w-3xl w-full text-center">
+            
+            {% if user.is_authenticated %}
+            <div class="animate-fade-in-up">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-brand-cyan text-xs font-bold uppercase tracking-wider mb-8">
+                    <div class="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></div>
+                    System Operational
+                </div>
+
+                <h1 class="text-5xl md:text-6xl font-bold mb-6 tracking-tight text-white">
+                    Welcome back, <br> <span class="text-brand-cyan text-glow">{{ user.agent.name|default:user.username }}</span>.
+                </h1>
+                
+                <p class="text-lg text-slate-400 mb-12 max-w-xl mx-auto">
+                    Your digital portfolio is live. Manage your content and check new leads below.
+                </p>
+
+                <div class="grid sm:grid-cols-2 gap-4 max-w-lg mx-auto">
+                    <a href="{% url 'dashboard' %}" class="group relative overflow-hidden rounded-2xl bg-brand-cyan text-slate-900 p-1 transition hover:bg-brand-cyanHover shadow-[0_0_30px_rgba(34,211,238,0.2)]">
+                        <div class="relative h-full bg-white/10 rounded-xl p-6 flex flex-col items-center justify-center gap-3 transition group-hover:bg-transparent">
+                            <i class='bx bxs-inbox text-3xl'></i>
+                            <div class="font-bold text-lg">Check Inbox</div>
+                            <span class="text-xs font-semibold opacity-70 uppercase tracking-wide">Go to Dashboard</span>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'manage_profile' %}" class="group rounded-2xl glass-panel p-6 flex flex-col items-center justify-center gap-3 transition hover:border-brand-cyan/50 hover:bg-brand-surface">
+                        <i class='bx bxs-pencil text-3xl text-brand-cyan'></i>
+                        <div class="font-bold text-lg text-white">Update Profile</div>
+                        <span class="text-xs text-slate-500 font-bold uppercase tracking-wide group-hover:text-brand-cyan transition">Edit Content</span>
+                    </a>
+                </div>
+                
+                <div class="mt-12">
+                    <a href="{% url 'agent_profile' user.agent.slug %}" target="_blank" class="inline-flex items-center gap-2 text-slate-500 hover:text-white transition text-sm font-medium">
+                        View live website <i class='bx bx-link-external'></i>
+                    </a>
+                </div>
+            </div>
+
+            {% else %}
+            <div>
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 tracking-tight text-white">
+                    Turn Your Reputation <br>
+                    <span class="text-brand-cyan text-glow">Into Revenue.</span>
+                </h1>
+                
+                <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+                    The verified digital portfolio that builds trust and captures leads before you even say hello.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="{% url 'login' %}" class="w-full sm:w-auto bg-brand-cyan hover:bg-brand-cyanHover text-slate-900 px-10 py-4 rounded-xl font-bold text-lg transition shadow-[0_0_20px_rgba(34,211,238,0.3)]">
+                        Member Login
+                    </a>
+                    <a href="mailto:benedict@skandage.com" class="w-full sm:w-auto px-10 py-4 rounded-xl font-bold text-white glass-panel hover:bg-white/5 transition">
+                        Request Access
+                    </a>
+                </div>
+                
+                <div class="mt-16 pt-8 border-t border-white/5 flex flex-col items-center gap-4">
+                    <p class="text-xs font-bold text-slate-600 uppercase tracking-widest">Trusted by consultants from</p>
+                    <div class="flex gap-8 opacity-40 grayscale hover:grayscale-0 transition duration-500">
+                        <span class="font-serif font-bold text-xl">Prudential</span>
+                        <span class="font-serif font-bold text-xl">Great Eastern</span>
+                        <span class="font-serif font-bold text-xl">AIA</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+
+    <footer class="py-8 text-center text-slate-600 text-sm">
+        <p>&copy; {% now "Y" %} Skandage Technologies. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

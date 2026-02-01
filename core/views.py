@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import update_session_auth_hash, logout
+from django.contrib import messages
 from .models import Agent, Testimonial, Lead, Article, Credential
 from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm
 
@@ -12,16 +13,21 @@ from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, Cre
 def domain_router(request):
     """
     The Traffic Controller:
-    Checks if the request is for a subdomain (e.g., benedict.skandage.com)
-    and routes it to the correct agent profile.
+    1. Checks the domain name (e.g., 'benedict.skandage.com')
+    2. Extracts the subdomain ('benedict')
+    3. Serves the correct Agent Profile
     """
-    host = request.get_host().split(':')[0] # Remove port number
-    reserved_domains = ['www', 'skandage', 'app', 'localhost', '127.0.0.1']
+    host = request.get_host().split(':')[0] # Remove port number if present
     subdomain = host.split('.')[0]
+    
+    # List of "Reserved" domains/subdomains that point to the Landing Page
+    reserved_domains = ['www', 'skandage', 'app', 'localhost', '127.0.0.1']
 
-    if subdomain in reserved_domains:
-        # If it's the main site, show the Landing Page (or redirect to Login)
+    # FIX: We now check if the FULL HOST is reserved (catches 127.0.0.1)
+    # OR if the SUBDOMAIN is reserved (catches www.skandage.com)
+    if host in reserved_domains or subdomain in reserved_domains:
         return render(request, 'core/index.html') 
+    
     else:
         # It's an AGENT! Load their profile using the subdomain as the slug
         return agent_profile(request, slug=subdomain)
@@ -209,26 +215,42 @@ def add_testimonial(request):
     return render(request, 'core/add_testimonial.html', {'form': form})
 
 @login_required
+def delete_testimonial(request, pk):
+    agent = request.user.agent
+    testimonial = get_object_or_404(Testimonial, pk=pk, agent=agent)
+
+    # --- PERMISSION CHECK (NEW) ---
+    if not agent.can_upload_testimonials:
+        messages.error(request, "You cannot delete reviews on the Ad-Hoc plan. Please contact support.")
+        return redirect('manage_testimonials')
+    
+    if request.method == 'POST':
+        testimonial.delete()
+        messages.success(request, "Review deleted.")
+        return redirect('manage_testimonials')
+        
+    return render(request, 'core/delete_confirm.html', {'testimonial': testimonial})
+
+@login_required
 def edit_testimonial(request, pk):
-    testimonial = get_object_or_404(Testimonial, pk=pk, agent=request.user.agent)
+    agent = request.user.agent
+    testimonial = get_object_or_404(Testimonial, pk=pk, agent=agent)
+    
+    # --- PERMISSION CHECK (NEW) ---
+    if not agent.can_upload_testimonials:
+        messages.error(request, "You cannot edit reviews on the Ad-Hoc plan. Please contact support.")
+        return redirect('manage_testimonials')
+    
     if request.method == 'POST':
         form = TestimonialForm(request.POST, request.FILES, instance=testimonial)
         if form.is_valid():
             form.save()
-            return redirect('manage_testimonials')
+            messages.success(request, "Review updated.")
+            return redirect('dashboard')
     else:
         form = TestimonialForm(instance=testimonial)
 
     return render(request, 'core/edit_testimonial.html', {'form': form, 'testimonial': testimonial})
-
-@login_required
-def delete_testimonial(request, pk):
-    testimonial = get_object_or_404(Testimonial, pk=pk, agent=request.user.agent)
-    if request.method == 'POST':
-        testimonial.delete()
-        return redirect('manage_testimonials')
-        
-    return render(request, 'core/delete_confirm.html', {'testimonial': testimonial})
 
 # Note: edit_bio and upload_headshot have been removed as they are now handled in manage_profile
 
@@ -278,3 +300,30 @@ def account_settings(request):
         'section': 'settings' # For sidebar highlighting
     }
     return render(request, 'core/account_settings.html', context)
+
+@login_required
+def add_testimonial(request):
+    agent = request.user.agent
+    
+    # --- PERMISSION CHECK ---
+    if not agent.can_upload_testimonials:
+        # If they try to force access, kick them back to the list with an error
+        messages.error(request, "Your plan does not support self-uploading. Please contact support to add reviews.")
+        return redirect('manage_testimonials')
+    
+    if request.method == 'POST':
+        form = TestimonialForm(request.POST, request.FILES)
+        if form.is_valid():
+            testimonial = form.save(commit=False)
+            testimonial.agent = agent
+            testimonial.save()
+            messages.success(request, "Review added successfully!") # Nice feedback
+            return redirect('manage_testimonials')
+    else:
+        form = TestimonialForm()
+
+    return render(request, 'core/add_testimonial.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')

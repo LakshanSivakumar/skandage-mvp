@@ -1,55 +1,95 @@
 {% extends 'core/dashboard_base.html' %}
 
 {% block dashboard_content %}
-<div class="flex justify-between items-center mb-8">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
     <div>
-        <h2 class="text-2xl font-bold text-slate-900">Testimonials</h2>
-        <p class="text-slate-500 text-sm">Manage what clients say about you.</p>
+        <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Testimonials</h2>
+        <p class="text-slate-500 mt-1">Manage what clients say about you.</p>
     </div>
-    <a href="{% url 'add_testimonial' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-700 transition">
-        <i class='bx bx-plus'></i> Add New
-    </a>
+
+    {% if agent.can_upload_testimonials %}
+        <a href="{% url 'add_testimonial' %}" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-200 flex items-center gap-2">
+            <i class='bx bx-plus'></i> Add New Review
+        </a>
+    {% else %}
+        <div class="flex items-center gap-3 bg-amber-50 text-amber-800 px-4 py-2.5 rounded-xl border border-amber-100 text-sm font-bold shadow-sm">
+            <i class='bx bxs-lock-alt text-xl'></i>
+            <span>Uploads Locked (Ad-Hoc Plan)</span>
+            <a href="https://wa.me/6591234567?text=Hi%20Benedict,%20I%20would%20like%20to%20add%20new%20testimonials." target="_blank" class="underline hover:text-amber-600 ml-1">
+                Request Update
+            </a>
+        </div>
+    {% endif %}
 </div>
+
+{% if messages %}
+    <div class="space-y-2 mb-6">
+    {% for message in messages %}
+        <div class="p-4 rounded-xl font-bold flex items-center gap-3 shadow-sm border {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-100{% else %}bg-green-50 text-green-700 border-green-100{% endif %}">
+            <i class='bx {% if message.tags == 'error' %}bxs-error-circle{% else %}bxs-check-circle{% endif %} text-xl'></i>
+            {{ message }}
+        </div>
+    {% endfor %}
+    </div>
+{% endif %}
 
 <div class="grid gap-4">
     {% for t in testimonials %}
-    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between gap-4">
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between gap-6 group hover:border-blue-300 transition">
         
-        <div class="flex gap-4">
-            <div class="w-12 h-12 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-slate-500 font-bold text-lg uppercase">
+        <div class="flex gap-5">
+            <div class="w-14 h-14 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-slate-500 font-bold text-xl uppercase shadow-inner">
                 {{ t.client_name|slice:":1" }}
             </div>
             <div>
-                <h3 class="font-bold text-slate-900">{{ t.client_name }}</h3>
-                <p class="text-slate-600 text-sm mt-1 italic">"{{ t.review_text|truncatechars:100 }}"</p>
+                <h3 class="font-bold text-lg text-slate-900">{{ t.client_name }}</h3>
+                <p class="text-slate-600 text-sm mt-1 italic leading-relaxed">"{{ t.review_text|truncatechars:120 }}"</p>
                 
                 {% if t.screenshot %}
-                <div class="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded">
-                    <i class='bx bx-image'></i> Has Screenshot
+                <div class="mt-3 inline-flex items-center gap-1.5 text-xs text-blue-600 font-bold bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
+                    <i class='bx bx-image'></i> Verified with Screenshot
                 </div>
                 {% endif %}
             </div>
         </div>
 
-        <div class="flex items-center gap-2 self-start sm:self-center ml-16 sm:ml-0">
-            <a href="{% url 'edit_testimonial' t.pk %}" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit">
-                <i class='bx bx-pencil text-xl'></i>
-            </a>
+        <div class="flex items-center gap-2 self-start md:self-center md:ml-0 pl-[4.5rem] md:pl-0">
             
-            <a href="{% url 'delete_testimonial' t.pk %}" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete">
-                <i class='bx bx-trash text-xl'></i>
-            </a>
+            {% if agent.can_upload_testimonials %}
+                <a href="{% url 'edit_testimonial' t.pk %}" class="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition" title="Edit">
+                    <i class='bx bxs-pencil text-xl'></i>
+                </a>
+                
+                <form action="{% url 'delete_testimonial' t.pk %}" method="post" onsubmit="return confirm('Delete this review permanently?');">
+                    {% csrf_token %}
+                    <button type="submit" class="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition" title="Delete">
+                        <i class='bx bxs-trash text-xl'></i>
+                    </button>
+                </form>
+            {% else %}
+                <span class="p-2.5 text-slate-300 cursor-not-allowed" title="Management Locked by Admin">
+                    <i class='bx bxs-lock-alt text-xl'></i>
+                </span>
+            {% endif %}
+            
         </div>
 
     </div>
     {% empty %}
-    <div class="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+    <div class="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-slate-200">
         <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
             <i class='bx bxs-quote-alt-left'></i>
         </div>
         <h3 class="text-lg font-bold text-slate-700">No testimonials yet</h3>
-        <p class="text-slate-500 text-sm mb-4">Add your first client review to build trust.</p>
-        <a href="{% url 'add_testimonial' %}" class="text-blue-600 font-bold hover:underline">Add Review</a>
+        <p class="text-slate-500 text-sm mb-6">Build trust by adding client reviews.</p>
+        
+        {% if agent.can_upload_testimonials %}
+        <a href="{% url 'add_testimonial' %}" class="inline-flex items-center gap-2 text-blue-600 font-bold bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition">
+            <i class='bx bx-plus'></i> Add First Review
+        </a>
+        {% else %}
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wide bg-slate-100 px-3 py-1 rounded">Uploads Locked</span>
+        {% endif %}
     </div>
     {% endfor %}
 </div>

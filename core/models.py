@@ -15,6 +15,11 @@ class Agent(models.Model):
     # Profile Details
     headshot = models.ImageField(upload_to='headshots/', blank=True, null=True)
     bio = models.TextField(blank=True)
+
+    can_upload_testimonials = models.BooleanField(
+        default=False, 
+        help_text="If True, agent can add/upload testimonials freely. If False, button is hidden."
+    )
     
     # Meta
     created_at = models.DateTimeField(auto_now_add=True)

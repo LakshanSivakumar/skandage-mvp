@@ -31,5 +31,6 @@ urlpatterns = [
 
     path('dashboard/leads/delete/<int:pk>/', views.delete_lead, name='delete_lead'),
     path('dashboard/settings/', views.account_settings, name='account_settings'),
+    path('logout/', views.logout_view, name='logout'),
 
 ]
