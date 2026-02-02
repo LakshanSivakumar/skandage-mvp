@@ -35,6 +35,16 @@ def domain_router(request):
 def agent_profile(request, slug):
     agent = get_object_or_404(Agent, slug=slug)
     
+    # Sort testimonials by ID (newest first) since 'created_at' might be missing on Testimonial model
+    featured_reviews = agent.testimonials.filter(is_featured=True).order_by('-id')
+    
+    # 2. If you picked some, show them. 
+    #    If you haven't picked any yet, fallback to the newest 4.
+    if featured_reviews.exists():
+        testimonials = featured_reviews[:4]
+    else:
+        testimonials = agent.testimonials.all().order_by('-id')[:4]
+    
     if request.method == 'POST':
         form = LeadForm(request.POST)
         if form.is_valid():
@@ -47,11 +57,12 @@ def agent_profile(request, slug):
 
     context = {
         'agent': agent,
-        'testimonials': agent.testimonials.all(),
-        'services': agent.services.all(),
+        'testimonials': testimonials,
+        # --- FIX IS HERE ---
+        # Changed from "agent.articles.filter.all()..." to "agent.articles.all()..."
+        'articles': agent.articles.all().order_by('-created_at')[:3], 
         'credentials': agent.credentials.all(),
-        'articles': agent.articles.all().order_by('-created_at'),
-        'form': form,
+        'total_testimonials': agent.testimonials.count() 
     }
     return render(request, 'core/agent_profile.html', context)
 
@@ -327,3 +338,28 @@ def add_testimonial(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+def agent_testimonials(request, slug):
+    agent = get_object_or_404(Agent, slug=slug)
+    # Show ALL reviews here
+    testimonials = agent.testimonials.all().order_by('-id')
+    
+    return render(request, 'core/public_testimonials.html', {
+        'agent': agent,
+        'testimonials': testimonials
+    })
+
+def agent_bio(request, slug):
+    agent = get_object_or_404(Agent, slug=slug)
+    return render(request, 'core/public_bio.html', {
+        'agent': agent,
+        'credentials': agent.credentials.all()
+    })
+def single_testimonial(request, slug, pk):
+    agent = get_object_or_404(Agent, slug=slug)
+    testimonial = get_object_or_404(Testimonial, pk=pk, agent=agent)
+    
+    return render(request, 'core/single_testimonial.html', {
+        'agent': agent,
+        'review': testimonial
+    })

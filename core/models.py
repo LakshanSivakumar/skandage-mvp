@@ -54,10 +54,10 @@ class Testimonial(models.Model):
     client_name = models.CharField(max_length=100)
     review_text = models.TextField()
     screenshot = models.ImageField(upload_to='reviews/', blank=True, null=True, help_text="Upload WhatsApp screenshot if available")
-    
+    is_featured = models.BooleanField(default=False, help_text="Check this to pin this review to the homepage")
     def __str__(self):
-        return f"Review for {self.agent.name} by {self.client_name}"
-
+        status = "★" if self.is_featured else ""
+        return f"{status} {self.client_name}"
 class Service(models.Model):
     agent = models.ForeignKey(Agent, related_name='services', on_delete=models.CASCADE)
     title = models.CharField(max_length=100, help_text="e.g., Critical Illness Protection")

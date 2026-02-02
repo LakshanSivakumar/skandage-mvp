@@ -5,15 +5,28 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{{ agent.name }} - Trusted Advisor</title>
         
-        <meta property="og:title" content="{{ agent.name }} | {{ agent.title }}" />
-        <meta property="og:description" content="{{ agent.tagline|default:'Contact me for professional insurance advice.' }}" />
+        <title>{{ agent.name }} | {{ agent.title }}</title>
+        
+        <meta property="og:site_name" content="{{ agent.name }}'s Portfolio" />
+        <meta property="og:title" content="{{ agent.name }} - {{ agent.title }}" />
+        <meta property="og:description" content="{{ agent.tagline|default:'Connect with me for trusted financial advice and legacy planning.' }}" />
+        
         {% if agent.headshot %}
-            <meta property="og:image" content="{{ agent.headshot.url }}" />
+            <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ agent.headshot.url }}" />
+            <meta property="og:image:width" content="300" />
+            <meta property="og:image:height" content="300" />
         {% endif %}
+        
         <meta property="og:url" content="{{ request.build_absolute_uri }}" />
         <meta property="og:type" content="profile" />
+
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ agent.name }}">
+        <meta name="twitter:description" content="{{ agent.tagline }}">
+        {% if agent.headshot %}
+            <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ agent.headshot.url }}">
+        {% endif %}
     
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -21,7 +34,6 @@
         <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
         
         <style>
-            /* Existing styles */
             body { font-family: 'Lato', sans-serif; background-color: #fafaf9; }
             h1, h2, h3, .serif-font { font-family: 'Playfair Display', serif; }
             .hero-bg { background: linear-gradient(to bottom, #1c1917, #292524); }
@@ -35,7 +47,6 @@
                 content: ''; position: absolute; left: -2px; right: -2px; bottom: 2px; height: 35%;
                 background-color: #f59e0b; opacity: 0.8; z-index: -1; transform: rotate(-1deg);
             }
-            /* NEW Style for smooth expandable section */
             .proof-container {
                 max-height: 0;
                 overflow: hidden;
@@ -43,7 +54,7 @@
                 opacity: 0;
             }
             .proof-container.expanded {
-                max-height: 800px; /* Large enough to fit the image */
+                max-height: 800px;
                 opacity: 1;
             }
             .rotate-icon { transition: transform 0.3s ease; }
@@ -101,7 +112,13 @@
                     My Story
                 </h2>
                 <div class="prose prose-stone prose-lg text-stone-600 leading-relaxed font-light max-w-none">
-                    {{ agent.bio|markdown|safe }}
+                    {{ agent.bio|markdown|truncatewords_html:80|safe }}
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-stone-100">
+                    <a href="{% url 'agent_bio' agent.slug %}" class="inline-flex items-center gap-2 text-amber-600 font-bold hover:text-amber-700 transition group text-lg">
+                        Read full story <i class='bx bx-right-arrow-alt group-hover:translate-x-1 transition'></i>
+                    </a>
                 </div>
             </div>
 
@@ -142,6 +159,78 @@
             </div>
             {% endif %}
         </div>
+
+        {% if testimonials %}
+        <div data-aos="fade-up">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+                <div>
+                    <h3 class="font-serif text-4xl text-stone-900">Kind Words</h3>
+                    <p class="text-stone-500 mt-3 text-lg font-light">Recent feedback from clients</p>
+                </div>
+                
+                {% if total_testimonials > 4 %}
+                <a href="{% url 'agent_testimonials' agent.slug %}" class="hidden md:flex items-center gap-2 text-stone-900 font-bold hover:text-amber-600 transition group">
+                    Read all {{ total_testimonials }} stories <i class='bx bx-right-arrow-alt group-hover:translate-x-1 transition'></i>
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="md:columns-2 gap-8 space-y-8">
+                {% for review in testimonials %}
+                <div class="break-inside-avoid bg-[#fffbf7] p-10 rounded-3xl shadow-sm border border-stone-100 relative hover:shadow-md transition-all duration-300">
+                    <div class="absolute -top-5 -left-2 text-amber-200 opacity-50 transform rotate-12">
+                        <i class='bx bxs-quote-left text-6xl'></i>
+                    </div>
+                    
+                    <div class="relative z-10">
+                        <p class="text-stone-700 text-lg italic leading-loose mb-8 font-serif">
+                            "{{ review.review_text }}"
+                        </p>
+                        
+                        {% if review.screenshot %}
+                        <div class="mb-6">
+                            <button onclick="toggleProof('proof-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold text-stone-500 uppercase tracking-wider hover:text-amber-600 transition border border-stone-200 px-4 py-2 rounded-lg bg-white shadow-sm group">
+                                <i class='bx bx-image text-lg text-amber-500'></i> 
+                                <span>Show Verified Proof</span>
+                                <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
+                            </button>
+                        </div>
+                        
+                        <div id="proof-{{ forloop.counter }}" class="proof-container mb-6">
+                            <div class="bg-stone-100 p-2 rounded-2xl border border-stone-200/50">
+                                <img src="{{ review.screenshot.url }}" class="w-full rounded-xl shadow-inner" alt="Proof for review by {{ review.client_name }}">
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex items-center gap-4 pt-6 border-t border-stone-200/50 relative z-10">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-stone-200 to-stone-300 flex items-center justify-center text-stone-600 font-bold font-serif text-xl shadow-inner">
+                            {{ review.client_name|slice:":1" }}
+                        </div>
+                        <div>
+                            <div class="font-bold text-stone-900 text-lg">{{ review.client_name }}</div>
+                            <div class="text-xs text-amber-600 font-bold uppercase tracking-wide">Verified Client</div>
+                        </div>
+                        <div class="absolute top-6 right-6">
+                            <a href="{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="text-stone-300 hover:text-amber-500 transition" title="Share this review">
+                                <i class='bx bx-share-alt text-xl'></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if total_testimonials > 4 %}
+            <div class="md:hidden text-center mt-10">
+                <a href="{% url 'agent_testimonials' agent.slug %}" class="inline-block w-full border border-stone-300 px-8 py-4 rounded-full font-bold text-stone-600 hover:bg-stone-900 hover:text-white transition shadow-sm">
+                    View All {{ total_testimonials }} Testimonials
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
 
         {% if articles %}
         <section data-aos="fade-up">
@@ -184,57 +273,6 @@
                 {% endfor %}
             </div>
         </section>
-        {% endif %}
-
-        {% if testimonials %}
-        <div data-aos="fade-up">
-            <div class="text-center mb-12">
-                <h3 class="font-serif text-4xl text-stone-900">Kind Words</h3>
-                <p class="text-stone-500 mt-3 text-lg font-light">Real stories from families I've protected</p>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-8 items-start">
-                {% for review in testimonials %}
-                <div class="bg-[#fffbf7] p-10 rounded-3xl shadow-sm border border-stone-100 relative hover:shadow-md transition-all duration-300" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
-                    <div class="absolute -top-5 -left-2 text-amber-200 opacity-50 transform rotate-12">
-                        <i class='bx bxs-quote-left text-6xl'></i>
-                    </div>
-                    
-                    <div class="relative z-10">
-                        <p class="text-stone-700 text-lg italic leading-loose mb-8 font-serif">
-                            "{{ review.review_text }}"
-                        </p>
-                        
-                        {% if review.screenshot %}
-                        <div class="mb-6">
-                            <button onclick="toggleProof('proof-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold text-stone-500 uppercase tracking-wider hover:text-amber-600 transition border border-stone-200 px-4 py-2 rounded-lg bg-white shadow-sm group">
-                                <i class='bx bx-image text-lg text-amber-500'></i> 
-                                <span>Show Verified Proof</span>
-                                <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
-                            </button>
-                        </div>
-                        
-                        <div id="proof-{{ forloop.counter }}" class="proof-container mb-6">
-                            <div class="bg-stone-100 p-2 rounded-2xl border border-stone-200/50">
-                                <img src="{{ review.screenshot.url }}" class="w-full rounded-xl shadow-inner" alt="Proof for review by {{ review.client_name }}">
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="flex items-center gap-4 pt-6 border-t border-stone-200/50 relative z-10">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-stone-200 to-stone-300 flex items-center justify-center text-stone-600 font-bold font-serif text-xl shadow-inner">
-                            {{ review.client_name|slice:":1" }}
-                        </div>
-                        <div>
-                            <div class="font-bold text-stone-900 text-lg">{{ review.client_name }}</div>
-                            <div class="text-xs text-amber-600 font-bold uppercase tracking-wide">Verified Client</div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
         {% endif %}
 
         <section id="contact" class="scroll-mt-20 pt-10 pb-10" data-aos="fade-up">
@@ -320,7 +358,6 @@
             easing: 'ease-out-cubic',
         });
 
-        // NEW SCRIPT for toggling proof images
         function toggleProof(elementId, button) {
             const container = document.getElementById(elementId);
             container.classList.toggle('expanded');

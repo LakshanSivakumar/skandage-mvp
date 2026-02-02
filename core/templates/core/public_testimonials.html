@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Stories - {{ agent.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Lato', sans-serif; background-color: #fafaf9; }
+        h1, h2, h3, .serif-font { font-family: 'Playfair Display', serif; }
+        
+        .proof-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+        .proof-container.expanded {
+            max-height: 800px;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="antialiased pb-20">
+
+    <nav class="p-6">
+        <div class="max-w-4xl mx-auto flex items-center gap-4">
+            <a href="{% url 'agent_profile' agent.slug %}" class="w-10 h-10 rounded-full bg-white border border-stone-200 flex items-center justify-center text-stone-600 hover:bg-stone-100 transition shadow-sm">
+                <i class='bx bx-left-arrow-alt text-2xl'></i>
+            </a>
+            <div class="flex items-center gap-3">
+                {% if agent.headshot %}
+                <img src="{{ agent.headshot.url }}" class="w-10 h-10 rounded-full object-cover border border-stone-200">
+                {% endif %}
+                <span class="font-bold text-stone-900">{{ agent.name }}</span>
+            </div>
+        </div>
+    </nav>
+
+    <header class="text-center max-w-2xl mx-auto px-6 mb-16 pt-8">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 text-amber-700 text-xs font-bold uppercase tracking-wider mb-6 border border-amber-100">
+            <i class='bx bxs-heart'></i> Client Stories
+        </div>
+        <h1 class="text-4xl md:text-5xl font-serif text-stone-900 mb-6">What people are saying</h1>
+        <p class="text-xl text-stone-500 font-light leading-relaxed">
+            Real experiences from the families and professionals I've had the privilege to serve.
+        </p>
+    </header>
+
+    <div class="max-w-4xl mx-auto px-6 md:columns-2 gap-8 space-y-8">
+        
+        {% for review in testimonials %}
+        <div class="break-inside-avoid bg-white p-8 rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-stone-100 hover:border-amber-100 transition duration-300 relative group">
+            
+            <a href="{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 text-stone-400 hover:text-white hover:bg-amber-500 transition z-10" title="Share this review">
+                <i class='bx bx-share-alt text-lg'></i>
+            </a>
+
+            <div class="mb-6 relative">
+                <i class='bx bxs-quote-left text-4xl text-stone-100 absolute -top-4 -left-2 -z-10'></i>
+                <p class="text-stone-700 text-lg leading-relaxed italic font-serif">
+                    "{{ review.review_text }}"
+                </p>
+            </div>
+
+            {% if review.screenshot %}
+            <div class="mb-6">
+                <button onclick="toggleProof('proof-{{ forloop.counter }}', this)" class="text-xs font-bold text-stone-400 hover:text-amber-600 transition flex items-center gap-1 uppercase tracking-wider">
+                    <i class='bx bx-image'></i> <span>View Verified Proof</span>
+                </button>
+                
+                <div id="proof-{{ forloop.counter }}" class="proof-container mt-4">
+                    <img src="{{ review.screenshot.url }}" class="w-full rounded-xl border border-stone-100 shadow-sm">
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="flex items-center gap-4 pt-6 border-t border-stone-100">
+                <div class="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-500 font-bold font-serif">
+                    {{ review.client_name|slice:":1" }}
+                </div>
+                <div>
+                    <div class="font-bold text-stone-900">{{ review.client_name }}</div>
+                    <div class="text-[10px] text-amber-600 font-bold uppercase tracking-wide">Verified Client</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+    
+    <div class="text-center mt-20">
+        <p class="text-stone-400 text-sm mb-4">Ready to start your own journey?</p>
+        <a href="{% url 'agent_profile' agent.slug %}#contact" class="inline-block bg-stone-900 text-white px-8 py-4 rounded-full font-bold hover:bg-amber-600 transition shadow-lg">
+            Get in Touch
+        </a>
+    </div>
+
+    <script>
+        function toggleProof(id, btn) {
+            const el = document.getElementById(id);
+            el.classList.toggle('expanded');
+            const span = btn.querySelector('span');
+            span.innerText = el.classList.contains('expanded') ? 'Hide Proof' : 'View Verified Proof';
+        }
+    </script>
+</body>
+</html>
