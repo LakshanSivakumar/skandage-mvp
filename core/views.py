@@ -5,45 +5,29 @@ from django.contrib.auth import update_session_auth_hash, logout
 from django.contrib import messages
 from .models import Agent, Testimonial, Lead, Article, Credential
 from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm
+from .themes import THEMES  # Ensure this is imported!
 
 # ==========================================
 # PUBLIC VIEWS (Accessible by Everyone)
 # ==========================================
 
 def domain_router(request):
-    """
-    The Traffic Controller:
-    1. Checks the domain name (e.g., 'benedict.skandage.com')
-    2. Extracts the subdomain ('benedict')
-    3. Serves the correct Agent Profile
-    """
-    host = request.get_host().split(':')[0] # Remove port number if present
+    host = request.get_host().split(':')[0] 
     subdomain = host.split('.')[0]
-    
-    # List of "Reserved" domains/subdomains that point to the Landing Page
     reserved_domains = ['www', 'skandage', 'app', 'localhost', '127.0.0.1']
 
-    # FIX: We now check if the FULL HOST is reserved (catches 127.0.0.1)
-    # OR if the SUBDOMAIN is reserved (catches www.skandage.com)
     if host in reserved_domains or subdomain in reserved_domains:
         return render(request, 'core/index.html') 
-    
     else:
-        # It's an AGENT! Load their profile using the subdomain as the slug
         return agent_profile(request, slug=subdomain)
 
 def agent_profile(request, slug):
     agent = get_object_or_404(Agent, slug=slug)
     
-    # Sort testimonials by ID (newest first) since 'created_at' might be missing on Testimonial model
-    featured_reviews = agent.testimonials.filter(is_featured=True).order_by('-id')
-    
-    # 2. If you picked some, show them. 
-    #    If you haven't picked any yet, fallback to the newest 4.
-    if featured_reviews.exists():
-        testimonials = featured_reviews[:4]
-    else:
-        testimonials = agent.testimonials.all().order_by('-id')[:4]
+    # --- GET THEME CONFIG ---
+    theme_config = THEMES.get(agent.theme, THEMES['luxe'])
+
+    testimonials = agent.testimonials.all().order_by('-id')[:4]
     
     if request.method == 'POST':
         form = LeadForm(request.POST)
@@ -58,11 +42,10 @@ def agent_profile(request, slug):
     context = {
         'agent': agent,
         'testimonials': testimonials,
-        # --- FIX IS HERE ---
-        # Changed from "agent.articles.filter.all()..." to "agent.articles.all()..."
-        'articles': agent.articles.all().order_by('-created_at')[:3], 
+        'articles': agent.articles.all().order_by('-created_at')[:3],
         'credentials': agent.credentials.all(),
-        'total_testimonials': agent.testimonials.count() 
+        'total_testimonials': agent.testimonials.count(),
+        'theme': theme_config  # Pass the theme to the template
     }
     return render(request, 'core/agent_profile.html', context)
 
@@ -70,17 +53,12 @@ def article_detail(request, slug):
     article = get_object_or_404(Article, slug=slug)
     return render(request, 'core/article_detail.html', {'article': article, 'agent': article.agent})
 
-
 # ==========================================
 # DASHBOARD VIEWS (Protected Area)
 # ==========================================
 
 @login_required
 def dashboard_stats(request):
-    """
-    The Main Dashboard Page: Shows Stats & Leads
-    """
-    # Ensure Agent Profile Exists
     try:
         agent = request.user.agent
     except Agent.DoesNotExist:
@@ -91,19 +69,15 @@ def dashboard_stats(request):
     context = {
         'agent': agent,
         'leads': leads,
-        'section': 'stats' # Highlights sidebar
+        'section': 'stats'
     }
     return render(request, 'core/dashboard_stats.html', context)
 
 @login_required
 def manage_profile(request):
-    """
-    Edit Profile Details, Bio, Headshot & Credentials
-    """
     agent = request.user.agent
     
     if request.method == 'POST':
-        # Handle the Profile Form (Bio, Name, Headshot, etc.)
         form = AgentProfileForm(request.POST, request.FILES, instance=agent)
         if form.is_valid():
             form.save()
@@ -121,12 +95,8 @@ def manage_profile(request):
 
 @login_required
 def manage_articles(request):
-    """
-    List all articles with Edit/Delete options
-    """
     agent = request.user.agent
     articles = agent.articles.all().order_by('-created_at')
-    
     context = {
         'agent': agent,
         'articles': articles,
@@ -136,12 +106,8 @@ def manage_articles(request):
 
 @login_required
 def manage_testimonials(request):
-    """
-    List all testimonials with Edit/Delete options
-    """
     agent = request.user.agent
     testimonials = agent.testimonials.all()
-    
     context = {
         'agent': agent,
         'testimonials': testimonials,
@@ -149,12 +115,10 @@ def manage_testimonials(request):
     }
     return render(request, 'core/manage_testimonials.html', context)
 
-
 # ==========================================
 # ACTION VIEWS (Create, Edit, Delete)
 # ==========================================
 
-# --- ARTICLES ---
 @login_required
 def create_article(request):
     agent = request.user.agent
@@ -164,16 +128,14 @@ def create_article(request):
             article = form.save(commit=False)
             article.agent = agent
             article.save()
-            return redirect('manage_articles') # Redirect back to list
+            return redirect('manage_articles')
     else:
         form = ArticleForm()
-    
     return render(request, 'core/create_article.html', {'form': form, 'title': 'Write New Article'})
 
 @login_required
 def edit_article(request, pk):
     article = get_object_or_404(Article, pk=pk, agent=request.user.agent)
-    
     if request.method == 'POST':
         form = ArticleForm(request.POST, request.FILES, instance=article)
         if form.is_valid():
@@ -181,14 +143,11 @@ def edit_article(request, pk):
             return redirect('manage_articles')
     else:
         form = ArticleForm(instance=article)
-    
     return render(request, 'core/create_article.html', {'form': form, 'title': 'Edit Article'})
 
-# --- CREDENTIALS ---
 @login_required
 def add_credential(request):
     agent = request.user.agent
-    
     if request.method == 'POST':
         form = CredentialForm(request.POST)
         if form.is_valid():
@@ -197,9 +156,7 @@ def add_credential(request):
             cred.save()
             return redirect('manage_profile')
     else:
-        # This was missing! We need to create an empty form for GET requests
-        form = CredentialForm() 
-    
+        form = CredentialForm()
     return render(request, 'core/generic_form.html', {'form': form, 'title': 'Add New Credential'})
 
 @login_required
@@ -209,49 +166,44 @@ def delete_credential(request, pk):
         cred.delete()
     return redirect('manage_profile')
 
-# --- TESTIMONIALS ---
 @login_required
 def add_testimonial(request):
     agent = request.user.agent
+    if not agent.can_upload_testimonials:
+        messages.error(request, "Your plan does not support self-uploading. Please contact support to add reviews.")
+        return redirect('manage_testimonials')
     if request.method == 'POST':
         form = TestimonialForm(request.POST, request.FILES)
         if form.is_valid():
             testimonial = form.save(commit=False)
             testimonial.agent = agent
             testimonial.save()
+            messages.success(request, "Review added successfully!")
             return redirect('manage_testimonials')
     else:
         form = TestimonialForm()
-
     return render(request, 'core/add_testimonial.html', {'form': form})
 
 @login_required
 def delete_testimonial(request, pk):
     agent = request.user.agent
     testimonial = get_object_or_404(Testimonial, pk=pk, agent=agent)
-
-    # --- PERMISSION CHECK (NEW) ---
     if not agent.can_upload_testimonials:
         messages.error(request, "You cannot delete reviews on the Ad-Hoc plan. Please contact support.")
         return redirect('manage_testimonials')
-    
     if request.method == 'POST':
         testimonial.delete()
         messages.success(request, "Review deleted.")
         return redirect('manage_testimonials')
-        
     return render(request, 'core/delete_confirm.html', {'testimonial': testimonial})
 
 @login_required
 def edit_testimonial(request, pk):
     agent = request.user.agent
     testimonial = get_object_or_404(Testimonial, pk=pk, agent=agent)
-    
-    # --- PERMISSION CHECK (NEW) ---
     if not agent.can_upload_testimonials:
         messages.error(request, "You cannot edit reviews on the Ad-Hoc plan. Please contact support.")
         return redirect('manage_testimonials')
-    
     if request.method == 'POST':
         form = TestimonialForm(request.POST, request.FILES, instance=testimonial)
         if form.is_valid():
@@ -260,106 +212,78 @@ def edit_testimonial(request, pk):
             return redirect('dashboard')
     else:
         form = TestimonialForm(instance=testimonial)
-
     return render(request, 'core/edit_testimonial.html', {'form': form, 'testimonial': testimonial})
-
-# Note: edit_bio and upload_headshot have been removed as they are now handled in manage_profile
 
 @login_required
 def delete_lead(request, pk):
-    # Ensure the lead belongs to the logged-in agent (Security)
     lead = get_object_or_404(Lead, pk=pk, agent=request.user.agent)
-    
     if request.method == 'POST':
         lead.delete()
-        return redirect('dashboard')
-    
-    # If someone tries GET, just redirect them back
     return redirect('dashboard')
 
-# --- NEW VIEW: ACCOUNT SETTINGS ---
 @login_required
 def account_settings(request):
     user = request.user
-    
     if request.method == 'POST':
-        # Check which form was submitted based on the button name
         if 'update_profile' in request.POST:
             user_form = UserUpdateForm(request.POST, instance=user)
-            password_form = PasswordChangeForm(user) # Empty form
-            
+            password_form = PasswordChangeForm(user)
             if user_form.is_valid():
                 user_form.save()
                 return redirect('account_settings')
-                
         elif 'change_password' in request.POST:
-            user_form = UserUpdateForm(instance=user) # Keep existing data
+            user_form = UserUpdateForm(instance=user)
             password_form = PasswordChangeForm(user, request.POST)
-            
             if password_form.is_valid():
                 user = password_form.save()
-                # Important! Updating password logs you out unless you do this:
                 update_session_auth_hash(request, user) 
                 return redirect('account_settings')
     else:
         user_form = UserUpdateForm(instance=user)
         password_form = PasswordChangeForm(user)
-
     context = {
         'user_form': user_form,
         'password_form': password_form,
-        'section': 'settings' # For sidebar highlighting
+        'section': 'settings'
     }
     return render(request, 'core/account_settings.html', context)
-
-@login_required
-def add_testimonial(request):
-    agent = request.user.agent
-    
-    # --- PERMISSION CHECK ---
-    if not agent.can_upload_testimonials:
-        # If they try to force access, kick them back to the list with an error
-        messages.error(request, "Your plan does not support self-uploading. Please contact support to add reviews.")
-        return redirect('manage_testimonials')
-    
-    if request.method == 'POST':
-        form = TestimonialForm(request.POST, request.FILES)
-        if form.is_valid():
-            testimonial = form.save(commit=False)
-            testimonial.agent = agent
-            testimonial.save()
-            messages.success(request, "Review added successfully!") # Nice feedback
-            return redirect('manage_testimonials')
-    else:
-        form = TestimonialForm()
-
-    return render(request, 'core/add_testimonial.html', {'form': form})
 
 def logout_view(request):
     logout(request)
     return redirect('home')
 
+# Subpage Views
 def agent_testimonials(request, slug):
     agent = get_object_or_404(Agent, slug=slug)
-    # Show ALL reviews here
+    # --- GET THEME CONFIG ---
+    theme_config = THEMES.get(agent.theme, THEMES['luxe'])
     testimonials = agent.testimonials.all().order_by('-id')
     
     return render(request, 'core/public_testimonials.html', {
         'agent': agent,
-        'testimonials': testimonials
+        'testimonials': testimonials,
+        'theme': theme_config
     })
 
 def agent_bio(request, slug):
     agent = get_object_or_404(Agent, slug=slug)
+    # --- GET THEME CONFIG ---
+    theme_config = THEMES.get(agent.theme, THEMES['luxe'])
+    
     return render(request, 'core/public_bio.html', {
         'agent': agent,
-        'credentials': agent.credentials.all()
+        'credentials': agent.credentials.all(),
+        'theme': theme_config
     })
+
 def single_testimonial(request, slug, pk):
     agent = get_object_or_404(Agent, slug=slug)
     testimonial = get_object_or_404(Testimonial, pk=pk, agent=agent)
-    
+    # --- GET THEME CONFIG ---
+    theme_config = THEMES.get(agent.theme, THEMES['luxe'])
+
     return render(request, 'core/single_testimonial.html', {
         'agent': agent,
-        'review': testimonial
+        'review': testimonial,
+        'theme': theme_config
     })

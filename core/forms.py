@@ -1,10 +1,11 @@
 from django import forms
 from .models import Agent, Testimonial, Lead, Article, Credential
 from django.contrib.auth.models import User
+
 class AgentProfileForm(forms.ModelForm):
     class Meta:
         model = Agent
-        fields = ['name', 'title', 'company', 'phone_number', 'bio', 'headshot', 'tagline']
+        fields = ['name', 'title', 'company', 'phone_number', 'bio', 'headshot', 'tagline', 'theme', 'layout']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition placeholder-slate-400'
@@ -26,12 +27,13 @@ class AgentProfileForm(forms.ModelForm):
                 'rows': 5
             }),
             'headshot': forms.FileInput(attrs={
-                'class': 'hidden', # We hide this and use the label trick in HTML
+                'class': 'hidden',
                 'id': 'id_headshot'
             }),
+            'theme': forms.Select(attrs={'class': 'w-full p-3 border border-gray-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition'}),
+            'layout': forms.Select(attrs={'class': 'w-full p-3 border border-gray-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition'}),
         }
     
-
 class TestimonialForm(forms.ModelForm):
     class Meta:
         model = Testimonial
@@ -87,9 +89,6 @@ class UserUpdateForm(forms.ModelForm):
     def clean_email(self):
         email = self.cleaned_data.get('email')
         username = self.cleaned_data.get('username')
-        
-        # Check if another user ALREADY has this email
         if email and User.objects.filter(email=email).exclude(username=username).exists():
             raise forms.ValidationError("This email address is already in use by another account.")
-        
         return email

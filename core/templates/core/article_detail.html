@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ article.title }} | Skandage Blog{% endblock %}
+{% block title %}{{ article.title }} | {Skandage} Blog{% endblock %}
 
 {% block content %}
 <style>
@@ -59,7 +59,7 @@
         <h1 class="article-title">{{ article.title }}</h1>
         
         <div class="article-meta">
-            <span>By <strong>{{ agent.name|default:"Skandage Team" }}</strong></span>
+            <span>By <strong>{{ agent.name|default:"Skandage"}}</strong></span>
             <span>•</span>
             <span>{{ article.created_at|date:"F j, Y" }}</span>
         </div>
