@@ -20,7 +20,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-j#5(=%n-%0omvrmhjil65
 # We check if we are on Render by looking for the 'RENDER' environment variable
 DEBUG = 'RENDER' not in os.environ
 
-ALLOWED_HOSTS = ['.skandage.com', '.onrender.com', 'localhost', '127.0.0.1', '192.168.1.115']
+ALLOWED_HOSTS = ['.skandage.com', 'skandage-app.onrender.com', 'localhost', '127.0.0.1', '192.168.1.115', 'benedict.skandage.com']
 
 # Application definition
 
