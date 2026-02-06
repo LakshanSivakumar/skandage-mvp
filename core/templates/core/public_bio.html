@@ -7,18 +7,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About {{ agent.name }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&family=Plus+Jakarta+Sans:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Lato', sans-serif; background-color: #fffbf7; }
-        h1, h2, h3, .serif-font { font-family: 'Playfair Display', serif; }
+        /* --- DYNAMIC THEME VARIABLES --- */
+        :root {
+            --bg-page: {{ theme.bg_page }};
+            --text-main: {{ theme.text_main }};
+            --text-muted: {{ theme.text_muted }};
+            --accent: {{ theme.accent }};
+            --font-heading: {{ theme.font_heading|safe }};
+            --font-body: {{ theme.font_body|safe }};
+        }
+
+        body { font-family: var(--font-body); background-color: var(--bg-page); color: var(--text-main); }
+        h1, h2, h3, .serif-font { font-family: var(--font-heading); }
     </style>
 </head>
-<body class="antialiased text-stone-800">
+<body class="antialiased transition-colors duration-500">
 
-    <nav class="p-6 sticky top-0 bg-[#fffbf7]/80 backdrop-blur-sm z-50">
+    <nav class="p-6 sticky top-0 backdrop-blur-md z-50 border-b" style="background-color: var(--bg-page); border-color: transparent;">
         <div class="max-w-3xl mx-auto flex items-center justify-between">
-            <a href="{% url 'agent_profile' agent.slug %}" class="flex items-center gap-2 text-stone-500 hover:text-stone-900 transition font-bold text-sm uppercase tracking-wide">
+            <a href="{% url 'agent_profile' agent.slug %}" class="flex items-center gap-2 transition font-bold text-lg uppercase tracking-wide hover:opacity-70" style="color: var(--text-muted)">
                 <i class='bx bx-left-arrow-alt text-xl'></i> Back to Home
             </a>
         </div>
@@ -27,10 +39,10 @@
     <main class="max-w-3xl mx-auto px-6 pb-24 pt-10">
         
         <div class="mb-12">
-            <h1 class="text-5xl md:text-6xl font-serif font-bold text-stone-900 mb-6 leading-tight">
+            <h1 class="text-5xl md:text-6xl font-serif font-bold mb-6 leading-tight" style="color: var(--text-main)">
                 My Story.
             </h1>
-            <div class="h-1 w-20 bg-amber-500"></div>
+            <div class="h-1 w-20" style="background-color: var(--accent)"></div>
         </div>
 
         {% if agent.headshot %}
@@ -39,20 +51,20 @@
         </div>
         {% endif %}
 
-        <div class="prose prose-stone prose-lg max-w-none font-light leading-loose">
+        <div class="prose prose-lg max-w-none font-light leading-loose" style="color: var(--text-muted)">
             {{ agent.bio|markdown|safe }}
         </div>
 
         {% if credentials %}
-        <div class="mt-20 pt-12 border-t border-stone-200">
-            <h3 class="text-2xl font-serif font-bold mb-8">Credentials & Awards</h3>
+        <div class="mt-20 pt-12 border-t" style="border-color: var(--text-muted); opacity: 0.8;">
+            <h3 class="text-2xl font-serif font-bold mb-8" style="color: var(--text-main)">Credentials & Awards</h3>
             <div class="grid sm:grid-cols-2 gap-6">
                 {% for cred in credentials %}
                 <div class="flex items-start gap-4">
-                    <div class="mt-1 text-amber-600"><i class='bx bxs-medal text-xl'></i></div>
+                    <div class="mt-1" style="color: var(--accent)"><i class='bx bxs-medal text-xl'></i></div>
                     <div>
-                        <div class="font-bold text-stone-900">{{ cred.title }}</div>
-                        <div class="text-sm text-stone-500">{{ cred.issuer }} &bull; {{ cred.year }}</div>
+                        <div class="font-bold" style="color: var(--text-main)">{{ cred.title }}</div>
+                        <div class="text-sm opacity-80" style="color: var(--text-muted)">{{ cred.issuer }} &bull; {{ cred.year }}</div>
                     </div>
                 </div>
                 {% endfor %}
@@ -61,6 +73,32 @@
         {% endif %}
 
     </main>
+
+    <footer class="py-16 border-t border-gray-200/60 mt-20 relative z-10" style="background-color: var(--bg-page);">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            
+            {% if agent.linkedin or agent.instagram or agent.facebook %}
+            <div class="flex justify-center gap-6 mb-10">
+                {% if agent.linkedin %}<a href="{{ agent.linkedin }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-white hover:bg-[#0077b5] hover:border-[#0077b5] transition text-xl shadow-sm"><i class='bx bxl-linkedin'></i></a>{% endif %}
+                {% if agent.instagram %}<a href="{{ agent.instagram }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-white hover:bg-[#E1306C] hover:border-[#E1306C] transition text-xl shadow-sm"><i class='bx bxl-instagram'></i></a>{% endif %}
+                {% if agent.facebook %}<a href="{{ agent.facebook }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-white hover:bg-[#1877F2] hover:border-[#1877F2] transition text-xl shadow-sm"><i class='bx bxl-facebook'></i></a>{% endif %}
+            </div>
+            {% endif %}
+
+            <div class="max-w-3xl mx-auto space-y-4 mb-12">
+                <p class="text-xs uppercase tracking-widest font-bold opacity-40" style="color: var(--text-muted)">Important Disclaimer</p>
+                <div class="text-xs leading-relaxed opacity-60 whitespace-pre-line" style="color: var(--text-muted)">{{ agent.disclaimer }}</div>
+            </div>
+
+            <div class="flex flex-col items-center gap-3">
+                <p class="text-xs font-medium opacity-40" style="color: var(--text-muted)">&copy; {% now "Y" %} {{ agent.name }}. All rights reserved.</p>
+                
+                <a href="https://www.skandage.com/sites" target="_blank" class="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 hover:opacity-100 transition-opacity duration-300" style="color: var(--text-muted)">
+                    <i class='bx bxs-bolt'></i> Powered by Skandage
+                </a>
+            </div>
+        </div>
+    </footer>
 
 </body>
 </html>

@@ -26,16 +26,19 @@
         body { font-family: var(--font-body); background-color: var(--bg-page); color: var(--text-main); }
         h1, h2, h3, .serif-font { font-family: var(--font-heading); }
         
-        .proof-container {
+        /* Smooth Collapse Animation */
+        .content-toggle {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
             opacity: 0;
         }
-        .proof-container.expanded {
+        .content-toggle.expanded {
             max-height: 800px;
             opacity: 1;
         }
+        .rotate-icon { transition: transform 0.3s ease; }
+        .expanded .rotate-icon { transform: rotate(180deg); }
     </style>
 </head>
 <body class="antialiased pb-20 transition-colors duration-500">
@@ -46,57 +49,75 @@
                 <i class='bx bx-left-arrow-alt text-2xl'></i>
             </a>
             <div class="flex items-center gap-3">
-                {% if agent.headshot %}
-                <img src="{{ agent.headshot.url }}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
-                {% endif %}
-                <span class="font-bold" style="color: var(--text-main)">{{ agent.name }}</span>
+                <span class="font-bold text-lg" style="color: var(--text-main)">{{ agent.name }}</span>
             </div>
         </div>
     </nav>
 
-    <header class="text-center max-w-2xl mx-auto px-6 mb-16 pt-8">
-        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6" style="background-color: var(--bg-secondary); color: var(--accent); border: 1px solid var(--accent);">
-            <i class='bx bxs-heart'></i> Client Stories
+    <header class="max-w-5xl mx-auto px-6 mb-20 pt-8 flex flex-col md:flex-row items-center justify-center gap-10 md:gap-16">
+        
+        {% if agent.headshot %}
+        <div class="shrink-0 relative group">
+            <div class="absolute inset-0 bg-current opacity-10 rounded-full blur-2xl transform translate-y-4" style="color: var(--accent)"></div>
+            <img src="{{ agent.headshot.url }}" class="relative w-48 h-48 md:w-56 md:h-56 rounded-full object-cover shadow-2xl border-4 border-white transform transition duration-500 hover:scale-105" alt="{{ agent.name }}">
+            
+            <div class="absolute bottom-2 right-2 md:bottom-4 md:right-4 bg-white text-blue-600 w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-white text-xl">
+                <i class='bx bxs-badge-check'></i>
+            </div>
         </div>
-        <h1 class="text-4xl md:text-5xl font-serif mb-6" style="color: var(--text-main)">What people are saying</h1>
-        <p class="text-xl font-light leading-relaxed" style="color: var(--text-muted)">
-            Real experiences from the families and professionals I've had the privilege to serve.
-        </p>
+        {% endif %}
+
+        <div class="text-center md:text-left max-w-xl">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6" style="background-color: var(--bg-secondary); color: var(--accent); border: 1px solid var(--accent);">
+                <i class='bx bxs-heart'></i> Client Stories
+            </div>
+            <h1 class="text-5xl md:text-6xl font-serif mb-6 leading-tight" style="color: var(--text-main)">What people <br> are saying</h1>
+            <p class="text-xl font-light leading-relaxed" style="color: var(--text-muted)">
+                Real experiences from the families and professionals I've had the privilege to serve.
+            </p>
+        </div>
+
     </header>
 
     <div class="max-w-4xl mx-auto px-6 md:columns-2 gap-8">
                 
         {% for review in testimonials %}
-        <div class="inline-block w-full mb-8 break-inside-avoid p-10 rounded-3xl shadow-sm relative hover:shadow-md transition-all duration-300 group" style="background-color: var(--bg-secondary);">
+        <div class="inline-block w-full mb-8 break-inside-avoid p-8 rounded-3xl shadow-sm relative hover:shadow-md transition-all duration-300 group" style="background-color: var(--bg-secondary);">
             
-            <a href="{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-white transition z-10 hover:brightness-110" style="--tw-hover-bg: var(--accent);" onmouseover="this.style.backgroundColor=getComputedStyle(document.documentElement).getPropertyValue('--accent')" onmouseout="this.style.backgroundColor='white'" title="Share this review">
-                <i class='bx bx-share-alt text-lg'></i>
+            <a href="{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white border border-stone-200 text-stone-500 hover:text-white transition z-20 shadow-sm hover:brightness-110" style="--tw-hover-bg: var(--accent); --tw-hover-border: var(--accent);" onmouseover="this.style.backgroundColor=getComputedStyle(document.documentElement).getPropertyValue('--accent'); this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent');" onmouseout="this.style.backgroundColor='white'; this.style.borderColor='#e7e5e4';" title="Share this review">
+                <i class='bx bx-share-alt text-xl'></i>
             </a>
 
-            <div class="absolute -top-5 -left-2 opacity-20 transform rotate-12" style="color: var(--accent)">
-                <i class='bx bxs-quote-left text-6xl'></i>
-            </div>
-            
-            <div class="relative z-10">
-                <p class="text-lg italic leading-loose mb-8 font-serif" style="color: var(--text-muted)">
-                    "{{ review.review_text }}"
-                </p>
-                
-                {% if review.screenshot %}
-                <div class="mb-6">
-                    <button onclick="toggleProof('proof-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition px-4 py-2 rounded-lg bg-white shadow-sm group" style="color: var(--text-muted); border: 1px solid rgba(0,0,0,0.05)">
-                        <i class='bx bx-image text-lg' style="color: var(--accent)"></i> 
-                        <span>Show Verified Proof</span>
+            {% if review.screenshot %}
+                <div class="mb-6 rounded-2xl overflow-hidden border border-black/5 shadow-sm relative z-10">
+                    <img src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Proof">
+                </div>
+
+                <div class="mb-4">
+                    <button onclick="toggleContent('text-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition px-4 py-2 rounded-lg bg-white shadow-sm group w-full justify-center" style="color: var(--text-muted); border: 1px solid rgba(0,0,0,0.05)">
+                        <span>Read Review Text</span>
                         <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
                     </button>
                 </div>
-                <div id="proof-{{ forloop.counter }}" class="proof-container mb-6">
-                    <div class="bg-white p-2 rounded-2xl border border-gray-100">
-                        <img src="{{ review.screenshot.url }}" class="w-full rounded-xl shadow-inner" alt="Proof">
+
+                <div id="text-{{ forloop.counter }}" class="content-toggle mb-6 relative z-10">
+                    <div class="p-4 bg-white/50 rounded-xl border border-black/5">
+                        <p class="text-lg italic leading-relaxed font-serif" style="color: var(--text-muted)">
+                            "{{ review.review_text }}"
+                        </p>
                     </div>
                 </div>
-                {% endif %}
-            </div>
+
+            {% else %}
+                <div class="absolute -top-5 -left-2 opacity-20 transform rotate-12" style="color: var(--accent)">
+                    <i class='bx bxs-quote-left text-6xl'></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-lg italic leading-loose mb-8 font-serif" style="color: var(--text-muted)">
+                        "{{ review.review_text }}"
+                    </p>
+                </div>
+            {% endif %}
 
             <div class="flex items-center gap-4 pt-6 border-t border-gray-200/50 relative z-10">
                 <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center font-bold font-serif text-xl shadow-sm" style="color: var(--text-muted)">
@@ -107,6 +128,7 @@
                     <div class="text-xs font-bold uppercase tracking-wide" style="color: var(--accent)">Verified Client</div>
                 </div>
             </div>
+
         </div>
         {% endfor %}
     </div>
@@ -118,12 +140,43 @@
         </a>
     </div>
 
+    <footer class="py-16 border-t border-gray-200/60 mt-20 relative z-10" style="background-color: var(--bg-card);">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            
+            {% if agent.linkedin or agent.instagram or agent.facebook %}
+            <div class="flex justify-center gap-6 mb-10">
+                {% if agent.linkedin %}<a href="{{ agent.linkedin }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-white hover:bg-[#0077b5] hover:border-[#0077b5] transition text-xl shadow-sm"><i class='bx bxl-linkedin'></i></a>{% endif %}
+                {% if agent.instagram %}<a href="{{ agent.instagram }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-white hover:bg-[#E1306C] hover:border-[#E1306C] transition text-xl shadow-sm"><i class='bx bxl-instagram'></i></a>{% endif %}
+                {% if agent.facebook %}<a href="{{ agent.facebook }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-white hover:bg-[#1877F2] hover:border-[#1877F2] transition text-xl shadow-sm"><i class='bx bxl-facebook'></i></a>{% endif %}
+            </div>
+            {% endif %}
+
+            <div class="max-w-3xl mx-auto space-y-4 mb-12">
+                <p class="text-xs uppercase tracking-widest font-bold opacity-40" style="color: var(--text-muted)">Important Disclaimer</p>
+                <div class="text-xs leading-relaxed opacity-60 whitespace-pre-line" style="color: var(--text-muted)">{{ agent.disclaimer }}</div>
+            </div>
+
+            <div class="flex flex-col items-center gap-3">
+                <p class="text-xs font-medium opacity-40" style="color: var(--text-muted)">&copy; {% now "Y" %} {{ agent.name }}. All rights reserved.</p>
+                
+                <a href="https://www.skandage.com/sites" target="_blank" class="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 hover:opacity-100 transition-opacity duration-300" style="color: var(--text-muted)">
+                    <i class='bx bxs-bolt'></i> Powered by Skandage
+                </a>
+            </div>
+        </div>
+    </footer>
+
     <script>
-        function toggleProof(id, btn) {
+        function toggleContent(id, btn) {
             const el = document.getElementById(id);
             el.classList.toggle('expanded');
+            btn.classList.toggle('expanded');
             const span = btn.querySelector('span');
-            span.innerText = el.classList.contains('expanded') ? 'Hide Proof' : 'View Verified Proof';
+            if (el.classList.contains('expanded')) {
+                span.innerText = 'Hide Review Text';
+            } else {
+                span.innerText = 'Read Review Text';
+            }
         }
     </script>
 </body>

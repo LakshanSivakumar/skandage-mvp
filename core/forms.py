@@ -1,11 +1,11 @@
 from django import forms
-from .models import Agent, Testimonial, Lead, Article, Credential
+from .models import Agent, Testimonial, Lead, Article, Credential, Service
 from django.contrib.auth.models import User
 
 class AgentProfileForm(forms.ModelForm):
     class Meta:
         model = Agent
-        fields = ['name', 'title', 'company', 'phone_number', 'bio', 'headshot', 'tagline', 'theme', 'layout']
+        fields = ['name', 'title', 'company', 'phone_number', 'bio', 'headshot', 'tagline', 'theme', 'layout','linkedin', 'instagram', 'facebook', 'disclaimer']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition placeholder-slate-400'
@@ -22,6 +22,9 @@ class AgentProfileForm(forms.ModelForm):
             'phone_number': forms.TextInput(attrs={
                 'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pl-10 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition placeholder-slate-400 font-mono'
             }),
+            'linkedin': forms.URLInput(attrs={'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pl-10 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition placeholder-slate-400', 'placeholder': 'https://linkedin.com/in/...'}),
+            'instagram': forms.URLInput(attrs={'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pl-10 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition placeholder-slate-400', 'placeholder': 'https://instagram.com/...'}),
+            'facebook': forms.URLInput(attrs={'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pl-10 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition placeholder-slate-400', 'placeholder': 'https://facebook.com/...'}),
             'bio': forms.Textarea(attrs={
                 'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition placeholder-slate-400',
                 'rows': 5
@@ -32,6 +35,7 @@ class AgentProfileForm(forms.ModelForm):
             }),
             'theme': forms.Select(attrs={'class': 'w-full p-3 border border-gray-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition'}),
             'layout': forms.Select(attrs={'class': 'w-full p-3 border border-gray-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition'}),
+            'disclaimer': forms.Textarea(attrs={'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition placeholder-slate-400 text-sm', 'rows': 4}),
         }
     
 class TestimonialForm(forms.ModelForm):
@@ -92,3 +96,22 @@ class UserUpdateForm(forms.ModelForm):
         if email and User.objects.filter(email=email).exclude(username=username).exists():
             raise forms.ValidationError("This email address is already in use by another account.")
         return email
+    
+class ServiceForm(forms.ModelForm):
+    class Meta:
+        model = Service
+        fields = ['title', 'icon', 'description'] # Added 'icon'
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition', 
+                'placeholder': 'e.g. Retirement Planning'
+            }),
+            'icon': forms.Select(attrs={
+                'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition', 
+                'rows': 3,
+                'placeholder': 'Briefly explain this service...'
+            }),
+        }

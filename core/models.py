@@ -13,7 +13,13 @@ class Agent(models.Model):
     # WhatsApp Feature
     phone_number = models.CharField(max_length=20, help_text="Format: 6591234567 (No + sign)")
     whatsapp_message = models.CharField(max_length=200, default="Hi, I saw your profile and would like to know more.")
-    
+    linkedin = models.URLField(blank=True, help_text="Full URL (e.g. https://linkedin.com/in/name)")
+    instagram = models.URLField(blank=True, help_text="Full URL (e.g. https://instagram.com/name)")
+    facebook = models.URLField(blank=True, help_text="Full URL (e.g. https://facebook.com/name)")
+    disclaimer = models.TextField(
+        default="The content on this website is strictly for information and educational purposes only and does not constitute financial advice. Investments are subject to market risks. Please consult a qualified financial consultant before making any decisions. Views expressed here are my own and do not necessarily reflect the official policy or position of my company.\n\nThis advertisement has not been reviewed by the Monetary Authority of Singapore.",
+        help_text="This text appears in the footer of every page."
+    )
     # Profile Details
     headshot = models.ImageField(upload_to='headshots/', blank=True, null=True)
     bio = models.TextField(blank=True)
@@ -23,6 +29,10 @@ class Agent(models.Model):
         ('luxe', 'Luxe Minimal (Stone & Amber)'),
         ('corporate', 'Corporate Blue (Navy & White)'),
         ('midnight', 'Midnight Neon (Dark & Cyan)'),
+        ('sunset', 'Sunset (Warm Orange & Cream)'),
+        ('cotton', 'Cotton (Monochrome Black & White)'),
+        ('glacier', 'Glacier (White & Icy Blue)'),
+        ('blush', 'Blush (White & Rose Gold)'),
     ]
     theme = models.CharField(max_length=20, choices=THEME_CHOICES, default='luxe')
 
@@ -75,6 +85,19 @@ class Service(models.Model):
     agent = models.ForeignKey(Agent, related_name='services', on_delete=models.CASCADE)
     title = models.CharField(max_length=100, help_text="e.g., Critical Illness Protection")
     description = models.TextField(blank=True)
+    
+    # NEW: Icon Picker
+    ICON_CHOICES = [
+        ('bxs-shield', 'Protection / Shield'),
+        ('bxs-heart', 'Life / Health'),
+        ('bxs-briefcase', 'Retirement / Business'),
+        ('bxs-bar-chart-alt-2', 'Investment / Growth'),
+        ('bxs-graduation', 'Education / Planning'),
+        ('bxs-home-heart', 'Mortgage / Housing'),
+        ('bxs-plane-alt', 'Travel / Lifestyle'),
+        ('bxs-badge-dollar', 'Wealth / Tax'),
+    ]
+    icon = models.CharField(max_length=50, choices=ICON_CHOICES, default='bxs-shield')
     
     def __str__(self):
         return self.title

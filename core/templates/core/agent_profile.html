@@ -35,7 +35,6 @@
         <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
         
         <style>
-            /* --- DYNAMIC THEME CONFIGURATION --- */
             :root {
                 --bg-page: {{ theme.bg_page }};
                 --bg-card: {{ theme.bg_card }};
@@ -48,11 +47,8 @@
                 --font-heading: {{ theme.font_heading|safe }};
                 --font-body: {{ theme.font_body|safe }};
             }
-
             body { font-family: var(--font-body); background-color: var(--bg-page); color: var(--text-main); }
             h1, h2, h3, .serif-font { font-family: var(--font-heading); }
-            
-            /* Dynamic Utilities */
             .text-theme-main { color: var(--text-main); }
             .text-theme-muted { color: var(--text-muted); }
             .text-theme-accent { color: var(--accent); }
@@ -60,29 +56,19 @@
             .bg-theme-secondary { background-color: var(--bg-secondary); }
             .bg-theme-accent { background-color: var(--accent); }
             .border-theme-accent { border-color: var(--accent); }
-
             .hero-bg { background: linear-gradient(to bottom, var(--hero-start), var(--hero-end)); }
-            
-            .paper-card {
-                background-color: var(--bg-card);
-                border: 1px solid rgba(0,0,0,0.05);
-                box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-            }
-            
+            .paper-card { background-color: var(--bg-card); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
             .highlight-underline { position: relative; white-space: nowrap; z-index: 10; }
-            .highlight-underline::after {
-                content: ''; position: absolute; left: -2px; right: -2px; bottom: 2px; height: 35%;
-                background-color: var(--accent); opacity: 0.8; z-index: -1; transform: rotate(-1deg);
-            }
-
-            .proof-container {
+            .highlight-underline::after { content: ''; position: absolute; left: -2px; right: -2px; bottom: 2px; height: 35%; background-color: var(--accent); opacity: 0.8; z-index: -1; transform: rotate(-1deg); }
+            
+            .content-toggle {
                 max-height: 0;
                 overflow: hidden;
                 transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
                 opacity: 0;
             }
-            .proof-container.expanded {
-                max-height: 800px;
+            .content-toggle.expanded {
+                max-height: 500px;
                 opacity: 1;
             }
             .rotate-icon { transition: transform 0.3s ease; }
@@ -92,7 +78,6 @@
 <body class="antialiased pb-24 transition-colors duration-500">
 
     <div class="hero-bg text-white relative overflow-hidden pb-32 pt-20 rounded-b-[3rem]">
-        
         <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-white/5 rounded-full blur-[120px] pointer-events-none"></div>
 
         {% if agent.layout == 'classic' %}
@@ -104,29 +89,30 @@
                 {% else %}
                     <div class="relative w-48 h-48 md:w-64 md:h-64 rounded-[2rem] bg-white/10 flex items-center justify-center text-7xl font-serif text-white/50">{{ agent.name|slice:":1" }}</div>
                 {% endif %}
-                
                 <div class="absolute -bottom-5 -right-5 bg-white text-gray-900 px-5 py-2.5 rounded-xl shadow-lg border border-gray-100 flex items-center gap-2">
                     <i class='bx bxs-badge-check text-theme-accent text-xl'></i>
                     <span class="text-xs font-bold tracking-wide uppercase">Trusted</span>
                 </div>
             </div>
-
             <div class="flex flex-col justify-center pt-4 max-w-2xl" data-aos="fade-up" data-aos-delay="200">
-                <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-                    Hello, I'm <br class="hidden md:block"> <span class="text-theme-accent">{{ agent.name }}</span>
-                </h1>
-                <p class="text-xl md:text-2xl text-white/80 font-light mb-6 leading-relaxed">
-                    {{ agent.title }} at <span class="font-semibold text-white">{{ agent.company }}</span>.
-                </p>
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">Hello, I'm <br class="hidden md:block"> <span class="text-theme-accent">{{ agent.name }}</span></h1>
+                <p class="text-xl md:text-2xl text-white/80 font-light mb-6 leading-relaxed">{{ agent.title }} at <span class="font-semibold text-white">{{ agent.company }}</span>.</p>
                 {% if agent.tagline %}
                 <p class="text-lg text-white/60 font-light italic opacity-80 border-l-2 border-theme-accent pl-4">"{{ agent.tagline }}"</p>
                 {% endif %}
+                <div class="mt-8 flex justify-center md:justify-start gap-4 flex-wrap">
+                    <a href="{% url 'download_vcard' agent.slug %}" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-3 rounded-full font-bold transition backdrop-blur-md">
+                        <i class='bx bxs-contact'></i> Save Contact
+                    </a>
+                    {% if agent.linkedin %}<a href="{{ agent.linkedin }}" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-2xl transition"><i class='bx bxl-linkedin'></i></a>{% endif %}
+                    {% if agent.instagram %}<a href="{{ agent.instagram }}" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-2xl transition"><i class='bx bxl-instagram'></i></a>{% endif %}
+                    {% if agent.facebook %}<a href="{{ agent.facebook }}" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-2xl transition"><i class='bx bxl-facebook'></i></a>{% endif %}
+                </div>
             </div>
         </div>
 
         {% elif agent.layout == 'centered' %}
         <div class="max-w-4xl mx-auto px-8 relative z-10 flex flex-col items-center text-center">
-            
             <div class="mb-8" data-aos="zoom-in">
                 {% if agent.headshot %}
                     <img src="{{ agent.headshot.url }}" class="w-40 h-40 md:w-56 md:h-56 rounded-full object-cover shadow-2xl border-4 border-theme-accent">
@@ -134,18 +120,21 @@
                     <div class="w-40 h-40 rounded-full bg-white/10 flex items-center justify-center text-6xl font-serif text-white/50">{{ agent.name|slice:":1" }}</div>
                 {% endif %}
             </div>
-
             <div data-aos="fade-up">
-                <h1 class="text-5xl md:text-8xl font-bold mb-6 leading-tight tracking-tight">
-                    <span class="text-theme-accent">{{ agent.name }}</span>
-                </h1>
+                <h1 class="text-5xl md:text-8xl font-bold mb-6 leading-tight tracking-tight"><span class="text-theme-accent">{{ agent.name }}</span></h1>
                 <div class="w-24 h-1 bg-theme-accent mx-auto mb-8 rounded-full"></div>
-                <p class="text-2xl md:text-3xl text-white font-light mb-4">
-                    {{ agent.title }} <span class="text-white/40 mx-2">|</span> {{ agent.company }}
-                </p>
+                <p class="text-2xl md:text-3xl text-white font-light mb-4">{{ agent.title }} <span class="text-white/40 mx-2">|</span> {{ agent.company }}</p>
                 {% if agent.tagline %}
                 <p class="text-xl text-white/70 italic font-serif">"{{ agent.tagline }}"</p>
                 {% endif %}
+                <div class="mt-8 flex justify-center gap-4 flex-wrap">
+                    <a href="{% url 'download_vcard' agent.slug %}" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-3 rounded-full font-bold transition backdrop-blur-md">
+                        <i class='bx bxs-contact'></i> Save Contact
+                    </a>
+                    {% if agent.linkedin %}<a href="{{ agent.linkedin }}" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-2xl transition"><i class='bx bxl-linkedin'></i></a>{% endif %}
+                    {% if agent.instagram %}<a href="{{ agent.instagram }}" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-2xl transition"><i class='bx bxl-instagram'></i></a>{% endif %}
+                    {% if agent.facebook %}<a href="{{ agent.facebook }}" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-2xl transition"><i class='bx bxl-facebook'></i></a>{% endif %}
+                </div>
             </div>
         </div>
 
@@ -153,36 +142,34 @@
         <div class="max-w-5xl mx-auto px-8 relative z-10 text-left">
             <div class="border-l-4 border-theme-accent pl-8 py-4" data-aos="fade-right">
                 <p class="text-theme-accent font-bold tracking-widest uppercase mb-4 text-sm">Professional Portfolio</p>
-                <h1 class="text-6xl md:text-8xl font-bold mb-6 leading-none text-white">
-                    {{ agent.name }}<span class="text-theme-accent">.</span>
-                </h1>
-                <p class="text-2xl md:text-3xl text-white/60 font-light max-w-2xl">
-                    {{ agent.title }} at {{ agent.company }}. <br>
-                    <span class="text-white">{{ agent.tagline }}</span>
-                </p>
+                <h1 class="text-6xl md:text-8xl font-bold mb-6 leading-none text-white">{{ agent.name }}<span class="text-theme-accent">.</span></h1>
+                <p class="text-2xl md:text-3xl text-white/60 font-light max-w-2xl">{{ agent.title }} at {{ agent.company }}. <br><span class="text-white">{{ agent.tagline }}</span></p>
+                <div class="mt-8 flex gap-4 items-center">
+                    <a href="{% url 'download_vcard' agent.slug %}" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-3 rounded-full font-bold transition backdrop-blur-md">
+                        <i class='bx bxs-contact'></i> Save Contact
+                    </a>
+                    {% if agent.linkedin %}<a href="{{ agent.linkedin }}" target="_blank" class="text-white/60 hover:text-white text-3xl transition"><i class='bx bxl-linkedin'></i></a>{% endif %}
+                    {% if agent.instagram %}<a href="{{ agent.instagram }}" target="_blank" class="text-white/60 hover:text-white text-3xl transition"><i class='bx bxl-instagram'></i></a>{% endif %}
+                    {% if agent.facebook %}<a href="{{ agent.facebook }}" target="_blank" class="text-white/60 hover:text-white text-3xl transition"><i class='bx bxl-facebook'></i></a>{% endif %}
+                </div>
             </div>
             {% if agent.headshot %}
-             <div class="absolute top-0 right-0 opacity-20 hidden md:block">
-                 <img src="{{ agent.headshot.url }}" class="w-96 h-96 object-cover rounded-full blur-sm grayscale mix-blend-overlay">
+             <div class="absolute top-1/2 -translate-y-1/2 right-0 hidden md:block">
+                 <img src="{{ agent.headshot.url }}" class="w-80 h-80 object-cover rounded-full shadow-2xl border-4 border-white/10">
              </div>
              {% endif %}
         </div>
         {% endif %}
-
     </div>
 
     <div class="max-w-6xl mx-auto px-6 -mt-24 relative z-20 space-y-16">
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2 paper-card p-10 md:p-12 rounded-3xl" data-aos="fade-up">
-                <h2 class="text-3xl font-bold text-theme-main mb-8 flex items-center gap-4">
-                    <span class="w-10 h-1 bg-theme-accent rounded-full"></span>
-                    My Story
-                </h2>
-                <div class="prose prose-lg text-theme-muted leading-relaxed font-light max-w-none">
+                <h2 class="text-3xl font-bold text-theme-main mb-8 flex items-center gap-4"><span class="w-10 h-1 bg-theme-accent rounded-full"></span> My Story</h2>
+                <div class="prose text-theme-muted leading-relaxed font-light max-w-none" style="font-size: 20px; line-height: 1.8;">
                     {{ agent.bio|markdown|truncatewords_html:80|safe }}
                 </div>
-                
                 <div class="mt-8 pt-6 border-t border-gray-100">
                     <a href="{% url 'agent_bio' agent.slug %}" class="inline-flex items-center gap-2 text-theme-accent font-bold hover:brightness-110 transition group text-lg">
                         Read full story <i class='bx bx-right-arrow-alt group-hover:translate-x-1 transition'></i>
@@ -193,15 +180,11 @@
             {% if agent.credentials.exists %}
             <div class="lg:col-span-1 space-y-6" data-aos="fade-up" data-aos-delay="100">
                 <div class="bg-gray-900 text-gray-300 p-8 rounded-3xl border border-gray-800 shadow-xl">
-                    <h3 class="text-xs font-bold text-theme-accent uppercase tracking-[0.2em] mb-6 border-b border-gray-800 pb-4">
-                        Accolades
-                    </h3>
+                    <h3 class="text-xs font-bold text-theme-accent uppercase tracking-[0.2em] mb-6 border-b border-gray-800 pb-4">Accolades</h3>
                     <div class="space-y-6">
                         {% for cred in agent.credentials.all %}
                         <div class="flex items-start gap-4 group">
-                            <div class="mt-1 text-theme-accent group-hover:text-white transition">
-                                <i class='bx bxs-trophy text-lg'></i>
-                            </div>
+                            <div class="mt-1 text-theme-accent group-hover:text-white transition"><i class='bx bxs-trophy text-lg'></i></div>
                             <div>
                                 <h4 class="font-bold text-white text-base leading-tight group-hover:text-theme-accent transition">{{ cred.title }}</h4>
                                 <p class="text-xs text-gray-500 uppercase mt-1 font-bold">{{ cred.issuer }} {{ cred.year }}</p>
@@ -210,23 +193,34 @@
                         {% endfor %}
                     </div>
                 </div>
-
-                {% if services %}
-                <div class="paper-card p-8 rounded-3xl border border-gray-100 shadow-sm">
-                    <h3 class="text-xs font-bold text-theme-muted uppercase tracking-[0.2em] mb-6">Expertise</h3>
-                    <ul class="space-y-3">
-                        {% for service in services %}
-                        <li class="flex items-center gap-3 text-theme-main">
-                            <i class='bx bx-check-circle text-theme-accent text-xl'></i>
-                            <span class="font-medium">{{ service.title }}</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
             </div>
             {% endif %}
         </div>
+
+        {% if services %}
+        <section data-aos="fade-up">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+                <div>
+                    <h3 class="font-serif text-4xl text-theme-main">How I Can Help</h3>
+                    <p class="text-theme-muted mt-3 text-lg font-light">Specialized solutions for your life stage.</p>
+                </div>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for service in services %}
+                <div class="paper-card p-8 rounded-3xl group hover:-translate-y-1 transition duration-300 border-t-4 border-theme-accent">
+                    <div class="w-12 h-12 rounded-xl bg-theme-secondary flex items-center justify-center text-theme-accent text-2xl mb-6 group-hover:scale-110 transition">
+                        <i class='bx {{ service.icon }}'></i>
+                    </div>
+                    <h4 class="font-bold text-xl text-theme-main mb-3">{{ service.title }}</h4>
+                    <p class="text-theme-muted text-sm leading-relaxed mb-6 min-h-[80px]">{{ service.description|truncatewords:25 }}</p>
+                    <a href="#contact" class="inline-flex items-center gap-2 text-sm font-bold text-theme-accent uppercase tracking-wider hover:opacity-80 transition">
+                        Ask about this <i class='bx bx-right-arrow-alt'></i>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
 
         {% if testimonials %}
         <div data-aos="fade-up">
@@ -235,52 +229,44 @@
                     <h3 class="font-serif text-4xl text-theme-main">Kind Words</h3>
                     <p class="text-theme-muted mt-3 text-lg font-light">Recent feedback from clients</p>
                 </div>
-                
                 {% if total_testimonials > 4 %}
                 <a href="{% url 'agent_testimonials' agent.slug %}" class="hidden md:flex items-center gap-2 text-theme-main font-bold hover:text-theme-accent transition group">
                     Read all {{ total_testimonials }} stories <i class='bx bx-right-arrow-alt group-hover:translate-x-1 transition'></i>
                 </a>
                 {% endif %}
             </div>
-
             <div class="md:columns-2 gap-8">
                 {% for review in testimonials %}
                 <div class="inline-block w-full mb-8 break-inside-avoid bg-theme-secondary p-10 rounded-3xl shadow-sm border border-transparent relative hover:shadow-md transition-all duration-300 group">
-                    
-                    <a href="{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-white hover:bg-theme-accent transition z-10" title="Share this review">
-                        <i class='bx bx-share-alt text-lg'></i>
+                    <a href="{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:text-white hover:bg-theme-accent hover:border-theme-accent transition z-20 shadow-sm" title="Share this review">
+                        <i class='bx bx-share-alt text-xl'></i>
                     </a>
-
-                    <div class="absolute -top-5 -left-2 text-theme-accent opacity-20 transform rotate-12">
-                        <i class='bx bxs-quote-left text-6xl'></i>
-                    </div>
                     
-                    <div class="relative z-10">
-                        <p class="text-theme-muted text-lg italic leading-loose mb-8 font-serif">
-                            "{{ review.review_text }}"
-                        </p>
-                        
-                        {% if review.screenshot %}
-                        <div class="mb-6">
-                            <button onclick="toggleProof('proof-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold text-theme-muted uppercase tracking-wider hover:text-theme-accent transition border border-gray-200 px-4 py-2 rounded-lg bg-white shadow-sm group">
-                                <i class='bx bx-image text-lg text-theme-accent'></i> 
-                                <span>Show Verified Proof</span>
-                                <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
+                    {% if review.screenshot %}
+                        <div class="mb-6 rounded-2xl overflow-hidden border border-black/5 shadow-sm relative z-10">
+                            <img src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Proof">
+                        </div>
+
+                        <div class="mb-4">
+                            <button onclick="toggleContent('text-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold text-theme-muted uppercase tracking-wider hover:text-theme-accent transition border border-gray-200 px-4 py-2 rounded-lg bg-white shadow-sm group w-full justify-center">
+                                <span>Read Review Text</span> <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
                             </button>
                         </div>
-                        
-                        <div id="proof-{{ forloop.counter }}" class="proof-container mb-6">
-                            <div class="bg-gray-100 p-2 rounded-2xl border border-gray-200/50">
-                                <img src="{{ review.screenshot.url }}" class="w-full rounded-xl shadow-inner" alt="Proof">
+
+                        <div id="text-{{ forloop.counter }}" class="content-toggle mb-6 relative z-10">
+                            <div class="p-4 bg-white/50 rounded-xl border border-black/5">
+                                <p class="text-theme-muted text-xl italic leading-loose font-serif">"{{ review.review_text }}"</p>
                             </div>
                         </div>
-                        {% endif %}
-                    </div>
+                    {% else %}
+                        <div class="absolute -top-5 -left-2 text-theme-accent opacity-20 transform rotate-12"><i class='bx bxs-quote-left text-6xl'></i></div>
+                        <div class="relative z-10">
+                            <p class="text-theme-muted text-lg italic leading-loose mb-8 font-serif">"{{ review.review_text }}"</p>
+                        </div>
+                    {% endif %}
 
                     <div class="flex items-center gap-4 pt-6 border-t border-gray-200/50 relative z-10">
-                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-gray-600 font-bold font-serif text-xl shadow-sm">
-                            {{ review.client_name|slice:":1" }}
-                        </div>
+                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-gray-600 font-bold font-serif text-xl shadow-sm">{{ review.client_name|slice:":1" }}</div>
                         <div>
                             <div class="font-bold text-theme-main text-lg">{{ review.client_name }}</div>
                             <div class="text-xs text-theme-accent font-bold uppercase tracking-wide">Verified Client</div>
@@ -289,12 +275,9 @@
                 </div>
                 {% endfor %}
             </div>
-
             {% if total_testimonials > 4 %}
             <div class="md:hidden text-center mt-10">
-                <a href="{% url 'agent_testimonials' agent.slug %}" class="inline-block w-full border border-gray-300 px-8 py-4 rounded-full font-bold text-theme-main hover:bg-theme-accent hover:text-white transition shadow-sm">
-                    View All {{ total_testimonials }} Testimonials
-                </a>
+                <a href="{% url 'agent_testimonials' agent.slug %}" class="inline-block w-full border border-gray-300 px-8 py-4 rounded-full font-bold text-theme-main hover:bg-theme-accent hover:text-white transition shadow-sm">View All {{ total_testimonials }} Testimonials</a>
             </div>
             {% endif %}
         </div>
@@ -309,33 +292,19 @@
                 </div>
                 <div class="hidden md:block h-px bg-gray-200 flex-1 ml-10 mb-2"></div>
             </div>
-
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for article in articles %}
                 <a href="{% url 'article_detail' article.slug %}" class="group block paper-card rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition duration-300">
                     {% if article.cover_image %}
-                        <div class="h-56 overflow-hidden">
-                            <img src="{{ article.cover_image.url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
-                        </div>
+                        <div class="h-56 overflow-hidden"><img src="{{ article.cover_image.url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700"></div>
                     {% else %}
-                        <div class="h-56 bg-theme-secondary flex items-center justify-center text-gray-300">
-                            <i class='bx bx-news text-5xl'></i>
-                        </div>
+                        <div class="h-56 bg-theme-secondary flex items-center justify-center text-gray-300"><i class='bx bx-news text-5xl'></i></div>
                     {% endif %}
-                    
                     <div class="p-8">
-                        <div class="text-xs text-theme-accent font-bold uppercase mb-3 tracking-wide">
-                            {{ article.created_at|date:"M d, Y" }}
-                        </div>
-                        <h4 class="font-serif text-2xl font-bold text-theme-main mb-3 group-hover:text-theme-accent transition leading-tight">
-                            {{ article.title }}
-                        </h4>
-                        <p class="text-theme-muted text-base line-clamp-3 mb-4 leading-relaxed">
-                            {{ article.content|striptags|truncatewords:20 }}
-                        </p>
-                        <div class="text-theme-main text-sm font-bold flex items-center gap-2 group-hover:gap-3 transition-all">
-                            Read Article <i class='bx bx-right-arrow-alt'></i>
-                        </div>
+                        <div class="text-xs text-theme-accent font-bold uppercase mb-3 tracking-wide">{{ article.created_at|date:"M d, Y" }}</div>
+                        <h4 class="font-serif text-2xl font-bold text-theme-main mb-3 group-hover:text-theme-accent transition leading-tight">{{ article.title }}</h4>
+                        <p class="text-theme-muted text-base line-clamp-3 mb-4 leading-relaxed">{{ article.content|striptags|truncatewords:20 }}</p>
+                        <div class="text-theme-main text-sm font-bold flex items-center gap-2 group-hover:gap-3 transition-all">Read Article <i class='bx bx-right-arrow-alt'></i></div>
                     </div>
                 </a>
                 {% endfor %}
@@ -345,94 +314,79 @@
 
         <section id="contact" class="scroll-mt-20 pt-10 pb-10" data-aos="fade-up">
              <div class="rounded-[3rem] p-10 md:p-16 relative overflow-hidden text-white shadow-2xl" style="background: linear-gradient(to right, var(--hero-start), var(--hero-end));">
-                
                 <div class="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
                     <div>
                         <h2 class="font-serif text-4xl md:text-5xl text-white mb-6 leading-tight">Let's Secure Your <br> <span class="text-theme-accent">Legacy Today.</span></h2>
-                        <p class="text-white/70 font-light text-xl mb-8 leading-relaxed">
-                            Have questions about your coverage or investment planning? Send me a message directly. I usually respond within 2 hours.
-                        </p>
-                        
+                        <p class="text-white/70 font-light text-xl mb-8 leading-relaxed">Have questions about your coverage or investment planning? Send me a message directly. I usually respond within 2 hours.</p>
                         <div class="space-y-4">
-                            <div class="flex items-center gap-4 text-white/80">
-                                <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-theme-accent"><i class='bx bxs-envelope'></i></div>
-                                <span>Direct Email Support</span>
-                            </div>
-                            <div class="flex items-center gap-4 text-white/80">
-                                <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-theme-accent"><i class='bx bxl-whatsapp'></i></div>
-                                <span>WhatsApp Priority Chat</span>
-                            </div>
+                            <div class="flex items-center gap-4 text-white/80"><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-theme-accent"><i class='bx bxs-envelope'></i></div><span>Direct Email Support</span></div>
+                            <div class="flex items-center gap-4 text-white/80"><div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-theme-accent"><i class='bx bxl-whatsapp'></i></div><span>WhatsApp Priority Chat</span></div>
                         </div>
                     </div>
-
                     <form action="{% url 'agent_profile' agent.slug %}" method="post" class="bg-white/5 p-8 rounded-3xl border border-white/10 backdrop-blur-sm space-y-5">
                         {% csrf_token %}
-                        
                         <div class="grid md:grid-cols-2 gap-5">
-                            <div>
-                                <label class="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Name</label>
-                                <input type="text" name="name" required class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-theme-accent transition">
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Phone</label>
-                                <input type="text" name="phone" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-theme-accent transition">
-                            </div>
+                            <div><label class="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Name</label><input type="text" name="name" required class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-theme-accent transition"></div>
+                            <div><label class="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Phone</label><input type="text" name="phone" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-theme-accent transition"></div>
                         </div>
-
-                        <div>
-                            <label class="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Email Address</label>
-                            <input type="email" name="email" required class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-theme-accent transition">
-                        </div>
-                        
-                        <div>
-                            <label class="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">How can I help?</label>
-                            <textarea name="message" rows="3" required class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-theme-accent transition"></textarea>
-                        </div>
-                        
-                        <button type="submit" class="w-full bg-theme-accent hover:brightness-110 text-white font-bold text-lg py-4 rounded-xl transition shadow-lg flex items-center justify-center gap-2 mt-2 group">
-                            Send Message
-                            <i class='bx bx-send group-hover:translate-x-1 transition'></i>
-                        </button>
+                        <div><label class="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Email Address</label><input type="email" name="email" required class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-theme-accent transition"></div>
+                        <div><label class="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">How can I help?</label><textarea name="message" rows="3" required class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-theme-accent transition"></textarea></div>
+                        <button type="submit" class="w-full bg-theme-accent hover:brightness-110 text-white font-bold text-lg py-4 rounded-xl transition shadow-lg flex items-center justify-center gap-2 mt-2 group">Send Message <i class='bx bx-send group-hover:translate-x-1 transition'></i></button>
                     </form>
                 </div>
             </div>
         </section>
-
     </div>
+
+    <footer class="py-16 border-t border-gray-200/60 mt-20 relative z-10 bg-gray-50" style="background-color: var(--bg-secondary);">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            
+            {% if agent.linkedin or agent.instagram or agent.facebook %}
+            <div class="flex justify-center gap-6 mb-10">
+                {% if agent.linkedin %}<a href="{{ agent.linkedin }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-white hover:bg-[#0077b5] hover:border-[#0077b5] transition text-xl shadow-sm"><i class='bx bxl-linkedin'></i></a>{% endif %}
+                {% if agent.instagram %}<a href="{{ agent.instagram }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-white hover:bg-[#E1306C] hover:border-[#E1306C] transition text-xl shadow-sm"><i class='bx bxl-instagram'></i></a>{% endif %}
+                {% if agent.facebook %}<a href="{{ agent.facebook }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-white hover:bg-[#1877F2] hover:border-[#1877F2] transition text-xl shadow-sm"><i class='bx bxl-facebook'></i></a>{% endif %}
+            </div>
+            {% endif %}
+
+            <div class="max-w-3xl mx-auto space-y-4 mb-12">
+                <p class="text-xs uppercase tracking-widest font-bold opacity-40" style="color: var(--text-muted)">Important Disclaimer</p>
+                <div class="text-xs leading-relaxed opacity-60 whitespace-pre-line" style="color: var(--text-muted)">{{ agent.disclaimer }}</div>
+            </div>
+
+            <div class="flex flex-col items-center gap-3">
+                <p class="text-xs font-medium opacity-40" style="color: var(--text-muted)">&copy; {% now "Y" %} {{ agent.name }}. All rights reserved.</p>
+                
+                <a href="https://www.skandage.com/sites" target="_blank" class="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 hover:opacity-100 transition-opacity duration-300" style="color: var(--text-muted)">
+                    <i class='bx bxs-bolt'></i> Powered by Skandage
+                </a>
+            </div>
+        </div>
+    </footer>
 
     {% if agent.phone_number %}
     <div class="fixed bottom-8 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
         <a href="https://wa.me/{{ agent.phone_number }}" target="_blank" class="pointer-events-auto bg-gray-900 text-white pl-6 pr-8 py-3.5 rounded-full shadow-2xl flex items-center gap-4 transform hover:-translate-y-1 hover:scale-105 transition duration-300 border border-gray-700/50 group">
-            <div class="bg-[#25D366] p-2 rounded-full text-white shadow-lg group-hover:rotate-12 transition">
-                <i class='bx bxl-whatsapp text-xl'></i>
-            </div>
-            <div class="flex flex-col text-left">
-                <span class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Have a question?</span>
-                <span class="text-base font-bold">WhatsApp Me</span>
-            </div>
+            <div class="bg-[#25D366] p-2 rounded-full text-white shadow-lg group-hover:rotate-12 transition"><i class='bx bxl-whatsapp text-xl'></i></div>
+            <div class="flex flex-col text-left"><span class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Have a question?</span><span class="text-base font-bold">WhatsApp Me</span></div>
         </a>
     </div>
     {% endif %}
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        AOS.init({
-            once: true,
-            offset: 50,
-            duration: 800,
-            easing: 'ease-out-cubic',
-        });
-
-        function toggleProof(elementId, button) {
+        AOS.init({ once: true, offset: 50, duration: 800, easing: 'ease-out-cubic' });
+        
+        function toggleContent(elementId, button) {
             const container = document.getElementById(elementId);
             container.classList.toggle('expanded');
             button.classList.toggle('expanded');
             
             const textSpan = button.querySelector('span');
             if (container.classList.contains('expanded')) {
-                textSpan.textContent = "Hide Verified Proof";
+                textSpan.textContent = "Hide Review Text";
             } else {
-                textSpan.textContent = "Show Verified Proof";
+                textSpan.textContent = "Read Review Text";
             }
         }
     </script>

@@ -3,9 +3,39 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash, logout
 from django.contrib import messages
-from .models import Agent, Testimonial, Lead, Article, Credential
-from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm
+from .models import Agent, Testimonial, Lead, Article, Credential, Service
+from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm, ServiceForm
 from .themes import THEMES  # Ensure this is imported!
+import vobject
+from django.http import HttpResponse
+
+# ==========================
+# VCARD DOWNLOAD VIEW
+# ==========================
+def download_vcard(request, slug):
+    agent = get_object_or_404(Agent, slug=slug)
+    
+    # Create vCard Content Manually (No extra pip install needed)
+    vcard_data = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        f"FN:{agent.name}",
+        f"N:{agent.name};;;;",
+        f"ORG:{agent.company}",
+        f"TITLE:{agent.title}",
+        f"TEL;TYPE=CELL:{agent.phone_number}",
+        f"URL:{request.build_absolute_uri(f'/agent/{agent.slug}/')}",
+    ]
+    
+    # Add WhatsApp link as a note or specific field if desired
+    if agent.whatsapp_message:
+        vcard_data.append(f"NOTE:WhatsApp: https://wa.me/{agent.phone_number}")
+        
+    vcard_data.append("END:VCARD")
+    
+    response = HttpResponse("\n".join(vcard_data), content_type="text/x-vcard")
+    response["Content-Disposition"] = f'attachment; filename="{agent.slug}.vcf"'
+    return response
 
 # ==========================================
 # PUBLIC VIEWS (Accessible by Everyone)
@@ -28,7 +58,7 @@ def agent_profile(request, slug):
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
 
     testimonials = agent.testimonials.all().order_by('-id')[:4]
-    
+    services = agent.services.all()
     if request.method == 'POST':
         form = LeadForm(request.POST)
         if form.is_valid():
@@ -42,6 +72,7 @@ def agent_profile(request, slug):
     context = {
         'agent': agent,
         'testimonials': testimonials,
+        'services': services,
         'articles': agent.articles.all().order_by('-created_at')[:3],
         'credentials': agent.credentials.all(),
         'total_testimonials': agent.testimonials.count(),
@@ -287,3 +318,36 @@ def single_testimonial(request, slug, pk):
         'review': testimonial,
         'theme': theme_config
     })
+
+
+@login_required
+def manage_services(request):
+    agent = request.user.agent
+    services = agent.services.all()
+    context = {
+        'agent': agent,
+        'services': services,
+        'section': 'services' # Highlights sidebar
+    }
+    return render(request, 'core/manage_services.html', context)
+
+@login_required
+def add_service(request):
+    agent = request.user.agent
+    if request.method == 'POST':
+        form = ServiceForm(request.POST)
+        if form.is_valid():
+            service = form.save(commit=False)
+            service.agent = agent
+            service.save()
+            return redirect('manage_services')
+    else:
+        form = ServiceForm()
+    return render(request, 'core/generic_form.html', {'form': form, 'title': 'Add New Service'})
+
+@login_required
+def delete_service(request, pk):
+    service = get_object_or_404(Service, pk=pk, agent=request.user.agent)
+    if request.method == 'POST':
+        service.delete()
+    return redirect('manage_services')

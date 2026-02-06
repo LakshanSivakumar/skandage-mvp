@@ -35,5 +35,9 @@ urlpatterns = [
     path('agent/<slug:slug>/testimonials/', views.agent_testimonials, name='agent_testimonials'),
     path('agent/<slug:slug>/bio/', views.agent_bio, name='agent_bio'),
     path('agent/<slug:slug>/review/<int:pk>/', views.single_testimonial, name='single_testimonial'),
+    path('agent/<slug:slug>/vcard/', views.download_vcard, name='download_vcard'),
+    path('dashboard/services/', views.manage_services, name='manage_services'),
+    path('dashboard/services/add/', views.add_service, name='add_service'),
+    path('dashboard/services/delete/<int:pk>/', views.delete_service, name='delete_service'),
 
 ]

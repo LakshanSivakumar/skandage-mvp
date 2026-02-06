@@ -53,7 +53,11 @@
                 <i class='bx bxs-quote-alt-left text-xl {% if section == 'testimonials' %}text-blue-600{% else %}text-slate-400 group-hover:text-slate-600{% endif %}'></i> 
                 Testimonials
             </a>
-
+            <a href="{% url 'manage_services' %}" class="{{ nav_class }} {% if section == 'services' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-500 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+                {% if section == 'services' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
+                <i class='bx bxs-briefcase-alt-2 text-xl {% if section == 'services' %}text-blue-600{% else %}text-slate-400 group-hover:text-slate-600{% endif %}'></i> 
+                Services
+            </a>
             <a href="{% url 'manage_articles' %}" class="{{ nav_class }} {% if section == 'articles' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-500 hover:bg-slate-50 hover:text-slate-900{% endif %}">
                 {% if section == 'articles' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
                 <i class='bx bxs-news text-xl {% if section == 'articles' %}text-blue-600{% else %}text-slate-400 group-hover:text-slate-600{% endif %}'></i> 
