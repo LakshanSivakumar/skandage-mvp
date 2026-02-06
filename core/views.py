@@ -56,8 +56,14 @@ def agent_profile(request, slug):
     # --- GET THEME CONFIG ---
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
 
-    testimonials = agent.testimonials.all().order_by('-id')[:4]
+    # --- FIX: SORT BY FEATURED FIRST ---
+    # 1. '-is_featured': True (1) comes before False (0)
+    # 2. '-id': Newest items come first
+    # 3. '[:4]': Only take the top 4 results
+    testimonials = agent.testimonials.all().order_by('-is_featured', '-id')[:4]
+    
     services = agent.services.all()
+
     if request.method == 'POST':
         form = LeadForm(request.POST)
         if form.is_valid():
@@ -287,7 +293,10 @@ def agent_testimonials(request, slug):
     agent = get_object_or_404(Agent, slug=slug)
     # --- GET THEME CONFIG ---
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
-    testimonials = agent.testimonials.all().order_by('-id')
+    
+    # --- FIX: SORT BY FEATURED FIRST ---
+    # Sorted by Featured (True) first, then by ID (Newest)
+    testimonials = agent.testimonials.all().order_by('-is_featured', '-id')
     
     return render(request, 'core/public_testimonials.html', {
         'agent': agent,

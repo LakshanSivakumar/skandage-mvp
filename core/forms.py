@@ -53,7 +53,7 @@ class TestimonialForm(forms.ModelForm):
                 'placeholder': 'Paste the full review here...'
             }),
             'screenshot': forms.FileInput(attrs={
-                'class': 'hidden',
+                'class': 'block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer',
                 'id': 'id_screenshot'
             }),
         }
