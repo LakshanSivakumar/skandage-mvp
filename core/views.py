@@ -6,7 +6,6 @@ from django.contrib import messages
 from .models import Agent, Testimonial, Lead, Article, Credential, Service
 from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm, ServiceForm
 from .themes import THEMES  # Ensure this is imported!
-import vobject
 from django.http import HttpResponse
 
 # ==========================
