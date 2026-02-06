@@ -39,5 +39,14 @@ urlpatterns = [
     path('dashboard/services/', views.manage_services, name='manage_services'),
     path('dashboard/services/add/', views.add_service, name='add_service'),
     path('dashboard/services/delete/<int:pk>/', views.delete_service, name='delete_service'),
+    path('dashboard/article/delete/<int:pk>/', views.delete_article, name='delete_article'),
+
+    # NEW: Credential Actions
+    path('dashboard/credential/edit/<int:pk>/', views.edit_credential, name='edit_credential'),
+
+    # NEW: Testimonial Feature Toggle
+    path('dashboard/testimonial/toggle-feature/<int:pk>/', views.toggle_testimonial_feature, name='toggle_testimonial_feature'),
+    path('dashboard/credentials/reorder/', views.reorder_credentials, name='reorder_credentials'),
+
 
 ]

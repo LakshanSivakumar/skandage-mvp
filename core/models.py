@@ -20,6 +20,7 @@ class Agent(models.Model):
         default="The content on this website is strictly for information and educational purposes only and does not constitute financial advice. Investments are subject to market risks. Please consult a qualified financial consultant before making any decisions. Views expressed here are my own and do not necessarily reflect the official policy or position of my company.\n\nThis advertisement has not been reviewed by the Monetary Authority of Singapore.",
         help_text="This text appears in the footer of every page."
     )
+    
     # Profile Details
     headshot = models.ImageField(upload_to='headshots/', blank=True, null=True)
     bio = models.TextField(blank=True)
@@ -107,7 +108,9 @@ class Credential(models.Model):
     title = models.CharField(max_length=100, help_text="e.g. MDRT 2024, ChFC, Top Rookie")
     issuer = models.CharField(max_length=100, help_text="e.g. Million Dollar Round Table, Prudential")
     year = models.CharField(max_length=20, blank=True, help_text="Optional, e.g. 2023")
-    
+    order = models.PositiveIntegerField(default=0)
+    class Meta:
+        ordering = ['order']
     def __str__(self):
         return self.title
     

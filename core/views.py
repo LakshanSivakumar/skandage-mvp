@@ -1,12 +1,15 @@
+import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash, logout
 from django.contrib import messages
 from .models import Agent, Testimonial, Lead, Article, Credential, Service
 from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm, ServiceForm
-from .themes import THEMES  # Ensure this is imported!
-from django.http import HttpResponse
+from .themes import THEMES
+from django.http import HttpResponse, JsonResponse
+from django.db.models import F, Max
 
 # ==========================
 # VCARD DOWNLOAD VIEW
@@ -14,7 +17,7 @@ from django.http import HttpResponse
 def download_vcard(request, slug):
     agent = get_object_or_404(Agent, slug=slug)
     
-    # Create vCard Content Manually (No extra pip install needed)
+    # Create vCard Content Manually
     vcard_data = [
         "BEGIN:VCARD",
         "VERSION:3.0",
@@ -79,9 +82,9 @@ def agent_profile(request, slug):
         'testimonials': testimonials,
         'services': services,
         'articles': agent.articles.all().order_by('-created_at')[:3],
-        'credentials': agent.credentials.all(),
+        'credentials': agent.credentials.all().order_by('order'), # Ensure public profile sees correct order
         'total_testimonials': agent.testimonials.count(),
-        'theme': theme_config  # Pass the theme to the template
+        'theme': theme_config
     }
     return render(request, 'core/agent_profile.html', context)
 
@@ -124,7 +127,7 @@ def manage_profile(request):
     context = {
         'agent': agent,
         'form': form,
-        'credentials': agent.credentials.all(),
+        'credentials': agent.credentials.all().order_by('order'), # Sort by Drag Order
         'section': 'profile'
     }
     return render(request, 'core/manage_profile.html', context)
@@ -189,6 +192,12 @@ def add_credential(request):
         if form.is_valid():
             cred = form.save(commit=False)
             cred.agent = agent
+            
+            # --- AUTO ASSIGN ORDER ---
+            # Finds the highest order number and adds 1
+            max_order = Credential.objects.filter(agent=agent).aggregate(Max('order'))['order__max']
+            cred.order = (max_order if max_order is not None else -1) + 1
+            
             cred.save()
             return redirect('manage_profile')
     else:
@@ -311,7 +320,7 @@ def agent_bio(request, slug):
     
     return render(request, 'core/public_bio.html', {
         'agent': agent,
-        'credentials': agent.credentials.all(),
+        'credentials': agent.credentials.all().order_by('order'), # Sorted by drag order
         'theme': theme_config
     })
 
@@ -359,3 +368,55 @@ def delete_service(request, pk):
     if request.method == 'POST':
         service.delete()
     return redirect('manage_services')
+
+@login_required
+def delete_article(request, pk):
+    article = get_object_or_404(Article, pk=pk, agent=request.user.agent)
+    if request.method == 'POST':
+        article.delete()
+        messages.success(request, "Article deleted successfully.")
+    return redirect('manage_articles')
+
+# --- EDIT CREDENTIAL ---
+@login_required
+def edit_credential(request, pk):
+    cred = get_object_or_404(Credential, pk=pk, agent=request.user.agent)
+    if request.method == 'POST':
+        form = CredentialForm(request.POST, instance=cred)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Credential updated.")
+            return redirect('manage_profile')
+    else:
+        form = CredentialForm(instance=cred)
+    return render(request, 'core/generic_form.html', {'form': form, 'title': 'Edit Credential'})
+
+# --- TOGGLE FEATURED TESTIMONIAL ---
+@login_required
+def toggle_testimonial_feature(request, pk):
+    testimonial = get_object_or_404(Testimonial, pk=pk, agent=request.user.agent)
+    # Toggle the boolean
+    testimonial.is_featured = not testimonial.is_featured
+    testimonial.save()
+    
+    status = "Featured" if testimonial.is_featured else "Un-featured"
+    messages.success(request, f"Review marked as {status}")
+    return redirect('manage_testimonials')
+
+# --- NEW: AJAX DRAG & DROP REORDER ---
+@login_required
+@require_POST
+def reorder_credentials(request):
+    try:
+        data = json.loads(request.body)
+        ordered_ids = data.get('order', [])
+        
+        # Update the order for each credential based on its position in the list
+        for index, cred_id in enumerate(ordered_ids):
+            # Using update() is more efficient than save() in a loop
+            # But we must ensure the user owns the credential
+            Credential.objects.filter(pk=cred_id, agent=request.user.agent).update(order=index)
+            
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
