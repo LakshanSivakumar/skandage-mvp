@@ -4,10 +4,17 @@
 <head>
     <title>Agent Hub - Skandage</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Enables manual toggling
+        }
+    </script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    
     <style> 
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F3F4F6; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
         
         /* Smooth fade in */
         main { animation: fadeIn 0.4s ease-out; }
@@ -18,13 +25,18 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Smooth Theme Transition */
+        body, div, nav, aside, main, h1, h2, h3, p, span, a, button, input {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden bg-slate-50 text-slate-800">
+<body class="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
 
-    <aside class="w-72 bg-white border-r border-slate-200 hidden md:flex flex-col z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+    <aside class="w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 hidden md:flex flex-col z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         <div class="p-8 pb-4">
-            <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
                 <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl shadow-lg shadow-blue-200">
                     <i class='bx bxs-bolt'></i>
                 </div>
@@ -36,70 +48,100 @@
         <nav class="flex-1 px-4 space-y-1.5 overflow-y-auto">
             {% with "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 group relative" as nav_class %}
             
-            <a href="{% url 'dashboard' %}" class="{{ nav_class }} {% if section == 'stats' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-500 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+            <a href="{% url 'dashboard' %}" class="{{ nav_class }} {% if section == 'stats' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
                 {% if section == 'stats' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
-                <i class='bx bxs-dashboard text-xl {% if section == 'stats' %}text-blue-600{% else %}text-slate-400 group-hover:text-slate-600{% endif %}'></i> 
+                <i class='bx bxs-dashboard text-xl {% if section == 'stats' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
                 Overview
             </a>
             
-            <a href="{% url 'manage_profile' %}" class="{{ nav_class }} {% if section == 'profile' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-500 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+            <a href="{% url 'manage_profile' %}" class="{{ nav_class }} {% if section == 'profile' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
                 {% if section == 'profile' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
-                <i class='bx bxs-user-detail text-xl {% if section == 'profile' %}text-blue-600{% else %}text-slate-400 group-hover:text-slate-600{% endif %}'></i> 
+                <i class='bx bxs-user-detail text-xl {% if section == 'profile' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
                 Profile & Bio
             </a>
 
-            <a href="{% url 'manage_testimonials' %}" class="{{ nav_class }} {% if section == 'testimonials' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-500 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+            <a href="{% url 'manage_testimonials' %}" class="{{ nav_class }} {% if section == 'testimonials' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
                 {% if section == 'testimonials' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
-                <i class='bx bxs-quote-alt-left text-xl {% if section == 'testimonials' %}text-blue-600{% else %}text-slate-400 group-hover:text-slate-600{% endif %}'></i> 
+                <i class='bx bxs-quote-alt-left text-xl {% if section == 'testimonials' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
                 Testimonials
             </a>
-            <a href="{% url 'manage_services' %}" class="{{ nav_class }} {% if section == 'services' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-500 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+            <a href="{% url 'manage_services' %}" class="{{ nav_class }} {% if section == 'services' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
                 {% if section == 'services' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
-                <i class='bx bxs-briefcase-alt-2 text-xl {% if section == 'services' %}text-blue-600{% else %}text-slate-400 group-hover:text-slate-600{% endif %}'></i> 
+                <i class='bx bxs-briefcase-alt-2 text-xl {% if section == 'services' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
                 Services
             </a>
-            <a href="{% url 'manage_articles' %}" class="{{ nav_class }} {% if section == 'articles' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-500 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+            <a href="{% url 'manage_articles' %}" class="{{ nav_class }} {% if section == 'articles' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
                 {% if section == 'articles' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
-                <i class='bx bxs-news text-xl {% if section == 'articles' %}text-blue-600{% else %}text-slate-400 group-hover:text-slate-600{% endif %}'></i> 
+                <i class='bx bxs-news text-xl {% if section == 'articles' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
                 Articles
             </a>
 
-            <div class="pt-4 mt-4 border-t border-slate-100 mx-2"></div>
+            <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-700 mx-2"></div>
 
-            <a href="{% url 'account_settings' %}" class="{{ nav_class }} {% if section == 'settings' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-500 hover:bg-slate-50 hover:text-slate-900{% endif %}">
+            <a href="{% url 'account_settings' %}" class="{{ nav_class }} {% if section == 'settings' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
                 {% if section == 'settings' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
-                <i class='bx bxs-cog text-xl {% if section == 'settings' %}text-blue-600{% else %}text-slate-400 group-hover:text-slate-600{% endif %}'></i> 
+                <i class='bx bxs-cog text-xl {% if section == 'settings' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
                 Settings
             </a>
 
             {% endwith %}
         </nav>
 
-        <div class="p-4 m-4 bg-slate-50 rounded-2xl border border-slate-100">
-            <a href="{% url 'agent_profile' request.user.agent.slug %}" target="_blank" class="flex items-center justify-between text-sm font-semibold text-slate-600 hover:text-blue-600 transition group">
+        <div class="p-4 m-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+            <a href="{% url 'agent_profile' request.user.agent.slug %}" target="_blank" class="flex items-center justify-between text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition group">
                 <span>View Live Page</span>
                 <i class='bx bx-link-external group-hover:translate-x-1 transition'></i>
             </a>
         </div>
 
-        <div class="p-6 border-t border-slate-100">
+        <div class="p-6 border-t border-slate-100 dark:border-slate-700">
+            
+            <button id="theme-toggle" class="w-full mb-4 flex items-center justify-center gap-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition border border-transparent dark:border-slate-700">
+                <i class='bx bxs-sun text-amber-500 hidden dark:block'></i>
+                <i class='bx bxs-moon text-indigo-500 block dark:hidden'></i>
+                <span class="text-xs font-bold uppercase tracking-wide">Toggle Theme</span>
+            </button>
+
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white shadow-md">
                     {{ request.user.username|slice:":1"|upper }}
                 </div>
                 <div class="overflow-hidden">
-                    <div class="text-sm font-bold text-slate-900 truncate">{{ request.user.username }}</div>
-                    <a href="{% url 'logout' %}" class="text-xs text-red-500 hover:text-red-600 font-medium">Sign Out</a>
+                    <div class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ request.user.username }}</div>
+                    <a href="{% url 'logout' %}" class="text-xs text-red-500 hover:text-red-400 font-medium">Sign Out</a>
                 </div>
             </div>
         </div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto bg-[#F8FAFC]">
+    <main class="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-slate-900">
         <div class="max-w-7xl mx-auto p-8 lg:p-12">
             {% block dashboard_content %}{% endblock %}
         </div>
     </main>
+
+    <script>
+        // Check for saved theme on load
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // Toggle Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', function() {
+                document.documentElement.classList.toggle('dark');
+                
+                if (document.documentElement.classList.contains('dark')) {
+                    localStorage.theme = 'dark';
+                } else {
+                    localStorage.theme = 'light';
+                }
+            });
+        }
+    </script>
 
 </body>
 </html>

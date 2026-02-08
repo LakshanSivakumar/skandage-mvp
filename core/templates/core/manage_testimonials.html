@@ -1,69 +1,46 @@
 {% extends 'core/dashboard_base.html' %}
 
 {% block dashboard_content %}
-<div class="flex items-center justify-between mb-8">
+<div class="flex items-end justify-between mb-8">
     <div>
-        <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Testimonials</h2>
-        <p class="text-slate-500 mt-1">Manage what clients say about you.</p>
+        <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">My Services</h2>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Define the packages or solutions you offer clients.</p>
     </div>
-    <a href="{% url 'add_testimonial' %}" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-200 flex items-center gap-2">
-        <i class='bx bx-plus'></i> Add New Review
+    <a href="{% url 'add_service' %}" class="bg-slate-900 dark:bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-blue-700 transition shadow-lg shadow-slate-200 dark:shadow-none flex items-center gap-2">
+        <i class='bx bx-plus'></i> Add Service
     </a>
 </div>
 
-<div class="space-y-4">
-    {% if testimonials %}
-        {% for review in testimonials %}
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition group relative">
-            
-            <div class="flex items-start gap-4">
-                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xl shrink-0">
-                    {{ review.client_name|slice:":1" }}
-                </div>
-                <div class="flex-1">
-                    <div class="flex items-center justify-between mb-1">
-                        <h3 class="font-bold text-slate-900">{{ review.client_name }}</h3>
-                        
-                        <div class="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
-                            <a href="{% url 'toggle_testimonial_feature' review.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg border transition {% if review.is_featured %}bg-amber-50 border-amber-200 text-amber-500{% else %}bg-white border-slate-200 text-slate-300 hover:text-amber-500{% endif %}" title="Toggle Featured on Homepage">
-                                <i class='bx bxs-star'></i>
-                            </a>
-
-                            <a href="{% url 'edit_testimonial' review.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-600 transition">
-                                <i class='bx bxs-edit-alt'></i>
-                            </a>
-                            <a href="{% url 'delete_testimonial' review.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-600 transition">
-                                <i class='bx bxs-trash'></i>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <p class="text-slate-600 italic text-sm mb-3">"{{ review.review_text|truncatewords:30 }}"</p>
-                    
-                    <div class="flex gap-3">
-                        {% if review.screenshot %}
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">
-                                <i class='bx bx-image'></i> Verified with Screenshot
-                            </span>
-                        {% endif %}
-                        
-                        {% if review.is_featured %}
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 text-xs font-bold border border-amber-100">
-                                <i class='bx bxs-star'></i> Featured on Homepage
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
+{% if services %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for service in services %}
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm group hover:border-blue-200 dark:hover:border-blue-500 transition">
+        <div class="flex justify-between items-start mb-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-2xl">
+                <i class='bx {{ service.icon }}'></i>
             </div>
+            
+            <form action="{% url 'delete_service' service.pk %}" method="post" onsubmit="return confirm('Delete this service?');">
+                {% csrf_token %}
+                <button class="text-slate-300 hover:text-red-500 dark:hover:text-red-400 transition p-2"><i class='bx bxs-trash'></i></button>
+            </form>
         </div>
-        {% endfor %}
-    {% else %}
-        <div class="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
-            <div class="text-slate-300 text-5xl mb-4"><i class='bx bxs-message-square-dots'></i></div>
-            <h3 class="text-slate-900 font-bold text-lg">No reviews yet</h3>
-            <p class="text-slate-500 mb-6">Add your first client testimonial to build trust.</p>
-            <a href="{% url 'add_testimonial' %}" class="text-blue-600 font-bold hover:underline">Add Review</a>
-        </div>
-    {% endif %}
+        
+        <h3 class="font-bold text-slate-900 dark:text-white text-lg mb-2">{{ service.title }}</h3>
+        <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{{ service.description }}</p>
+    </div>
+    {% endfor %}
 </div>
+{% else %}
+<div class="text-center py-20 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
+    <div class="w-16 h-16 bg-slate-50 dark:bg-slate-700/50 rounded-full flex items-center justify-center text-slate-400 dark:text-slate-500 text-3xl mx-auto mb-4">
+        <i class='bx bxs-briefcase-alt-2'></i>
+    </div>
+    <h3 class="text-lg font-bold text-slate-900 dark:text-white">No Services Yet</h3>
+    <p class="text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-2 mb-6">List the key areas you specialize in (e.g., Wealth Management, Legacy Planning).</p>
+    <a href="{% url 'add_service' %}" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold hover:underline">
+        Create your first service
+    </a>
+</div>
+{% endif %}
 {% endblock %}

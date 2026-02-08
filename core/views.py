@@ -55,7 +55,13 @@ def domain_router(request):
 
 def agent_profile(request, slug):
     agent = get_object_or_404(Agent, slug=slug)
-    
+    session_key = f'viewed_agent_{agent.pk}'
+    if not request.session.get(session_key, False):
+        # Atomic update (thread-safe way to add +1)
+        agent.profile_views = F('profile_views') + 1
+        agent.save(update_fields=['profile_views'])
+        # Mark as viewed in this user's session
+        request.session[session_key] = True
     # --- GET THEME CONFIG ---
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
 
