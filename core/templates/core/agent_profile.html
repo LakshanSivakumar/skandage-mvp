@@ -68,7 +68,7 @@
                 opacity: 0;
             }
             .content-toggle.expanded {
-                max-height: 500px;
+                max-height: 800px;
                 opacity: 1;
             }
             .rotate-icon { transition: transform 0.3s ease; }
@@ -238,40 +238,43 @@
             <div class="md:columns-2 gap-8">
                 {% for review in testimonials %}
                 <div class="inline-block w-full mb-8 break-inside-avoid bg-theme-secondary p-10 rounded-3xl shadow-sm border border-transparent relative hover:shadow-md transition-all duration-300 group">
+                    
                     <a href="{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:text-white hover:bg-theme-accent hover:border-theme-accent transition z-20 shadow-sm" title="Share this review">
                         <i class='bx bx-share-alt text-xl'></i>
                     </a>
                     
+                    <div class="relative z-10 mb-6">
+                        <i class='bx bxs-quote-left text-4xl text-theme-accent opacity-30 mb-2'></i>
+                        <p class="text-theme-muted text-lg italic leading-relaxed font-serif">
+                            "{{ review.review_text }}"
+                        </p>
+                    </div>
+
                     {% if review.screenshot %}
-                        <div class="mb-6 rounded-2xl overflow-hidden border border-black/5 shadow-sm relative z-10">
-                            <img src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Proof">
-                        </div>
+                        <button onclick="toggleContent('proof-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold text-theme-accent uppercase tracking-wider border border-theme-accent/20 px-4 py-2 rounded-lg hover:bg-theme-accent hover:text-white transition mb-6">
+                            <i class='bx bx-image'></i> <span>View Original Proof</span>
+                        </button>
 
-                        <div class="mb-4">
-                            <button onclick="toggleContent('text-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold text-theme-muted uppercase tracking-wider hover:text-theme-accent transition border border-gray-200 px-4 py-2 rounded-lg bg-white shadow-sm group w-full justify-center">
-                                <span>Read Review Text</span> <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
-                            </button>
-                        </div>
-
-                        <div id="text-{{ forloop.counter }}" class="content-toggle mb-6 relative z-10">
-                            <div class="p-4 bg-white/50 rounded-xl border border-black/5">
-                                <p class="text-theme-muted text-xl italic leading-loose font-serif">"{{ review.review_text }}"</p>
-                            </div>
-                        </div>
-                    {% else %}
-                        <div class="absolute -top-5 -left-2 text-theme-accent opacity-20 transform rotate-12"><i class='bx bxs-quote-left text-6xl'></i></div>
-                        <div class="relative z-10">
-                            <p class="text-theme-muted text-lg italic leading-loose mb-8 font-serif">"{{ review.review_text }}"</p>
+                        <div id="proof-{{ forloop.counter }}" class="content-toggle rounded-xl overflow-hidden shadow-sm border border-black/5 mb-6">
+                            <img src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Verified Proof">
                         </div>
                     {% endif %}
 
                     <div class="flex items-center gap-4 pt-6 border-t border-gray-200/50 relative z-10">
-                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-gray-600 font-bold font-serif text-xl shadow-sm">{{ review.client_name|slice:":1" }}</div>
+                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-gray-600 font-bold font-serif text-xl shadow-sm">
+                            {{ review.client_name|slice:":1" }}
+                        </div>
                         <div>
-                            <div class="font-bold text-theme-main text-lg">{{ review.client_name }}</div>
-                            <div class="text-xs text-theme-accent font-bold uppercase tracking-wide">Verified Client</div>
+                            {% if review.title %}
+                                <div class="text-sm font-bold text-theme-main uppercase tracking-wide opacity-80 mb-0.5">{{ review.title }}</div>
+                                <div class="font-bold text-theme-main text-lg">{{ review.client_name }}</div>
+                            {% else %}
+                                <div class="font-bold text-theme-main text-lg">{{ review.client_name }}</div>
+                                <div class="text-xs text-theme-accent font-bold uppercase tracking-wide">Verified Client</div>
+                            {% endif %}
                         </div>
                     </div>
+
                 </div>
                 {% endfor %}
             </div>
@@ -383,10 +386,12 @@
             button.classList.toggle('expanded');
             
             const textSpan = button.querySelector('span');
+            // If the container IS expanded, the user can click to HIDE it
             if (container.classList.contains('expanded')) {
-                textSpan.textContent = "Hide Review Text";
+                textSpan.textContent = "Hide Original Proof";
             } else {
-                textSpan.textContent = "Read Review Text";
+                // If it is collapsed, the user can click to VIEW it
+                textSpan.textContent = "View Original Proof";
             }
         }
     </script>

@@ -47,6 +47,6 @@ urlpatterns = [
     # NEW: Testimonial Feature Toggle
     path('dashboard/testimonial/toggle-feature/<int:pk>/', views.toggle_testimonial_feature, name='toggle_testimonial_feature'),
     path('dashboard/credentials/reorder/', views.reorder_credentials, name='reorder_credentials'),
-
+    path('dashboard/testimonials/import/', views.import_testimonials, name='import_testimonials'),
 
 ]

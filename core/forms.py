@@ -41,8 +41,12 @@ class AgentProfileForm(forms.ModelForm):
 class TestimonialForm(forms.ModelForm):
     class Meta:
         model = Testimonial
-        fields = ['client_name', 'review_text', 'screenshot']
+        fields = ['title','client_name', 'review_text', 'screenshot']
         widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition placeholder-slate-400', 
+                'placeholder': 'Headline (Optional, e.g. "Best Financial Advisor")'
+            }),
             'client_name': forms.TextInput(attrs={
                 'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition placeholder-slate-400', 
                 'placeholder': 'e.g. Sarah Tan'

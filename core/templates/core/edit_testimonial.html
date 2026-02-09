@@ -28,6 +28,11 @@
                 {% csrf_token %}
 
                 <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Headline / Title</label>
+                    {{ form.title }}
+                </div>
+
+                <div class="space-y-1.5">
                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Client Name</label>
                     {{ form.client_name }}
                 </div>

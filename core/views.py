@@ -10,10 +10,37 @@ from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, Cre
 from .themes import THEMES
 from django.http import HttpResponse, JsonResponse
 from django.db.models import F, Max
-
+from .utils import scrape_and_save_testimonials # Import the helper we just made
 # ==========================
 # VCARD DOWNLOAD VIEW
 # ==========================
+@login_required
+def import_testimonials(request):
+    if request.method == 'POST':
+        target_url = request.POST.get('target_url')
+        
+        # FIX: Use 'or' to ensure empty strings become '.card'
+        selector = request.POST.get('css_selector', '').strip() or '.card'
+        
+        if not target_url:
+            messages.error(request, "Please provide a valid URL.")
+            return redirect('manage_testimonials')
+            
+        try:
+            # Run the scraper
+            count = scrape_and_save_testimonials(request.user.agent, target_url, selector)
+            
+            if count > 0:
+                messages.success(request, f"Success! Imported {count} testimonials.")
+            else:
+                messages.warning(request, "Found 0 reviews. Check the CSS selector (default is .card).")
+                
+        except Exception as e:
+            # Log the actual error to console for debugging
+            print(f"Import Error: {e}")
+            messages.error(request, "An error occurred during import. Please check the URL.")
+            
+    return redirect('manage_testimonials')
 def download_vcard(request, slug):
     agent = get_object_or_404(Agent, slug=slug)
     

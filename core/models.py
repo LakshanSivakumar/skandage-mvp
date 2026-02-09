@@ -73,6 +73,7 @@ class Agent(models.Model):
 
 class Testimonial(models.Model):
     agent = models.ForeignKey(Agent, related_name='testimonials', on_delete=models.CASCADE)
+    title = models.CharField(max_length=200, blank=True, help_text="e.g. 'Built on Trust' or 'Great Service'")
     client_name = models.CharField(max_length=100)
     review_text = models.TextField()
     screenshot = models.ImageField(upload_to='reviews/', blank=True, null=True, help_text="Upload WhatsApp screenshot if available")
