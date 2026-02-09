@@ -243,20 +243,29 @@
                         <i class='bx bx-share-alt text-xl'></i>
                     </a>
                     
-                    <div class="relative z-10 mb-6">
-                        <i class='bx bxs-quote-left text-4xl text-theme-accent opacity-30 mb-2'></i>
-                        <p class="text-theme-muted text-lg italic leading-relaxed font-serif">
-                            "{{ review.review_text }}"
-                        </p>
-                    </div>
-
                     {% if review.screenshot %}
-                        <button onclick="toggleContent('proof-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold text-theme-accent uppercase tracking-wider border border-theme-accent/20 px-4 py-2 rounded-lg hover:bg-theme-accent hover:text-white transition mb-6">
-                            <i class='bx bx-image'></i> <span>View Original Proof</span>
-                        </button>
-
-                        <div id="proof-{{ forloop.counter }}" class="content-toggle rounded-xl overflow-hidden shadow-sm border border-black/5 mb-6">
+                        <div class="mb-6 rounded-2xl overflow-hidden border border-black/5 shadow-sm relative z-10">
                             <img src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Verified Proof">
+                        </div>
+
+                        <div class="mb-4">
+                            <button onclick="toggleContent('text-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold text-theme-muted uppercase tracking-wider hover:text-theme-accent transition border border-gray-200 px-4 py-2 rounded-lg bg-white shadow-sm group w-full justify-center">
+                                <span>Read Review Text</span> <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
+                            </button>
+                        </div>
+
+                        <div id="text-{{ forloop.counter }}" class="content-toggle mb-6 relative z-10">
+                            <div class="p-4 bg-white/50 rounded-xl border border-black/5">
+                                <p class="text-theme-muted text-xl italic leading-loose font-serif">"{{ review.review_text }}"</p>
+                            </div>
+                        </div>
+
+                    {% else %}
+                        <div class="relative z-10 mb-6">
+                            <i class='bx bxs-quote-left text-4xl text-theme-accent opacity-30 mb-2'></i>
+                            <p class="text-theme-muted text-lg italic leading-relaxed font-serif">
+                                "{{ review.review_text }}"
+                            </p>
                         </div>
                     {% endif %}
 
@@ -386,12 +395,12 @@
             button.classList.toggle('expanded');
             
             const textSpan = button.querySelector('span');
-            // If the container IS expanded, the user can click to HIDE it
+            // If the container IS expanded, set button to "Hide"
             if (container.classList.contains('expanded')) {
-                textSpan.textContent = "Hide Original Proof";
+                textSpan.textContent = "Hide Review Text";
             } else {
-                // If it is collapsed, the user can click to VIEW it
-                textSpan.textContent = "View Original Proof";
+                // If it is collapsed, set button to "Read"
+                textSpan.textContent = "Read Review Text";
             }
         }
     </script>
