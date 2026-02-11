@@ -48,5 +48,7 @@ urlpatterns = [
     path('dashboard/testimonial/toggle-feature/<int:pk>/', views.toggle_testimonial_feature, name='toggle_testimonial_feature'),
     path('dashboard/credentials/reorder/', views.reorder_credentials, name='reorder_credentials'),
     path('dashboard/testimonials/import/', views.import_testimonials, name='import_testimonials'),
+    path('dashboard/testimonials/generate-link/', views.generate_review_link, name='generate_review_link'),
+    path('review/submit/<str:token>/', views.client_review_submission, name='submit_review'),
 
 ]

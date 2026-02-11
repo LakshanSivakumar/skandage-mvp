@@ -124,8 +124,13 @@
                     {{ review.client_name|slice:":1" }}
                 </div>
                 <div>
-                    <div class="font-bold text-lg" style="color: var(--text-main)">{{ review.client_name }}</div>
-                    <div class="text-xs font-bold uppercase tracking-wide" style="color: var(--accent)">Verified Client</div>
+                    {% if review.title %}
+                        <div class="text-sm font-bold uppercase tracking-wide opacity-80 mb-0.5" style="color: var(--text-main)">{{ review.title }}</div>
+                        <div class="font-bold text-lg" style="color: var(--text-main)">{{ review.client_name }}</div>
+                    {% else %}
+                        <div class="font-bold text-lg" style="color: var(--text-main)">{{ review.client_name }}</div>
+                        <div class="text-xs font-bold uppercase tracking-wide" style="color: var(--accent)">Verified Client</div>
+                    {% endif %}
                 </div>
             </div>
 

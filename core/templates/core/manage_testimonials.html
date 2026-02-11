@@ -8,6 +8,10 @@
     </div>
     
     <div class="flex gap-3">
+        <button onclick="document.getElementById('linkModal').classList.remove('hidden')" class="bg-blue-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center gap-2">
+            <i class='bx bx-link'></i> Collect Review
+        </button>
+
         <button onclick="document.getElementById('importModal').classList.remove('hidden')" class="bg-white text-slate-700 border border-slate-300 px-5 py-3 rounded-xl font-bold hover:bg-slate-50 transition shadow-sm flex items-center gap-2">
             <i class='bx bx-import'></i> Import Existing
         </button>
@@ -18,60 +22,102 @@
     </div>
 </div>
 
-<div class="space-y-4">
-    {% if testimonials %}
-        {% for review in testimonials %}
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition group relative">
-            
-            <div class="flex items-start gap-4">
-                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xl shrink-0">
-                    {{ review.client_name|slice:":1" }}
-                </div>
-                <div class="flex-1">
-                    <div class="flex items-center justify-between mb-1">
-                        <h3 class="font-bold text-slate-900">{{ review.client_name }}</h3>
-                        
-                        <div class="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
-                            <a href="{% url 'toggle_testimonial_feature' review.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg border transition {% if review.is_featured %}bg-amber-50 border-amber-200 text-amber-500{% else %}bg-white border-slate-200 text-slate-300 hover:text-amber-500{% endif %}" title="Toggle Featured on Homepage">
-                                <i class='bx bxs-star'></i>
-                            </a>
-
-                            <a href="{% url 'edit_testimonial' review.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-600 transition">
-                                <i class='bx bxs-edit-alt'></i>
-                            </a>
-                            <a href="{% url 'delete_testimonial' review.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-600 transition">
-                                <i class='bx bxs-trash'></i>
-                            </a>
-                        </div>
+<div class="space-y-10">
+    
+    {% if pending_reviews %}
+    <div>
+        <h3 class="text-sm font-bold text-amber-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <i class='bx bxs-time-five'></i> Pending Approval
+        </h3>
+        <div class="grid gap-4">
+            {% for review in pending_reviews %}
+            <div class="bg-amber-50 border border-amber-100 p-6 rounded-2xl flex items-center justify-between">
+                <div class="flex gap-4">
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center font-bold text-amber-600 shadow-sm shrink-0">
+                        {{ review.client_name|slice:":1" }}
                     </div>
-                    
-                    <p class="text-slate-600 italic text-sm mb-3">"{{ review.review_text|truncatewords:30 }}"</p>
-                    
-                    <div class="flex gap-3">
-                        {% if review.screenshot %}
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">
-                                <i class='bx bx-image'></i> Verified with Screenshot
-                            </span>
-                        {% endif %}
+                    <div>
+                        <h4 class="font-bold text-slate-900">{{ review.client_name }}</h4>
+                        <p class="text-slate-600 text-sm italic line-clamp-1">"{{ review.review_text }}"</p>
+                        <span class="text-xs font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded mt-1 inline-block">Pending</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'edit_testimonial' review.pk %}" class="bg-white text-slate-900 px-4 py-2 rounded-lg font-bold border border-slate-200 hover:border-blue-500 hover:text-blue-600 transition shadow-sm">
+                        Review & Publish
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div>
+        {% if pending_reviews %}
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <i class='bx bxs-check-circle'></i> Published Reviews
+        </h3>
+        {% endif %}
+
+        {% if testimonials %}
+            <div class="space-y-4">
+            {% for review in testimonials %}
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition group relative">
+                
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xl shrink-0">
+                        {{ review.client_name|slice:":1" }}
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-1">
+                            <h3 class="font-bold text-slate-900">{{ review.client_name }}</h3>
+                            
+                            <div class="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
+                                <a href="{% url 'toggle_testimonial_feature' review.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg border transition {% if review.is_featured %}bg-amber-50 border-amber-200 text-amber-500{% else %}bg-white border-slate-200 text-slate-300 hover:text-amber-500{% endif %}" title="Toggle Featured on Homepage">
+                                    <i class='bx bxs-star'></i>
+                                </a>
+
+                                <a href="{% url 'edit_testimonial' review.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-600 transition">
+                                    <i class='bx bxs-edit-alt'></i>
+                                </a>
+                                <a href="{% url 'delete_testimonial' review.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-600 transition">
+                                    <i class='bx bxs-trash'></i>
+                                </a>
+                            </div>
+                        </div>
                         
-                        {% if review.is_featured %}
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 text-xs font-bold border border-amber-100">
-                                <i class='bx bxs-star'></i> Featured on Homepage
-                            </span>
-                        {% endif %}
+                        <p class="text-slate-600 italic text-sm mb-3">"{{ review.review_text|truncatewords:30 }}"</p>
+                        
+                        <div class="flex gap-3">
+                            {% if review.screenshot %}
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">
+                                    <i class='bx bx-image'></i> Verified with Screenshot
+                                </span>
+                            {% endif %}
+                            
+                            {% if review.is_featured %}
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 text-xs font-bold border border-amber-100">
+                                    <i class='bx bxs-star'></i> Featured on Homepage
+                                </span>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        {% endfor %}
-    {% else %}
-        <div class="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
-            <div class="text-slate-300 text-5xl mb-4"><i class='bx bxs-message-square-dots'></i></div>
-            <h3 class="text-slate-900 font-bold text-lg">No reviews yet</h3>
-            <p class="text-slate-500 mb-6">Add your first client testimonial to build trust.</p>
-            <a href="{% url 'add_testimonial' %}" class="text-blue-600 font-bold hover:underline">Add Review</a>
-        </div>
-    {% endif %}
+            {% endfor %}
+            </div>
+        {% else %}
+            {% if not pending_reviews %}
+            <div class="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
+                <div class="text-slate-300 text-5xl mb-4"><i class='bx bxs-message-square-dots'></i></div>
+                <h3 class="text-slate-900 font-bold text-lg">No reviews yet</h3>
+                <p class="text-slate-500 mb-6">Add your first client testimonial to build trust.</p>
+                <a href="{% url 'add_testimonial' %}" class="text-blue-600 font-bold hover:underline">Add Review</a>
+            </div>
+            {% endif %}
+        {% endif %}
+    </div>
 </div>
 
 <div id="importModal" class="fixed inset-0 z-50 hidden transition-opacity">
@@ -106,4 +152,79 @@
         </form>
     </div>
 </div>
+
+<div id="linkModal" class="fixed inset-0 z-50 hidden transition-opacity">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="document.getElementById('linkModal').classList.add('hidden')"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
+        <h3 class="text-xl font-bold text-slate-900 mb-4">Collect a Review</h3>
+        <p class="text-slate-500 text-sm mb-6">Enter your client's name. We'll generate a unique link for them to write a review. You can add the photo later.</p>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Client Name</label>
+                <input type="text" id="clientNameInput" placeholder="e.g. John Doe" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            
+            <div id="linkResult" class="hidden">
+                <label class="block text-xs font-bold text-green-600 uppercase mb-2">Unique Link Generated</label>
+                <div class="flex gap-2">
+                    <input type="text" id="generatedLink" readonly class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-600 text-sm">
+                    <button onclick="copyLink()" class="bg-slate-900 text-white px-4 rounded-xl font-bold hover:bg-slate-800"><i class='bx bx-copy'></i></button>
+                </div>
+            </div>
+
+            <button onclick="generateLink()" id="generateBtn" class="w-full bg-blue-600 text-white py-3 font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200">
+                Generate Link
+            </button>
+        </div>
+        
+        <button onclick="document.getElementById('linkModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+            <i class='bx bx-x text-2xl'></i>
+        </button>
+    </div>
+</div>
+
+<script>
+function generateLink() {
+    const name = document.getElementById('clientNameInput').value;
+    const btn = document.getElementById('generateBtn');
+    
+    if(!name) return alert('Please enter a name');
+    
+    btn.innerHTML = 'Generating...';
+    btn.disabled = true;
+
+    fetch("{% url 'generate_review_link' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({client_name: name})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.status === 'success') {
+            document.getElementById('linkResult').classList.remove('hidden');
+            document.getElementById('generatedLink').value = data.url;
+            btn.classList.add('hidden');
+        } else {
+            alert(data.message);
+            btn.innerHTML = 'Generate Link';
+            btn.disabled = false;
+        }
+    });
+}
+
+function copyLink() {
+    const copyText = document.getElementById("generatedLink");
+    copyText.select();
+    navigator.clipboard.writeText(copyText.value);
+    // Optional: Change button style temporarily
+    const btn = event.currentTarget;
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = "<i class='bx bx-check'></i>";
+    setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+}
+</script>
 {% endblock %}

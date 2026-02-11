@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-lg w-full bg-white rounded-2xl shadow-xl overflow-hidden text-center p-12">
+        <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center text-5xl mx-auto mb-6">
+            <i class='bx bx-check'></i>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900 mb-2">Thank You!</h1>
+        <p class="text-slate-500 mb-8">Your review for <strong>{{ agent.name }}</strong> has been submitted successfully.</p>
+        
+        <a href="{{ agent.whatsapp_link }}" class="inline-flex items-center gap-2 text-green-600 font-bold hover:underline">
+            <i class='bx bxl-whatsapp text-xl'></i> Chat with {{ agent.name }}
+        </a>
+    </div>
+
+</body>
+</html>
