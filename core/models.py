@@ -21,7 +21,12 @@ class Agent(models.Model):
         default="The content on this website is strictly for information and educational purposes only and does not constitute financial advice. Investments are subject to market risks. Please consult a qualified financial consultant before making any decisions. Views expressed here are my own and do not necessarily reflect the official policy or position of my company.\n\nThis advertisement has not been reviewed by the Monetary Authority of Singapore.",
         help_text="This text appears in the footer of every page."
     )
-    
+    custom_domain = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True, 
+        help_text="e.g. 'yq-partners.com'. If set, the agent will be accessible on this domain. They are ALWAYS accessible on skandage.com."
+    )
     # Profile Details
     headshot = models.ImageField(upload_to='headshots/', blank=True, null=True)
     bio = models.TextField(blank=True)
@@ -71,6 +76,7 @@ class Agent(models.Model):
 
     def __str__(self):
         return self.name
+    
 
 class Testimonial(models.Model):
     agent = models.ForeignKey(Agent, related_name='testimonials', on_delete=models.CASCADE)

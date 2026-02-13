@@ -51,17 +51,34 @@ def domain_router(request):
         return agent_profile(request, slug=subdomain)
 
 def agent_profile(request, slug):
-    agent = get_object_or_404(Agent, slug=slug)
+    # 1. Get the agent (Must be public generally)
+    agent = get_object_or_404(Agent, slug=slug, is_public=True)
+    
+    # 2. Get the hostname the user is visiting (e.g. "ryansiow.yq-partners.com")
+    host = request.get_host().lower()
+    
+    # 3. DOMAIN RESTRICTION LOGIC
+    # If the user is visiting via a Custom Domain (not skandage, not localhost)
+    if 'skandage.com' not in host and 'localhost' not in host and '127.0.0.1' not in host:
+        # Check if the agent is allowed on this specific domain
+        # We check if the agent's allowed domain is present in the current host
+        if not agent.custom_domain or agent.custom_domain not in host:
+            # If the agent (e.g. Ryan) is accessed via a restricted domain (e.g. yq-partners.com) -> Error
+            return render(request, 'core/error.html', {'message': 'This profile is not available on this domain.'})
+
+    # 4. View Counting Logic
     session_key = f'viewed_agent_{agent.pk}'
     if not request.session.get(session_key, False):
         agent.profile_views = F('profile_views') + 1
         agent.save(update_fields=['profile_views'])
         request.session[session_key] = True
 
+    # 5. Theme & Content
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
     testimonials = agent.testimonials.filter(is_published=True).order_by('-is_featured', '-id')[:4]
     services = agent.services.all()
 
+    # 6. Lead Form Logic
     if request.method == 'POST':
         form = LeadForm(request.POST)
         if form.is_valid():
