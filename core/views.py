@@ -38,9 +38,8 @@ def download_vcard(request, slug):
     return response
 
 # ==========================================
-# PUBLIC VIEWS (Router Logic)
+# PUBLIC ROUTER (The "Brain")
 # ==========================================
-
 def domain_router(request):
     host = request.get_host().split(':')[0].lower()
     subdomain = host.split('.')[0]
@@ -53,79 +52,48 @@ def domain_router(request):
     if host in ['skandage.com', 'www.skandage.com', 'localhost', '127.0.0.1']:
         return render(request, 'core/index.html', {'brand': 'skandage'})
 
-    # 3. CHECK FOR CUSTOM AGENCY SITE (The New Logic)
-    # Does this domain match an Agency in our DB? (e.g. yq-partners.com)
-    try:
-        agency_site = Agency.objects.get(domain=host)
-        
+    # 3. CHECK FOR CUSTOM AGENCY SITE (Robust Logic)
+    # We check if the host matches directly OR if 'www.' + host matches an agency
+    # This handles both "yq-partners.com" and "www.yq-partners.com"
+    agency_site = Agency.objects.filter(domain__in=[host, f"www.{host}", host.replace('www.', '')]).first()
+    
+    if agency_site:
         # Fetch agents who belong to this agency (via custom_domain field)
-        team_members = Agent.objects.filter(custom_domain=host, is_public=True)
+        # We filter liberally here to ensure we catch agents linked to either version of the domain
+        team_members = Agent.objects.filter(
+            custom_domain__in=[agency_site.domain, host, host.replace('www.', '')], 
+            is_public=True
+        )
         
         return render(request, 'core/agency_landing.html', {
             'agency': agency_site,
             'team': team_members
         })
-    except Agency.DoesNotExist:
-        pass # Fall through to Agent Profile check
 
     # 4. Agent Profiles (Subdomains)
     return agent_profile(request, slug=subdomain)
 
-# ... [Keep agent_profile, download_vcard etc.] ...
-
-# ==========================================
-# DASHBOARD: AGENCY BUILDER VIEW
-# ==========================================
-@login_required
-def manage_agency_site(request):
-    # Ensure user has an agency. If not, create one or 404 depending on your logic.
-    # For now, let's assume the logged-in user (you) owns the agency.
-    try:
-        agency = Agency.objects.get(owner=request.user)
-    except Agency.DoesNotExist:
-        # Create default if missing (Auto-onboarding)
-        agency = Agency.objects.create(
-            owner=request.user, 
-            domain="yq-partners.com", 
-            name="YQ Partners"
-        )
-
-    if request.method == 'POST':
-        form = AgencySiteForm(request.POST, request.FILES, instance=agency)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Agency website updated successfully!")
-            return redirect('manage_agency_site')
-    else:
-        form = AgencySiteForm(instance=agency)
-
-    return render(request, 'core/manage_agency.html', {'form': form, 'agency': agency})
 def agent_profile(request, slug):
-    # 1. Get agent, MUST be marked as public
     agent = get_object_or_404(Agent, slug=slug, is_public=True)
     
     host = request.get_host().lower()
     
-    # 2. Domain Restriction Check
-    # If visiting via YQ Partners or Custom Domain, enforce permissions
+    # Domain Restriction Check
     if 'skandage.com' not in host and 'localhost' not in host and '127.0.0.1' not in host:
-        # Agent MUST have this domain listed in their profile
-        if not agent.custom_domain or agent.custom_domain not in host:
+        # If agent has NO custom domain set, or the current host doesn't match their allowed domain
+        if not agent.custom_domain or (agent.custom_domain not in host):
             return render(request, 'core/error.html', {'message': 'This profile is not available on this domain.'})
 
-    # 3. View Counting
     session_key = f'viewed_agent_{agent.pk}'
     if not request.session.get(session_key, False):
         agent.profile_views = F('profile_views') + 1
         agent.save(update_fields=['profile_views'])
         request.session[session_key] = True
 
-    # 4. Data Loading
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
     testimonials = agent.testimonials.filter(is_published=True).order_by('-is_featured', '-id')[:4]    
     services = agent.services.all()
 
-    # 5. Lead Form Logic
     if request.method == 'POST':
         form = LeadForm(request.POST)
         if form.is_valid():
@@ -148,7 +116,6 @@ def agent_profile(request, slug):
     return render(request, 'core/agent_profile.html', context)
 
 def article_detail(request, slug):
-    # Ensure article belongs to a public agent
     article = get_object_or_404(Article, slug=slug, agent__is_public=True)
     return render(request, 'core/article_detail.html', {'article': article, 'agent': article.agent})
 
@@ -230,7 +197,6 @@ def dashboard_stats(request):
 @login_required
 def manage_profile(request):
     agent = request.user.agent
-    
     if request.method == 'POST':
         form = AgentProfileForm(request.POST, request.FILES, instance=agent)
         if form.is_valid():
@@ -238,7 +204,6 @@ def manage_profile(request):
             return redirect('manage_profile')
     else:
         form = AgentProfileForm(instance=agent)
-
     context = {
         'agent': agent,
         'form': form,
@@ -263,7 +228,6 @@ def manage_testimonials(request):
     agent = request.user.agent
     pending_reviews = agent.testimonials.filter(is_published=False)
     published_reviews = agent.testimonials.filter(is_published=True)
-    
     context = {
         'agent': agent,
         'pending_reviews': pending_reviews,
@@ -271,6 +235,34 @@ def manage_testimonials(request):
         'section': 'testimonials'
     }
     return render(request, 'core/manage_testimonials.html', context)
+
+# ==========================================
+# AGENCY BUILDER VIEW
+# ==========================================
+@login_required
+def manage_agency_site(request):
+    # Try to find an agency owned by this user
+    try:
+        agency = Agency.objects.get(owner=request.user)
+    except Agency.DoesNotExist:
+        # If no agency exists for this user, create a placeholder or redirect
+        # For now, let's create a placeholder
+        agency = Agency.objects.create(
+            owner=request.user, 
+            domain="yq-partners.com", 
+            name="YQ Partners"
+        )
+
+    if request.method == 'POST':
+        form = AgencySiteForm(request.POST, request.FILES, instance=agency)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Agency website updated successfully!")
+            return redirect('manage_agency_site')
+    else:
+        form = AgencySiteForm(instance=agency)
+
+    return render(request, 'core/manage_agency.html', {'form': form, 'agency': agency})
 
 # ==========================================
 # ACTION VIEWS
