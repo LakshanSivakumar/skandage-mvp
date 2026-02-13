@@ -11,3 +11,4 @@ python manage.py collectstatic --no-input
 python manage.py migrate
 
 playwright install chromium
+playwright install-deps

@@ -1,7 +1,7 @@
 {% extends 'core/dashboard_base.html' %}
 
 {% block dashboard_content %}
-<div class="flex items-end justify-between mb-8">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
     <div>
         <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Profile Settings</h2>
         <p class="text-slate-500 dark:text-slate-400 mt-1">Manage your public information and visual brand.</p>
@@ -23,8 +23,8 @@
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Live Preview</span>
         </div>
 
-        <div class="grid lg:grid-cols-12 min-h-[500px]">
-            <div class="lg:col-span-5 p-8 border-r border-slate-100 dark:border-slate-700 space-y-8 bg-white dark:bg-slate-800 overflow-y-auto max-h-[600px]">
+        <div class="grid lg:grid-cols-12">
+            <div class="lg:col-span-5 p-6 sm:p-8 border-r border-slate-100 dark:border-slate-700 space-y-8 bg-white dark:bg-slate-800 overflow-y-auto lg:max-h-[600px]">
                 
                 <div>
                     <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">1. Color Theme</label>
@@ -38,7 +38,7 @@
                                         <div class="w-6 h-6 rounded-full border border-black/10 shadow-sm swatch-bg-{{ value }}"></div>
                                         <div class="w-6 h-6 rounded-full border border-black/10 shadow-sm swatch-accent-{{ value }}"></div>
                                     </div>
-                                    <span class="font-bold text-slate-700 dark:text-slate-200 peer-checked:text-blue-700 dark:peer-checked:text-blue-400">{{ label }}</span>
+                                    <span class="font-bold text-slate-700 dark:text-slate-200 peer-checked:text-blue-700 dark:peer-checked:text-blue-400 text-sm">{{ label }}</span>
                                 </div>
                                 <i class='bx bxs-check-circle text-2xl text-blue-600 dark:text-blue-500 opacity-0 peer-checked:opacity-100 transition transform scale-50 peer-checked:scale-100'></i>
                             </div>
@@ -78,7 +78,7 @@
                 </div>
             </div>
 
-            <div class="lg:col-span-7 bg-slate-100 dark:bg-slate-900 p-8 flex items-center justify-center relative overflow-hidden transition-colors">
+            <div class="lg:col-span-7 bg-slate-100 dark:bg-slate-900 p-8 flex items-center justify-center relative overflow-hidden transition-colors min-h-[400px]">
                 <div class="absolute inset-0 opacity-5 dark:opacity-10" style="background-image: radial-gradient(#64748b 1px, transparent 1px); background-size: 24px 24px;"></div>
                 <div id="preview-container" class="w-full max-w-md aspect-[4/5] rounded-[2rem] shadow-2xl dark:shadow-none overflow-hidden relative transition-all duration-500 ease-in-out transform hover:scale-[1.02] border-[8px] border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
                     <div id="preview-content" class="h-full w-full flex flex-col p-8 transition-colors duration-300 relative">
@@ -100,7 +100,7 @@
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         
         <div class="xl:col-span-2 space-y-8">
-            <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
+            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
                 <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                     <i class='bx bxs-id-card text-blue-500 bg-blue-50 dark:bg-blue-900/30 p-1.5 rounded-lg'></i> 
                     Personal Details
@@ -143,7 +143,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
+            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
                 <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                     <i class='bx bxs-share-alt text-pink-500 bg-pink-50 dark:bg-pink-900/30 p-1.5 rounded-lg'></i> 
                     Social Media
@@ -165,7 +165,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
+            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
                         <i class='bx bxs-trophy text-amber-500 bg-amber-50 dark:bg-amber-900/30 p-1.5 rounded-lg'></i>
@@ -190,7 +190,7 @@
                             </div>
                         </div>
                         
-                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
+                        <div class="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
                             <a href="{% url 'edit_credential' cred.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-blue-600 hover:border-blue-600 dark:hover:text-blue-400 dark:hover:border-blue-400 transition shadow-sm">
                                 <i class='bx bxs-edit-alt'></i>
                             </a>
@@ -210,25 +210,19 @@
             </div>
             
             <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-            
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
                     var el = document.getElementById('credential-list');
                     if (el) {
                         Sortable.create(el, {
                             animation: 150,
-                            handle: '.cursor-move', // Can drag by the whole row or icon
-                            ghostClass: 'bg-blue-50', // Class applied to the dragging item
-                            
-                            // When drop finishes:
+                            handle: '.cursor-move',
+                            ghostClass: 'bg-blue-50',
                             onEnd: function (evt) {
-                                // 1. Get all IDs in the new order
                                 var orderedIds = [];
                                 document.querySelectorAll('.credential-item').forEach(function(item) {
                                     orderedIds.push(item.getAttribute('data-id'));
                                 });
-            
-                                // 2. Send to backend
                                 fetch("{% url 'reorder_credentials' %}", {
                                     method: 'POST',
                                     headers: {
@@ -236,12 +230,6 @@
                                         'X-CSRFToken': '{{ csrf_token }}'
                                     },
                                     body: JSON.stringify({ order: orderedIds })
-                                })
-                                .then(response => response.json())
-                                .then(data => {
-                                    if(data.status === 'success') {
-                                        console.log('Order saved!');
-                                    }
                                 });
                             }
                         });
@@ -249,7 +237,7 @@
                 });
             </script>
 
-            <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
+            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
                 <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                     <i class='bx bxs-check-shield text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 p-1.5 rounded-lg'></i> 
                     Legal & Compliance
@@ -284,7 +272,7 @@
         </div>
     </div>
 
-    <button type="submit" class="md:hidden w-full bg-slate-900 dark:bg-blue-600 text-white py-3 rounded-xl font-bold mt-8">Save Changes</button>
+    <button type="submit" class="md:hidden w-full bg-slate-900 dark:bg-blue-600 text-white py-3 rounded-xl font-bold mt-8 shadow-lg">Save Changes</button>
 </form>
 
 <style>
