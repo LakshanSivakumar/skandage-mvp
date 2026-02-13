@@ -11,18 +11,23 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         h1, h2, h3, .serif { font-family: 'Playfair Display', serif; }
-        .text-primary { color: {{ agency.primary_color }}; }
-        .bg-primary { background-color: {{ agency.primary_color }}; }
-        .text-secondary { color: {{ agency.secondary_color }}; }
         
-        /* Hide scrollbar for gallery */
+        /* COLOR SAFETY LOGIC */
+        /* If primary is missing, default to Blue. */
+        .text-primary { color: {{ agency.primary_color|default:"#2563EB" }}; }
+        .bg-primary { background-color: {{ agency.primary_color|default:"#2563EB" }}; }
+        
+        /* If secondary is missing OR White, default to Dark Slate (#0f172a) so text is visible */
+        .bg-secondary { background-color: {% if agency.secondary_color == '#ffffff' or not agency.secondary_color %}#0f172a{% else %}{{ agency.secondary_color }}{% endif %}; }
+        .text-secondary { color: {% if agency.secondary_color == '#ffffff' or not agency.secondary_color %}#0f172a{% else %}{{ agency.secondary_color }}{% endif %}; }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-white text-slate-900">
 
-    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-slate-100 transition-all duration-300">
+    <nav class="fixed w-full z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 {% if agency.logo %}
@@ -46,11 +51,12 @@
         <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
             <div class="relative z-10">
                 <span class="text-primary font-bold tracking-widest uppercase text-xs mb-6 block">Premier Financial Agency</span>
+                
                 <h1 class="text-5xl lg:text-7xl font-bold text-slate-900 leading-tight mb-6">
-                    {{ agency.hero_headline }}
+                    {{ agency.hero_headline|default:"Securing Futures, Building Legacies." }}
                 </h1>
                 <p class="text-xl text-slate-500 mb-10 leading-relaxed max-w-lg">
-                    {{ agency.hero_subheadline }}
+                    {{ agency.hero_subheadline|default:"We provide comprehensive financial planning to help you achieve your life goals." }}
                 </p>
                 
                 <div class="flex flex-wrap gap-4">
@@ -66,8 +72,9 @@
                 {% if agency.hero_image %}
                     <img src="{{ agency.hero_image.url }}" class="rounded-[2rem] shadow-2xl rotate-2 hover:rotate-0 transition duration-700">
                 {% else %}
-                    <div class="bg-slate-100 rounded-[2rem] aspect-[4/3] flex items-center justify-center text-slate-300">
-                        <i class='bx bxs-image text-6xl'></i>
+                    <div class="bg-slate-100 rounded-[2rem] aspect-[4/3] flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200">
+                        <i class='bx bxs-image text-6xl mb-2'></i>
+                        <span class="font-bold text-sm">Upload Hero Image in Dashboard</span>
                     </div>
                 {% endif %}
             </div>
@@ -79,14 +86,14 @@
             <div>
                 <h2 class="text-3xl font-serif font-bold mb-6">Who We Are</h2>
                 <div class="text-slate-600 leading-relaxed space-y-4">
-                    {{ agency.about_text|linebreaks }}
+                    {{ agency.about_text|default:"Welcome to our agency. We are dedicated to providing the best financial advice."|linebreaks }}
                 </div>
             </div>
             <div>
                 <h2 class="text-3xl font-serif font-bold mb-6">Our Core Values</h2>
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                     <div class="text-slate-600 leading-relaxed font-medium italic">
-                        "{{ agency.values_text|linebreaks }}"
+                        "{{ agency.values_text|default:"Integrity, Excellence, Compassion."|linebreaks }}"
                     </div>
                 </div>
             </div>
@@ -94,7 +101,7 @@
     </section>
 
     {% if gallery %}
-    <section class="py-20 overflow-hidden">
+    <section class="py-20 overflow-hidden border-t border-slate-100">
         <div class="max-w-7xl mx-auto px-6 mb-10 text-center">
             <h2 class="text-3xl font-bold mb-2">Life at {{ agency.name }}</h2>
             <p class="text-slate-500">Moments from our journey together.</p>
@@ -154,7 +161,7 @@
             {% if team %}
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for agent in team %}
-                <a href="http://{{ agent.slug }}.{{ agency.domain }}" target="_blank" class="group bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 border border-slate-100">
+                <a href="https://{{ agent.slug }}.{{ agency.domain|default:'skandage.com' }}" target="_blank" class="group bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 border border-slate-100 block h-full">
                     <div class="flex items-center gap-4 mb-4">
                         {% if agent.headshot %}
                             <img src="{{ agent.headshot.url }}" class="w-16 h-16 rounded-full object-cover">
@@ -177,7 +184,8 @@
             </div>
             {% else %}
             <div class="text-center py-10 border-2 border-dashed border-slate-200 rounded-2xl">
-                <p class="text-slate-400">No agents currently linked to this domain.</p>
+                <p class="text-slate-400 font-medium">No agents currently linked to this domain.</p>
+                <p class="text-xs text-slate-300 mt-2">Go to Admin > Agents > Edit Agent > Set "Custom Domain" to {{ agency.domain }}</p>
             </div>
             {% endif %}
         </div>
