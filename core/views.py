@@ -338,7 +338,7 @@ def manage_agency_site(request):
     else:
         form = AgencySiteForm(instance=agency)
 
-    return render(request, 'core/manage_agency.html', {'form': form, 'agency': agency})
+    return render(request, 'core/manage_agency.html', {'form': form, 'agency': agency, 'image_form': AgencyImageForm(),'review_form': AgencyReviewForm()} )
 
 # ==========================================
 # ACTION VIEWS
