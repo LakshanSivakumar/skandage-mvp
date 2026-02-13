@@ -95,39 +95,59 @@ def manage_agency_site(request):
     })
 
 @login_required
-def add_agency_image(request):
-    agency = get_object_or_404(Agency, owner=request.user)
+def add_agency_image(request, agency_pk):
+    # Fetch the specific agency by ID, ensuring the user has permission (e.g. is owner)
+    # Using owner=request.user ensures security so random people can't add photos to your agency
+    agency = get_object_or_404(Agency, pk=agency_pk, owner=request.user)
+    
     if request.method == 'POST':
         form = AgencyImageForm(request.POST, request.FILES)
         if form.is_valid():
             img = form.save(commit=False)
+            # Explicitly link the new image to the fetched agency
             img.agency = agency
             img.save()
             messages.success(request, "Image added to gallery.")
+        else:
+            # Useful for debugging if forms fail silently
+            print(form.errors)
+            messages.error(request, "Error adding image. Please check the form.")
+            
     return redirect('manage_agency_site')
 
 @login_required
 def delete_agency_image(request, pk):
+    # Ensure the image belongs to an agency owned by the current user
     img = get_object_or_404(AgencyImage, pk=pk, agency__owner=request.user)
     img.delete()
+    messages.success(request, "Image deleted.")
     return redirect('manage_agency_site')
 
 @login_required
-def add_agency_review(request):
-    agency = get_object_or_404(Agency, owner=request.user)
+def add_agency_review(request, agency_pk):
+    # Fetch specific agency by ID and ownership
+    agency = get_object_or_404(Agency, pk=agency_pk, owner=request.user)
+    
     if request.method == 'POST':
         form = AgencyReviewForm(request.POST, request.FILES)
         if form.is_valid():
             rev = form.save(commit=False)
+            # Explicitly link the new review to the fetched agency
             rev.agency = agency
             rev.save()
             messages.success(request, "FC Review added.")
+        else:
+             print(form.errors)
+             messages.error(request, "Error adding review.")
+
     return redirect('manage_agency_site')
 
 @login_required
 def delete_agency_review(request, pk):
+    # Ensure review belongs to user's agency
     rev = get_object_or_404(AgencyReview, pk=pk, agency__owner=request.user)
     rev.delete()
+    messages.success(request, "Review deleted.")
     return redirect('manage_agency_site')
 def agent_profile(request, slug):
     agent = get_object_or_404(Agent, slug=slug, is_public=True)

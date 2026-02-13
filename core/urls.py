@@ -51,9 +51,9 @@ urlpatterns = [
     path('dashboard/testimonials/generate-link/', views.generate_review_link, name='generate_review_link'),
     path('review/submit/<str:token>/', views.client_review_submission, name='submit_review'),
     path('dashboard/agency/', views.manage_agency_site, name='manage_agency_site'),
-    path('dashboard/agency/image/add/', views.add_agency_image, name='add_agency_image'),
+    path('dashboard/agency/<int:agency_pk>/image/add/', views.add_agency_image, name='add_agency_image'),
     path('dashboard/agency/image/delete/<int:pk>/', views.delete_agency_image, name='delete_agency_image'),
-    path('dashboard/agency/review/add/', views.add_agency_review, name='add_agency_review'),
+    path('dashboard/agency/<int:agency_pk>/review/add/', views.add_agency_review, name='add_agency_review'),
     path('dashboard/agency/review/delete/<int:pk>/', views.delete_agency_review, name='delete_agency_review'),
 
 ]
