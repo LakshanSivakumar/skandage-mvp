@@ -19,7 +19,7 @@ from django.core.signing import Signer, BadSignature
 # VCARD DOWNLOAD VIEW
 # ==========================
 def download_vcard(request, slug):
-    agent = get_object_or_404(Agent, slug=slug)
+    agent = get_object_or_404(Agent, slug=slug, is_public=True)
     vcard_data = [
         "BEGIN:VCARD",
         "VERSION:3.0",
@@ -38,47 +38,58 @@ def download_vcard(request, slug):
     return response
 
 # ==========================================
-# PUBLIC VIEWS
+# PUBLIC VIEWS (Router Logic)
 # ==========================================
 
 def domain_router(request):
-    host = request.get_host().split(':')[0] 
+    host = request.get_host().split(':')[0].lower()
     subdomain = host.split('.')[0]
-    reserved_domains = ['www', 'skandage', 'app', 'localhost', '127.0.0.1']
-    if host in reserved_domains or subdomain in reserved_domains:
-        return render(request, 'core/index.html') 
-    else:
-        return agent_profile(request, slug=subdomain)
+
+    # 1. APP / LOGIN DOMAINS -> Always Redirect to Login
+    # This captures app.skandage.com AND app.yq-partners.com
+    if host.startswith('app.') or subdomain == 'app':
+        return redirect('login') 
+
+    # 2. SKANDAGE PRODUCT SITE
+    # Exact match for skandage.com or local testing
+    if host in ['skandage.com', 'www.skandage.com', 'localhost', '127.0.0.1']:
+        return render(request, 'core/index.html', {'brand': 'skandage'})
+        
+    # 3. YQ PARTNERS AGENCY SITE
+    # Exact match for yq-partners.com (No redirect to login)
+    if host in ['yq-partners.com', 'www.yq-partners.com']:
+        return render(request, 'core/index.html', {'brand': 'yq_partners'})
+
+    # 4. AGENT PROFILES (Everything else)
+    # e.g. benedict.yq-partners.com or ryan.skandage.com
+    return agent_profile(request, slug=subdomain)
 
 def agent_profile(request, slug):
-    # 1. Get the agent (Must be public generally)
+    # 1. Get agent, MUST be marked as public
     agent = get_object_or_404(Agent, slug=slug, is_public=True)
     
-    # 2. Get the hostname the user is visiting (e.g. "ryansiow.yq-partners.com")
     host = request.get_host().lower()
     
-    # 3. DOMAIN RESTRICTION LOGIC
-    # If the user is visiting via a Custom Domain (not skandage, not localhost)
+    # 2. Domain Restriction Check
+    # If visiting via YQ Partners or Custom Domain, enforce permissions
     if 'skandage.com' not in host and 'localhost' not in host and '127.0.0.1' not in host:
-        # Check if the agent is allowed on this specific domain
-        # We check if the agent's allowed domain is present in the current host
+        # Agent MUST have this domain listed in their profile
         if not agent.custom_domain or agent.custom_domain not in host:
-            # If the agent (e.g. Ryan) is accessed via a restricted domain (e.g. yq-partners.com) -> Error
             return render(request, 'core/error.html', {'message': 'This profile is not available on this domain.'})
 
-    # 4. View Counting Logic
+    # 3. View Counting
     session_key = f'viewed_agent_{agent.pk}'
     if not request.session.get(session_key, False):
         agent.profile_views = F('profile_views') + 1
         agent.save(update_fields=['profile_views'])
         request.session[session_key] = True
 
-    # 5. Theme & Content
+    # 4. Data Loading
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
-    testimonials = agent.testimonials.filter(is_published=True).order_by('-is_featured', '-id')[:4]
+    testimonials = agent.testimonials.filter(is_published=True).order_by('-is_featured', '-id')[:4]    
     services = agent.services.all()
 
-    # 6. Lead Form Logic
+    # 5. Lead Form Logic
     if request.method == 'POST':
         form = LeadForm(request.POST)
         if form.is_valid():
@@ -101,7 +112,8 @@ def agent_profile(request, slug):
     return render(request, 'core/agent_profile.html', context)
 
 def article_detail(request, slug):
-    article = get_object_or_404(Article, slug=slug)
+    # Ensure article belongs to a public agent
+    article = get_object_or_404(Article, slug=slug, agent__is_public=True)
     return render(request, 'core/article_detail.html', {'article': article, 'agent': article.agent})
 
 # ==========================================
@@ -169,13 +181,20 @@ def dashboard_stats(request):
         agent = request.user.agent
     except Agent.DoesNotExist:
         agent = Agent.objects.create(user=request.user, name=request.user.username)
+
     leads = Lead.objects.filter(agent=agent).order_by('-created_at')
-    context = {'agent': agent, 'leads': leads, 'section': 'stats'}
+    
+    context = {
+        'agent': agent,
+        'leads': leads,
+        'section': 'stats'
+    }
     return render(request, 'core/dashboard_stats.html', context)
 
 @login_required
 def manage_profile(request):
     agent = request.user.agent
+    
     if request.method == 'POST':
         form = AgentProfileForm(request.POST, request.FILES, instance=agent)
         if form.is_valid():
@@ -183,6 +202,7 @@ def manage_profile(request):
             return redirect('manage_profile')
     else:
         form = AgentProfileForm(instance=agent)
+
     context = {
         'agent': agent,
         'form': form,
@@ -195,7 +215,11 @@ def manage_profile(request):
 def manage_articles(request):
     agent = request.user.agent
     articles = agent.articles.all().order_by('-created_at')
-    context = {'agent': agent, 'articles': articles, 'section': 'articles'}
+    context = {
+        'agent': agent,
+        'articles': articles,
+        'section': 'articles'
+    }
     return render(request, 'core/manage_articles.html', context)
 
 @login_required
@@ -203,6 +227,7 @@ def manage_testimonials(request):
     agent = request.user.agent
     pending_reviews = agent.testimonials.filter(is_published=False)
     published_reviews = agent.testimonials.filter(is_published=True)
+    
     context = {
         'agent': agent,
         'pending_reviews': pending_reviews,
@@ -267,6 +292,9 @@ def delete_credential(request, pk):
 @login_required
 def add_testimonial(request):
     agent = request.user.agent
+    if not agent.can_upload_testimonials:
+        messages.error(request, "Your plan does not support self-uploading. Please contact support to add reviews.")
+        return redirect('manage_testimonials')
     if request.method == 'POST':
         form = TestimonialForm(request.POST, request.FILES)
         if form.is_valid():
@@ -284,6 +312,9 @@ def add_testimonial(request):
 def delete_testimonial(request, pk):
     agent = request.user.agent
     testimonial = get_object_or_404(Testimonial, pk=pk, agent=agent)
+    if not agent.can_upload_testimonials:
+        messages.error(request, "You cannot delete reviews on the Ad-Hoc plan. Please contact support.")
+        return redirect('manage_testimonials')
     if request.method == 'POST':
         testimonial.delete()
         messages.success(request, "Review deleted.")
@@ -294,6 +325,9 @@ def delete_testimonial(request, pk):
 def edit_testimonial(request, pk):
     agent = request.user.agent
     testimonial = get_object_or_404(Testimonial, pk=pk, agent=agent)
+    if not agent.can_upload_testimonials:
+        messages.error(request, "You cannot edit reviews on the Ad-Hoc plan. Please contact support.")
+        return redirect('manage_testimonials')
     if request.method == 'POST':
         form = TestimonialForm(request.POST, request.FILES, instance=testimonial)
         if form.is_valid():
@@ -340,7 +374,7 @@ def logout_view(request):
 
 # Subpage Views
 def agent_testimonials(request, slug):
-    agent = get_object_or_404(Agent, slug=slug)
+    agent = get_object_or_404(Agent, slug=slug, is_public=True) # Check Public
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
     testimonials = agent.testimonials.filter(is_published=True).order_by('-is_featured', '-id')
     return render(request, 'core/public_testimonials.html', {
@@ -350,7 +384,7 @@ def agent_testimonials(request, slug):
     })
 
 def agent_bio(request, slug):
-    agent = get_object_or_404(Agent, slug=slug)
+    agent = get_object_or_404(Agent, slug=slug, is_public=True) # Check Public
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
     return render(request, 'core/public_bio.html', {
         'agent': agent,
@@ -359,7 +393,7 @@ def agent_bio(request, slug):
     })
 
 def single_testimonial(request, slug, pk):
-    agent = get_object_or_404(Agent, slug=slug)
+    agent = get_object_or_404(Agent, slug=slug, is_public=True) # Check Public
     testimonial = get_object_or_404(Testimonial, pk=pk, agent=agent)
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
     return render(request, 'core/single_testimonial.html', {

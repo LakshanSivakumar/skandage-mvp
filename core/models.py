@@ -1,7 +1,7 @@
+import uuid
 from django.db import models
 from django.utils.text import slugify
 from django.contrib.auth.models import User
-import uuid
 
 class Agent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -11,22 +11,18 @@ class Agent(models.Model):
     company = models.CharField(max_length=100, default="Great Eastern")
     tagline = models.CharField(max_length=200, default="Here for you, always.")
     profile_views = models.PositiveIntegerField(default=0)
+    
     # WhatsApp Feature
     phone_number = models.CharField(max_length=20, help_text="Format: 6591234567 (No + sign)")
     whatsapp_message = models.CharField(max_length=200, default="Hi, I saw your profile and would like to know more.")
-    linkedin = models.URLField(blank=True, help_text="Full URL (e.g. https://linkedin.com/in/name)")
-    instagram = models.URLField(blank=True, help_text="Full URL (e.g. https://instagram.com/name)")
-    facebook = models.URLField(blank=True, help_text="Full URL (e.g. https://facebook.com/name)")
+    linkedin = models.URLField(blank=True, help_text="Full URL")
+    instagram = models.URLField(blank=True, help_text="Full URL")
+    facebook = models.URLField(blank=True, help_text="Full URL")
     disclaimer = models.TextField(
         default="The content on this website is strictly for information and educational purposes only and does not constitute financial advice. Investments are subject to market risks. Please consult a qualified financial consultant before making any decisions. Views expressed here are my own and do not necessarily reflect the official policy or position of my company.\n\nThis advertisement has not been reviewed by the Monetary Authority of Singapore.",
         help_text="This text appears in the footer of every page."
     )
-    custom_domain = models.CharField(
-        max_length=100, 
-        blank=True, 
-        null=True, 
-        help_text="e.g. 'yq-partners.com'. If set, the agent will be accessible on this domain. They are ALWAYS accessible on skandage.com."
-    )
+    
     # Profile Details
     headshot = models.ImageField(upload_to='headshots/', blank=True, null=True)
     bio = models.TextField(blank=True)
@@ -52,7 +48,19 @@ class Agent(models.Model):
 
     can_upload_testimonials = models.BooleanField(
         default=False, 
-        help_text="If True, agent can add/upload testimonials freely. If False, button is hidden."
+        help_text="If True, agent can add/upload testimonials freely."
+    )
+
+    # --- NEW FIELDS ---
+    is_public = models.BooleanField(
+        default=True,
+        help_text="Uncheck this to disable the profile (404 error)."
+    )
+    custom_domain = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True, 
+        help_text="e.g. 'yq-partners.com'. If set, agent loads on this domain."
     )
     
     # Meta
@@ -76,27 +84,23 @@ class Agent(models.Model):
 
     def __str__(self):
         return self.name
-    
 
 class Testimonial(models.Model):
     agent = models.ForeignKey(Agent, related_name='testimonials', on_delete=models.CASCADE)
-    title = models.CharField(max_length=200, blank=True, help_text="e.g. 'Built on Trust' or 'Great Service'")
+    title = models.CharField(max_length=200, blank=True)
     client_name = models.CharField(max_length=100)
     review_text = models.TextField()
-    screenshot = models.ImageField(upload_to='reviews/', blank=True, null=True, help_text="Upload WhatsApp screenshot if available")
-    is_featured = models.BooleanField(default=False, help_text="Check this to pin this review to the homepage")
-    is_published = models.BooleanField(default=True, help_text="If False, it will be hidden until approved.")
-    submission_date = models.DateTimeField(auto_now_add=True, null=True) # To sort pending ones
+    screenshot = models.ImageField(upload_to='reviews/', blank=True, null=True)
+    is_featured = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=True)
+    submission_date = models.DateTimeField(auto_now_add=True, null=True)
     def __str__(self):
-        status = "★" if self.is_featured else ""
-        return f"{status} {self.client_name}"
+        return f"{self.client_name}"
 
 class Service(models.Model):
     agent = models.ForeignKey(Agent, related_name='services', on_delete=models.CASCADE)
-    title = models.CharField(max_length=100, help_text="e.g., Critical Illness Protection")
+    title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    
-    # NEW: Icon Picker
     ICON_CHOICES = [
         ('bxs-shield', 'Protection / Shield'),
         ('bxs-heart', 'Life / Health'),
@@ -108,20 +112,16 @@ class Service(models.Model):
         ('bxs-badge-dollar', 'Wealth / Tax'),
     ]
     icon = models.CharField(max_length=50, choices=ICON_CHOICES, default='bxs-shield')
-    
-    def __str__(self):
-        return self.title
+    def __str__(self): return self.title
 
 class Credential(models.Model):
     agent = models.ForeignKey(Agent, related_name='credentials', on_delete=models.CASCADE)
-    title = models.CharField(max_length=100, help_text="e.g. MDRT 2024, ChFC, Top Rookie")
-    issuer = models.CharField(max_length=100, help_text="e.g. Million Dollar Round Table, Prudential")
-    year = models.CharField(max_length=20, blank=True, help_text="Optional, e.g. 2023")
+    title = models.CharField(max_length=100)
+    issuer = models.CharField(max_length=100)
+    year = models.CharField(max_length=20, blank=True)
     order = models.PositiveIntegerField(default=0)
-    class Meta:
-        ordering = ['order']
-    def __str__(self):
-        return self.title
+    class Meta: ordering = ['order']
+    def __str__(self): return self.title
     
 class Lead(models.Model):
     agent = models.ForeignKey(Agent, related_name='leads', on_delete=models.CASCADE)
@@ -130,26 +130,21 @@ class Lead(models.Model):
     phone = models.CharField(max_length=20, blank=True)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Lead from {self.name}"
+    def __str__(self): return f"Lead from {self.name}"
     
 class Article(models.Model):
     agent = models.ForeignKey(Agent, related_name='articles', on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True) 
     cover_image = models.ImageField(upload_to='article_headers/', blank=True, null=True)
-    content = models.TextField(help_text="Write your article here.")
+    content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-
     def save(self, *args, **kwargs):
         if not self.slug:
             base_slug = slugify(self.title)
             self.slug = f"{base_slug}-{self.agent.id}" 
         super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.title
+    def __str__(self): return self.title
     
 class ReviewLink(models.Model):
     token = models.CharField(max_length=12, unique=True, editable=False)
@@ -157,9 +152,7 @@ class ReviewLink(models.Model):
     client_name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     is_used = models.BooleanField(default=False)
-
     def save(self, *args, **kwargs):
         if not self.token:
-            # Generate a short 8-character ID (e.g., "a1b2c3d4")
             self.token = str(uuid.uuid4())[:8]
         super().save(*args, **kwargs)
