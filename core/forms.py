@@ -1,5 +1,5 @@
 from django import forms
-from .models import Agent, Testimonial, Lead, Article, Credential, Service
+from .models import Agent, Testimonial, Lead, Article, Credential, Service, Agency
 from django.contrib.auth.models import User
 
 class AgentProfileForm(forms.ModelForm):
@@ -87,4 +87,25 @@ class ServiceForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition', 'placeholder': 'e.g. Retirement Planning'}),
             'icon': forms.Select(attrs={'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition'}),
             'description': forms.Textarea(attrs={'class': 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition', 'rows': 3, 'placeholder': 'Briefly explain this service...'}),
+        }
+
+class AgencySiteForm(forms.ModelForm):
+    class Meta:
+        model = Agency
+        fields = [
+            'name', 'domain', 'primary_color', 'secondary_color', 
+            'hero_headline', 'hero_subheadline', 'hero_image', 'logo',
+            'email', 'phone', 'address', 'whatsapp_number'
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'w-full p-3 border rounded-xl'}),
+            'domain': forms.TextInput(attrs={'class': 'w-full p-3 border rounded-xl', 'readonly': 'readonly'}), # Domain shouldn't change easily
+            'primary_color': forms.TextInput(attrs={'type': 'color', 'class': 'h-10 w-full rounded cursor-pointer'}),
+            'secondary_color': forms.TextInput(attrs={'type': 'color', 'class': 'h-10 w-full rounded cursor-pointer'}),
+            'hero_headline': forms.TextInput(attrs={'class': 'w-full p-3 border rounded-xl font-bold'}),
+            'hero_subheadline': forms.Textarea(attrs={'class': 'w-full p-3 border rounded-xl', 'rows': 3}),
+            'email': forms.EmailInput(attrs={'class': 'w-full p-3 border rounded-xl'}),
+            'phone': forms.TextInput(attrs={'class': 'w-full p-3 border rounded-xl'}),
+            'address': forms.Textarea(attrs={'class': 'w-full p-3 border rounded-xl', 'rows': 2}),
+            'whatsapp_number': forms.TextInput(attrs={'class': 'w-full p-3 border rounded-xl'}),
         }

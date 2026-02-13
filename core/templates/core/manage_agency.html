@@ -1,0 +1,84 @@
+{% extends 'core/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-slate-900">Agency Website Builder</h2>
+            <p class="text-slate-500 mt-1">Editing <a href="https://{{ agency.domain }}" target="_blank" class="text-blue-600 underline">{{ agency.domain }}</a></p>
+        </div>
+        <button type="submit" form="agencyForm" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg">
+            Publish Changes
+        </button>
+    </div>
+
+    <form id="agencyForm" method="post" enctype="multipart/form-data" class="space-y-8">
+        {% csrf_token %}
+
+        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-lg mb-6 flex items-center gap-2"><i class='bx bxs-palette'></i> Branding</h3>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Agency Name</label>
+                    {{ form.name }}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Domain (Read-only)</label>
+                    {{ form.domain }}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Primary Color</label>
+                    {{ form.primary_color }}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Secondary Color</label>
+                    {{ form.secondary_color }}
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Logo Upload</label>
+                    {{ form.logo }}
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-lg mb-6 flex items-center gap-2"><i class='bx bxs-image'></i> Hero Section</h3>
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Main Headline</label>
+                    {{ form.hero_headline }}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Subheadline</label>
+                    {{ form.hero_subheadline }}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Hero Image</label>
+                    {% if agency.hero_image %}
+                        <img src="{{ agency.hero_image.url }}" class="h-32 rounded-xl mb-4 object-cover">
+                    {% endif %}
+                    {{ form.hero_image }}
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-lg mb-6 flex items-center gap-2"><i class='bx bxs-contact'></i> Contact Details</h3>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Email</label>
+                    {{ form.email }}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Phone</label>
+                    {{ form.phone }}
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Address</label>
+                    {{ form.address }}
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

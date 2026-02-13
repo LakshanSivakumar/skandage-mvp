@@ -50,5 +50,6 @@ urlpatterns = [
     path('dashboard/testimonials/import/', views.import_testimonials, name='import_testimonials'),
     path('dashboard/testimonials/generate-link/', views.generate_review_link, name='generate_review_link'),
     path('review/submit/<str:token>/', views.client_review_submission, name='submit_review'),
+    path('dashboard/agency/', views.manage_agency_site, name='manage_agency_site'),
 
 ]

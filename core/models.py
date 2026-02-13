@@ -156,3 +156,30 @@ class ReviewLink(models.Model):
         if not self.token:
             self.token = str(uuid.uuid4())[:8]
         super().save(*args, **kwargs)
+
+class Agency(models.Model):
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, related_name='agency_site', null=True, blank=True)
+    name = models.CharField(max_length=100, default="YQ Partners")
+    domain = models.CharField(max_length=100, unique=True, help_text="e.g. yq-partners.com")
+    
+    # Branding
+    logo = models.ImageField(upload_to='agency/logos/', blank=True, null=True)
+    favicon = models.ImageField(upload_to='agency/favicons/', blank=True, null=True)
+    primary_color = models.CharField(max_length=7, default="#2563EB", help_text="Hex code (e.g. #2563EB)")
+    secondary_color = models.CharField(max_length=7, default="#1E293B", help_text="Hex code (e.g. #1E293B)")
+    
+    # Hero Section
+    hero_headline = models.CharField(max_length=200, default="Securing Futures, Building Legacies.")
+    hero_subheadline = models.TextField(default="A collective of top-tier financial consultants dedicated to providing comprehensive wealth management.")
+    hero_image = models.ImageField(upload_to='agency/hero/', blank=True, null=True)
+    
+    # Contact Info
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
+    whatsapp_number = models.CharField(max_length=20, blank=True, help_text="For the main floating chat button")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.domain

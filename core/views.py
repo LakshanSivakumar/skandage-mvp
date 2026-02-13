@@ -7,8 +7,8 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash, logout
 from django.contrib import messages
 from django.urls import reverse
-from .models import Agent, Testimonial, Lead, Article, Credential, Service, ReviewLink
-from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm, ServiceForm, ClientSubmissionForm
+from .models import Agent, Testimonial, Lead, Article, Credential, Service, ReviewLink, Agency
+from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm, ServiceForm, ClientSubmissionForm, AgencySiteForm
 from .themes import THEMES
 from django.http import HttpResponse, JsonResponse
 from django.db.models import F, Max
@@ -45,25 +45,61 @@ def domain_router(request):
     host = request.get_host().split(':')[0].lower()
     subdomain = host.split('.')[0]
 
-    # 1. APP / LOGIN DOMAINS -> Always Redirect to Login
-    # This captures app.skandage.com AND app.yq-partners.com
+    # 1. Login/App -> Redirect
     if host.startswith('app.') or subdomain == 'app':
         return redirect('login') 
 
-    # 2. SKANDAGE PRODUCT SITE
-    # Exact match for skandage.com or local testing
+    # 2. Skandage Product Site (Hardcoded specific check)
     if host in ['skandage.com', 'www.skandage.com', 'localhost', '127.0.0.1']:
         return render(request, 'core/index.html', {'brand': 'skandage'})
-        
-    # 3. YQ PARTNERS AGENCY SITE
-    # Exact match for yq-partners.com (No redirect to login)
-    if host in ['yq-partners.com', 'www.yq-partners.com']:
-        return render(request, 'core/index.html', {'brand': 'yq_partners'})
 
-    # 4. AGENT PROFILES (Everything else)
-    # e.g. benedict.yq-partners.com or ryan.skandage.com
+    # 3. CHECK FOR CUSTOM AGENCY SITE (The New Logic)
+    # Does this domain match an Agency in our DB? (e.g. yq-partners.com)
+    try:
+        agency_site = Agency.objects.get(domain=host)
+        
+        # Fetch agents who belong to this agency (via custom_domain field)
+        team_members = Agent.objects.filter(custom_domain=host, is_public=True)
+        
+        return render(request, 'core/agency_landing.html', {
+            'agency': agency_site,
+            'team': team_members
+        })
+    except Agency.DoesNotExist:
+        pass # Fall through to Agent Profile check
+
+    # 4. Agent Profiles (Subdomains)
     return agent_profile(request, slug=subdomain)
 
+# ... [Keep agent_profile, download_vcard etc.] ...
+
+# ==========================================
+# DASHBOARD: AGENCY BUILDER VIEW
+# ==========================================
+@login_required
+def manage_agency_site(request):
+    # Ensure user has an agency. If not, create one or 404 depending on your logic.
+    # For now, let's assume the logged-in user (you) owns the agency.
+    try:
+        agency = Agency.objects.get(owner=request.user)
+    except Agency.DoesNotExist:
+        # Create default if missing (Auto-onboarding)
+        agency = Agency.objects.create(
+            owner=request.user, 
+            domain="yq-partners.com", 
+            name="YQ Partners"
+        )
+
+    if request.method == 'POST':
+        form = AgencySiteForm(request.POST, request.FILES, instance=agency)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Agency website updated successfully!")
+            return redirect('manage_agency_site')
+    else:
+        form = AgencySiteForm(instance=agency)
+
+    return render(request, 'core/manage_agency.html', {'form': form, 'agency': agency})
 def agent_profile(request, slug):
     # 1. Get agent, MUST be marked as public
     agent = get_object_or_404(Agent, slug=slug, is_public=True)
