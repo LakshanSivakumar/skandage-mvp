@@ -7,8 +7,8 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash, logout
 from django.contrib import messages
 from django.urls import reverse
-from .models import Agent, Testimonial, Lead, Article, Credential, Service, ReviewLink, Agency
-from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm, ServiceForm, ClientSubmissionForm, AgencySiteForm
+from .models import Agent, Testimonial, Lead, Article, Credential, Service, ReviewLink, Agency, AgencyImage, AgencyReview
+from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm, ServiceForm, ClientSubmissionForm, AgencySiteForm, AgencyReviewForm, AgencyImageForm
 from .themes import THEMES
 from django.http import HttpResponse, JsonResponse
 from django.db.models import F, Max
@@ -44,35 +44,91 @@ def domain_router(request):
     host = request.get_host().split(':')[0].lower()
     subdomain = host.split('.')[0]
 
-    # 1. Login/App -> Redirect
     if host.startswith('app.') or subdomain == 'app':
         return redirect('login') 
 
-    # 2. Skandage Product Site (Hardcoded specific check)
     if host in ['skandage.com', 'www.skandage.com', 'localhost', '127.0.0.1']:
         return render(request, 'core/index.html', {'brand': 'skandage'})
 
-    # 3. CHECK FOR CUSTOM AGENCY SITE (Robust Logic)
-    # We check if the host matches directly OR if 'www.' + host matches an agency
-    # This handles both "yq-partners.com" and "www.yq-partners.com"
+    # --- AGENCY SITE LOGIC ---
     agency_site = Agency.objects.filter(domain__in=[host, f"www.{host}", host.replace('www.', '')]).first()
     
     if agency_site:
-        # Fetch agents who belong to this agency (via custom_domain field)
-        # We filter liberally here to ensure we catch agents linked to either version of the domain
         team_members = Agent.objects.filter(
             custom_domain__in=[agency_site.domain, host, host.replace('www.', '')], 
             is_public=True
         )
         
+        # NEW: Fetch Gallery & Reviews
+        gallery = agency_site.gallery_images.all().order_by('-created_at')
+        fc_reviews = agency_site.fc_reviews.all().order_by('-created_at')
+
         return render(request, 'core/agency_landing.html', {
             'agency': agency_site,
-            'team': team_members
+            'team': team_members,
+            'gallery': gallery,
+            'fc_reviews': fc_reviews
         })
 
-    # 4. Agent Profiles (Subdomains)
     return agent_profile(request, slug=subdomain)
+@login_required
+def manage_agency_site(request):
+    try:
+        agency = Agency.objects.get(owner=request.user)
+    except Agency.DoesNotExist:
+        agency = Agency.objects.create(owner=request.user, domain="yq-partners.com", name="YQ Partners")
 
+    if request.method == 'POST' and 'update_settings' in request.POST:
+        form = AgencySiteForm(request.POST, request.FILES, instance=agency)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Settings updated!")
+            return redirect('manage_agency_site')
+    else:
+        form = AgencySiteForm(instance=agency)
+
+    return render(request, 'core/manage_agency.html', {
+        'form': form, 
+        'agency': agency,
+        'image_form': AgencyImageForm(),
+        'review_form': AgencyReviewForm()
+    })
+
+@login_required
+def add_agency_image(request):
+    agency = get_object_or_404(Agency, owner=request.user)
+    if request.method == 'POST':
+        form = AgencyImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            img = form.save(commit=False)
+            img.agency = agency
+            img.save()
+            messages.success(request, "Image added to gallery.")
+    return redirect('manage_agency_site')
+
+@login_required
+def delete_agency_image(request, pk):
+    img = get_object_or_404(AgencyImage, pk=pk, agency__owner=request.user)
+    img.delete()
+    return redirect('manage_agency_site')
+
+@login_required
+def add_agency_review(request):
+    agency = get_object_or_404(Agency, owner=request.user)
+    if request.method == 'POST':
+        form = AgencyReviewForm(request.POST, request.FILES)
+        if form.is_valid():
+            rev = form.save(commit=False)
+            rev.agency = agency
+            rev.save()
+            messages.success(request, "FC Review added.")
+    return redirect('manage_agency_site')
+
+@login_required
+def delete_agency_review(request, pk):
+    rev = get_object_or_404(AgencyReview, pk=pk, agency__owner=request.user)
+    rev.delete()
+    return redirect('manage_agency_site')
 def agent_profile(request, slug):
     agent = get_object_or_404(Agent, slug=slug, is_public=True)
     

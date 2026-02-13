@@ -1,5 +1,5 @@
 from django import forms
-from .models import Agent, Testimonial, Lead, Article, Credential, Service, Agency
+from .models import Agent, Testimonial, Lead, Article, Credential, Service, Agency, AgencyImage, AgencyReview
 from django.contrib.auth.models import User
 
 class AgentProfileForm(forms.ModelForm):
@@ -95,17 +95,38 @@ class AgencySiteForm(forms.ModelForm):
         fields = [
             'name', 'domain', 'primary_color', 'secondary_color', 
             'hero_headline', 'hero_subheadline', 'hero_image', 'logo',
+            'about_text', 'values_text',
             'email', 'phone', 'address', 'whatsapp_number'
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'w-full p-3 border rounded-xl'}),
-            'domain': forms.TextInput(attrs={'class': 'w-full p-3 border rounded-xl', 'readonly': 'readonly'}), # Domain shouldn't change easily
+            'domain': forms.TextInput(attrs={'class': 'w-full p-3 border rounded-xl', 'readonly': 'readonly'}),
             'primary_color': forms.TextInput(attrs={'type': 'color', 'class': 'h-10 w-full rounded cursor-pointer'}),
             'secondary_color': forms.TextInput(attrs={'type': 'color', 'class': 'h-10 w-full rounded cursor-pointer'}),
             'hero_headline': forms.TextInput(attrs={'class': 'w-full p-3 border rounded-xl font-bold'}),
-            'hero_subheadline': forms.Textarea(attrs={'class': 'w-full p-3 border rounded-xl', 'rows': 3}),
+            'hero_subheadline': forms.Textarea(attrs={'class': 'w-full p-3 border rounded-xl', 'rows': 2}),
+            'about_text': forms.Textarea(attrs={'class': 'w-full p-3 border rounded-xl', 'rows': 4, 'placeholder': 'Tell your agency story...'}),
+            'values_text': forms.Textarea(attrs={'class': 'w-full p-3 border rounded-xl', 'rows': 3, 'placeholder': 'e.g. Integrity, Excellence, Family...'}),
             'email': forms.EmailInput(attrs={'class': 'w-full p-3 border rounded-xl'}),
             'phone': forms.TextInput(attrs={'class': 'w-full p-3 border rounded-xl'}),
             'address': forms.Textarea(attrs={'class': 'w-full p-3 border rounded-xl', 'rows': 2}),
             'whatsapp_number': forms.TextInput(attrs={'class': 'w-full p-3 border rounded-xl'}),
+        }
+
+class AgencyImageForm(forms.ModelForm):
+    class Meta:
+        model = AgencyImage
+        fields = ['image', 'caption']
+        widgets = {
+            'caption': forms.TextInput(attrs={'class': 'w-full p-2 border rounded', 'placeholder': 'Optional caption'})
+        }
+
+class AgencyReviewForm(forms.ModelForm):
+    class Meta:
+        model = AgencyReview
+        fields = ['fc_name', 'fc_role', 'fc_photo', 'review_text']
+        widgets = {
+            'fc_name': forms.TextInput(attrs={'class': 'w-full p-2 border rounded', 'placeholder': 'Name'}),
+            'fc_role': forms.TextInput(attrs={'class': 'w-full p-2 border rounded', 'placeholder': 'Title (e.g. Senior Director)'}),
+            'review_text': forms.Textarea(attrs={'class': 'w-full p-2 border rounded', 'rows': 3}),
         }

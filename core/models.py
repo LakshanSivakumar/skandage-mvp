@@ -164,22 +164,39 @@ class Agency(models.Model):
     
     # Branding
     logo = models.ImageField(upload_to='agency/logos/', blank=True, null=True)
-    favicon = models.ImageField(upload_to='agency/favicons/', blank=True, null=True)
     primary_color = models.CharField(max_length=7, default="#2563EB", help_text="Hex code (e.g. #2563EB)")
     secondary_color = models.CharField(max_length=7, default="#1E293B", help_text="Hex code (e.g. #1E293B)")
     
-    # Hero Section
+    # Content: Hero
     hero_headline = models.CharField(max_length=200, default="Securing Futures, Building Legacies.")
     hero_subheadline = models.TextField(default="A collective of top-tier financial consultants dedicated to providing comprehensive wealth management.")
     hero_image = models.ImageField(upload_to='agency/hero/', blank=True, null=True)
     
+    # Content: About & Values (NEW)
+    about_text = models.TextField(blank=True, default="We are a premier agency focused on...")
+    values_text = models.TextField(blank=True, default="Integrity, Excellence, Compassion.")
+
     # Contact Info
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
     address = models.TextField(blank=True)
-    whatsapp_number = models.CharField(max_length=20, blank=True, help_text="For the main floating chat button")
+    whatsapp_number = models.CharField(max_length=20, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.domain
+
+class AgencyImage(models.Model):
+    agency = models.ForeignKey(Agency, related_name='gallery_images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='agency/gallery/')
+    caption = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class AgencyReview(models.Model):
+    agency = models.ForeignKey(Agency, related_name='fc_reviews', on_delete=models.CASCADE)
+    fc_name = models.CharField(max_length=100)
+    fc_role = models.CharField(max_length=100, default="Financial Consultant")
+    fc_photo = models.ImageField(upload_to='agency/fc_reviews/', blank=True, null=True)
+    review_text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)

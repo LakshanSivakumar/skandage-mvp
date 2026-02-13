@@ -1,13 +1,14 @@
 {% extends 'core/dashboard_base.html' %}
 
 {% block dashboard_content %}
-<div class="max-w-4xl mx-auto">
-    <div class="flex items-center justify-between mb-8">
+<div class="max-w-5xl mx-auto space-y-10">
+    
+    <div class="flex items-center justify-between">
         <div>
             <h2 class="text-3xl font-bold text-slate-900">Agency Website Builder</h2>
             <p class="text-slate-500 mt-1">Editing <a href="https://{{ agency.domain }}" target="_blank" class="text-blue-600 underline">{{ agency.domain }}</a></p>
         </div>
-        <button type="submit" form="agencyForm" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg">
+        <button type="submit" form="agencyForm" name="update_settings" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg sticky top-4 z-50">
             Publish Changes
         </button>
     </div>
@@ -15,70 +16,119 @@
     <form id="agencyForm" method="post" enctype="multipart/form-data" class="space-y-8">
         {% csrf_token %}
 
-        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-            <h3 class="font-bold text-lg mb-6 flex items-center gap-2"><i class='bx bxs-palette'></i> Branding</h3>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Agency Name</label>
-                    {{ form.name }}
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800"><i class='bx bxs-palette'></i> Branding</h3>
+                <div class="space-y-4">
+                    <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Agency Name</label>{{ form.name }}</div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Primary Color</label>{{ form.primary_color }}</div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Secondary Color</label>{{ form.secondary_color }}</div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Logo</label>{{ form.logo }}</div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Domain (Read-only)</label>
-                    {{ form.domain }}
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Primary Color</label>
-                    {{ form.primary_color }}
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Secondary Color</label>
-                    {{ form.secondary_color }}
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Logo Upload</label>
-                    {{ form.logo }}
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800"><i class='bx bxs-image'></i> Hero Banner</h3>
+                <div class="space-y-4">
+                    <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Headline</label>{{ form.hero_headline }}</div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Subheadline</label>{{ form.hero_subheadline }}</div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase mb-1">Hero Image</label>
+                        {% if agency.hero_image %}<img src="{{ agency.hero_image.url }}" class="h-20 rounded mb-2 object-cover">{% endif %}
+                        {{ form.hero_image }}
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-            <h3 class="font-bold text-lg mb-6 flex items-center gap-2"><i class='bx bxs-image'></i> Hero Section</h3>
+            <h3 class="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800"><i class='bx bxs-book-content'></i> About & Values</h3>
             <div class="space-y-6">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Main Headline</label>
-                    {{ form.hero_headline }}
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Subheadline</label>
-                    {{ form.hero_subheadline }}
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Hero Image</label>
-                    {% if agency.hero_image %}
-                        <img src="{{ agency.hero_image.url }}" class="h-32 rounded-xl mb-4 object-cover">
-                    {% endif %}
-                    {{ form.hero_image }}
-                </div>
+                <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">About Us Text</label>{{ form.about_text }}</div>
+                <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Our Values</label>{{ form.values_text }}</div>
             </div>
         </div>
 
         <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-            <h3 class="font-bold text-lg mb-6 flex items-center gap-2"><i class='bx bxs-contact'></i> Contact Details</h3>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Email</label>
-                    {{ form.email }}
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Phone</label>
-                    {{ form.phone }}
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Address</label>
-                    {{ form.address }}
-                </div>
+            <h3 class="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800"><i class='bx bxs-contact'></i> Contact Info</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Email</label>{{ form.email }}</div>
+                <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Phone</label>{{ form.phone }}</div>
+                <div class="md:col-span-2"><label class="text-xs font-bold text-slate-500 uppercase mb-1">Address</label>{{ form.address }}</div>
             </div>
         </div>
     </form>
+
+    <hr class="border-slate-200">
+
+    <div>
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-slate-900">Photo Gallery</h3>
+            <button onclick="document.getElementById('galleryModal').classList.remove('hidden')" class="text-sm bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-bold hover:bg-blue-100">+ Add Photo</button>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for img in agency.gallery_images.all %}
+            <div class="relative group rounded-xl overflow-hidden aspect-square">
+                <img src="{{ img.image.url }}" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                    <a href="{% url 'delete_agency_image' img.pk %}" class="bg-red-500 text-white p-2 rounded-full hover:bg-red-600"><i class='bx bxs-trash'></i></a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div>
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-slate-900">What Our FCs Say</h3>
+            <button onclick="document.getElementById('reviewModal').classList.remove('hidden')" class="text-sm bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-bold hover:bg-blue-100">+ Add Review</button>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-4">
+            {% for rev in agency.fc_reviews.all %}
+            <div class="bg-white p-4 rounded-xl border border-slate-200 flex gap-4 items-start relative group">
+                {% if rev.fc_photo %}<img src="{{ rev.fc_photo.url }}" class="w-12 h-12 rounded-full object-cover">{% else %}<div class="w-12 h-12 bg-slate-100 rounded-full"></div>{% endif %}
+                <div>
+                    <h4 class="font-bold text-slate-900">{{ rev.fc_name }}</h4>
+                    <p class="text-xs text-slate-500 uppercase">{{ rev.fc_role }}</p>
+                    <p class="text-sm text-slate-600 mt-2">"{{ rev.review_text|truncatewords:15 }}"</p>
+                </div>
+                <a href="{% url 'delete_agency_review' rev.pk %}" class="absolute top-2 right-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100"><i class='bx bxs-trash'></i></a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<div id="galleryModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center">
+    <div class="bg-white p-8 rounded-2xl w-full max-w-md">
+        <h3 class="font-bold text-xl mb-4">Add Photo</h3>
+        <form action="{% url 'add_agency_image' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ image_form.as_p }}
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('galleryModal').classList.add('hidden')" class="text-slate-500 font-bold">Cancel</button>
+                <button type="submit" class="bg-slate-900 text-white px-4 py-2 rounded-lg font-bold">Upload</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="reviewModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center">
+    <div class="bg-white p-8 rounded-2xl w-full max-w-md">
+        <h3 class="font-bold text-xl mb-4">Add FC Review</h3>
+        <form action="{% url 'add_agency_review' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="space-y-4">
+                {{ review_form.as_p }}
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('reviewModal').classList.add('hidden')" class="text-slate-500 font-bold">Cancel</button>
+                <button type="submit" class="bg-slate-900 text-white px-4 py-2 rounded-lg font-bold">Save Review</button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}
