@@ -20,7 +20,7 @@ THEMES = {
         'accent': '#2563eb',        # blue-600
         'hero_start': '#1e3a8a',    # blue-900
         'hero_end': '#172554',      # blue-950
-        'font_heading': '"Plus Jakarta Sans", sans-serif', # Cleaner, modern font
+        'font_heading': '"Plus Jakarta Sans", sans-serif', 
         'font_body': '"Inter", sans-serif',
     },
     'midnight': {
@@ -35,8 +35,6 @@ THEMES = {
         'font_heading': '"Playfair Display", serif',
         'font_body': '"Lato", sans-serif',
     },
-
-    # --- NEW THEMES ---
     'forest': {
         'bg_page': '#f0fdf4',       # green-50
         'bg_card': '#ffffff',       # white
@@ -108,5 +106,18 @@ THEMES = {
         'hero_end': '#fb7185',      # Rose-400
         'font_heading': '"Playfair Display", serif',
         'font_body': '"Lato", sans-serif',
+    },
+    # --- NEW: BLACKPINK THEME ---
+    'midnight_rose': {
+        'bg_page': '#000000',       # Pure Black
+        'bg_card': '#18181b',       # Zinc-900 (Dark Grey Card)
+        'bg_secondary': '#27272a',  # Zinc-800
+        'text_main': '#ffffff',     # White
+        'text_muted': '#a1a1aa',    # Zinc-400
+        'accent': '#ec4899',        # Pink-500 (Hot Pink Accent)
+        'hero_start': '#000000',    # Black
+        'hero_end': '#18181b',      # Dark Zinc
+        'font_heading': '"Plus Jakarta Sans", sans-serif', # Modern/Professional
+        'font_body': '"Inter", sans-serif',
     }
 }

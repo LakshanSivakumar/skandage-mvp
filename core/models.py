@@ -36,6 +36,7 @@ class Agent(models.Model):
         ('cotton', 'Cotton (Monochrome Black & White)'),
         ('glacier', 'Glacier (White & Icy Blue)'),
         ('blush', 'Blush (White & Rose Gold)'),
+        ('midnight_rose', 'Midnight Rose (Obsidian & Soft Pink)'),
     ]
     theme = models.CharField(max_length=20, choices=THEME_CHOICES, default='luxe')
 

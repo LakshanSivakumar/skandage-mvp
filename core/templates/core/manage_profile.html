@@ -98,7 +98,6 @@
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        
         <div class="xl:col-span-2 space-y-8">
             <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
                 <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2">
@@ -178,18 +177,15 @@
                 <div id="credential-list" class="space-y-3">
                     {% for cred in credentials %}
                     <div class="credential-item p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 flex justify-between items-center group hover:border-blue-300 dark:hover:border-blue-500 transition cursor-move" data-id="{{ cred.pk }}">
-                        
                         <div class="flex items-center gap-3 flex-1">
                             <div class="text-slate-400 cursor-move hover:text-blue-600 dark:hover:text-blue-400">
                                 <i class='bx bx-grid-vertical text-2xl'></i>
                             </div>
-            
                             <div>
                                 <div class="font-bold text-slate-900 dark:text-white">{{ cred.title }}</div>
                                 <div class="text-xs text-slate-500 dark:text-slate-400 uppercase">{{ cred.issuer }} &bull; {{ cred.year }}</div>
                             </div>
                         </div>
-                        
                         <div class="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
                             <a href="{% url 'edit_credential' cred.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-blue-600 hover:border-blue-600 dark:hover:text-blue-400 dark:hover:border-blue-400 transition shadow-sm">
                                 <i class='bx bxs-edit-alt'></i>
@@ -208,41 +204,12 @@
                 <p class="text-slate-400 text-sm text-center py-4 border-2 border-dashed dark:border-slate-700 rounded-xl">No credentials yet.</p>
                 {% endif %}
             </div>
-            
-            <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    var el = document.getElementById('credential-list');
-                    if (el) {
-                        Sortable.create(el, {
-                            animation: 150,
-                            handle: '.cursor-move',
-                            ghostClass: 'bg-blue-50',
-                            onEnd: function (evt) {
-                                var orderedIds = [];
-                                document.querySelectorAll('.credential-item').forEach(function(item) {
-                                    orderedIds.push(item.getAttribute('data-id'));
-                                });
-                                fetch("{% url 'reorder_credentials' %}", {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRFToken': '{{ csrf_token }}'
-                                    },
-                                    body: JSON.stringify({ order: orderedIds })
-                                });
-                            }
-                        });
-                    }
-                });
-            </script>
 
             <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
                 <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                     <i class='bx bxs-check-shield text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 p-1.5 rounded-lg'></i> 
                     Legal & Compliance
                 </h3>
-                
                 <div class="space-y-4">
                     <div class="space-y-1.5">
                         <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Footer Disclaimer</label>
@@ -271,7 +238,6 @@
             </div>
         </div>
     </div>
-
     <button type="submit" class="md:hidden w-full bg-slate-900 dark:bg-blue-600 text-white py-3 rounded-xl font-bold mt-8 shadow-lg">Save Changes</button>
 </form>
 
@@ -286,6 +252,8 @@
     .swatch-bg-cotton { background-color: #ffffff; border: 1px solid #e5e5e5; } .swatch-accent-cotton { background-color: #000000; }
     .swatch-bg-glacier { background-color: #ffffff; border: 1px solid #e5e5e5; } .swatch-accent-glacier { background-color: #0ea5e9; }
     .swatch-bg-blush { background-color: #ffffff; border: 1px solid #e5e5e5; } .swatch-accent-blush { background-color: #e11d48; }
+    /* New Blackpink Theme Swatches */
+    .swatch-bg-midnight_rose { background-color: #0a0a0a; } .swatch-accent-midnight_rose { background-color: #f472b6; }
 </style>
 
 <script>
@@ -298,7 +266,9 @@
         'sunset': { bg: '#fff7ed', text: '#431407', accent: '#ea580c', font: '"Playfair Display", serif' },
         'cotton': { bg: '#ffffff', text: '#0a0a0a', accent: '#000000', font: '"Inter", sans-serif' },
         'glacier': { bg: '#ffffff', text: '#0c4a6e', accent: '#0ea5e9', font: '"Plus Jakarta Sans", sans-serif' },
-        'blush': { bg: '#ffffff', text: '#881337', accent: '#e11d48', font: '"Playfair Display", serif' }
+        'blush': { bg: '#ffffff', text: '#881337', accent: '#e11d48', font: '"Playfair Display", serif' },
+        /* Added Professional Blackpink Theme */
+        'midnight_rose': { bg: '#0a0a0a', text: '#ffffff', accent: '#f472b6', font: '"Plus Jakarta Sans", sans-serif' }
     };
 
     function updatePreview() {
