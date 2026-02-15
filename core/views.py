@@ -54,6 +54,7 @@ def domain_router(request):
     agency_site = Agency.objects.filter(domain__in=[host, f"www.{host}", host.replace('www.', '')]).first()
     
     if agency_site:
+        Agency.objects.filter(pk=agency_site.pk).update(page_views=F('page_views') + 1)
         team_members = Agent.objects.filter(
             custom_domain__in=[agency_site.domain, host, host.replace('www.', '')], 
             is_public=True
@@ -256,15 +257,35 @@ def client_review_submission(request, token):
 
 @login_required
 def dashboard_stats(request):
+    # Check if this user owns an Agency
+    agency = Agency.objects.filter(owner=request.user).first()
+    
+    # Check if this user is an Agent
     try:
         agent = request.user.agent
     except Agent.DoesNotExist:
+        agent = None
+
+    # LOGIC: If they are an Agency Owner and NOT an agent yet, 
+    # treat them purely as an Admin (do not auto-create agent profile).
+    if agency and not agent:
+        context = {
+            'agency': agency,
+            'is_agency_admin': True, # Flag for template
+            'section': 'stats'
+        }
+        return render(request, 'core/dashboard_stats.html', context)
+
+    # Fallback: If they are not an agency owner, or they are BOTH, 
+    # ensure they have an agent profile (Normal Agent Flow)
+    if not agent:
         agent = Agent.objects.create(user=request.user, name=request.user.username)
 
     leads = Lead.objects.filter(agent=agent).order_by('-created_at')
     
     context = {
         'agent': agent,
+        'agency': agency, # Pass this too, in case they are both
         'leads': leads,
         'section': 'stats'
     }
@@ -317,29 +338,29 @@ def manage_testimonials(request):
 # ==========================================
 @login_required
 def manage_agency_site(request):
-    # Try to find an agency owned by this user
     try:
         agency = Agency.objects.get(owner=request.user)
     except Agency.DoesNotExist:
-        # If no agency exists for this user, create a placeholder or redirect
-        # For now, let's create a placeholder
-        agency = Agency.objects.create(
-            owner=request.user, 
-            domain="yq-partners.com", 
-            name="YQ Partners"
-        )
+        # Create default if missing
+        agency = Agency.objects.create(owner=request.user, domain="yq-partners.com", name="YQ Partners")
 
-    if request.method == 'POST':
+    if request.method == 'POST' and 'update_settings' in request.POST:
         form = AgencySiteForm(request.POST, request.FILES, instance=agency)
         if form.is_valid():
             form.save()
-            messages.success(request, "Agency website updated successfully!")
+            messages.success(request, "Settings updated!")
             return redirect('manage_agency_site')
     else:
         form = AgencySiteForm(instance=agency)
 
-    return render(request, 'core/manage_agency.html', {'form': form, 'agency': agency, 'image_form': AgencyImageForm(),'review_form': AgencyReviewForm()} )
-
+    return render(request, 'core/manage_agency.html', {
+        'form': form, 
+        'agency': agency,
+        'image_form': AgencyImageForm(),
+        'review_form': AgencyReviewForm(),
+        'section': 'agency',         # Highlights the sidebar link
+        'is_agency_admin': True      # <--- THIS HIDES THE AGENT LINKS
+    })
 # ==========================================
 # ACTION VIEWS
 # ==========================================

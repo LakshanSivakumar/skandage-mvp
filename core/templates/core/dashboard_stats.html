@@ -1,14 +1,72 @@
 {% extends 'core/dashboard_base.html' %}
 
 {% block dashboard_content %}
+
+{% if is_agency_admin %}
+<div class="mb-8">
+    <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Agency Overview</h2>
+    <p class="text-slate-500 dark:text-slate-400 mt-1">Analytics for <a href="http://{{ agency.domain }}" target="_blank" class="underline text-blue-600 hover:text-blue-800">{{ agency.domain }}</a></p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-blue-600 rounded-2xl p-6 text-white shadow-lg shadow-blue-200 dark:shadow-none relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full group-hover:scale-110 transition"></div>
+        <div class="flex justify-between items-start mb-4 relative z-10">
+            <div class="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                <i class='bx bxs-bar-chart-alt-2 text-2xl'></i>
+            </div>
+            <span class="bg-white/20 px-2 py-1 rounded text-xs font-bold backdrop-blur-sm">All Time</span>
+        </div>
+        <h3 class="text-4xl font-bold mb-1 relative z-10">{{ agency.page_views }}</h3>
+        <p class="text-blue-100 font-medium relative z-10">Total Website Visits</p>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between group hover:border-purple-300 dark:hover:border-purple-500 transition">
+        <div class="flex justify-between items-start mb-4">
+            <div class="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-xl">
+                <i class='bx bxs-group text-2xl text-purple-600 dark:text-purple-400'></i>
+            </div>
+        </div>
+        <div>
+            <h3 class="text-4xl font-bold text-slate-900 dark:text-white mb-1">{{ agency.fc_reviews.count }}</h3>
+            <p class="text-slate-500 dark:text-slate-400 font-bold">Team Testimonials</p>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between group hover:border-emerald-300 dark:hover:border-emerald-500 transition">
+        <div class="flex justify-between items-start mb-4">
+            <div class="p-3 bg-emerald-50 dark:bg-emerald-900/30 rounded-xl">
+                <i class='bx bxs-image text-2xl text-emerald-600 dark:text-emerald-400'></i>
+            </div>
+        </div>
+        <div>
+            <h3 class="text-4xl font-bold text-slate-900 dark:text-white mb-1">{{ agency.gallery_images.count }}</h3>
+            <p class="text-slate-500 dark:text-slate-400 font-bold">Gallery Photos</p>
+        </div>
+    </div>
+</div>
+
+<div class="bg-slate-50 dark:bg-slate-800/50 p-10 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600 text-center">
+    <div class="w-16 h-16 bg-white dark:bg-slate-700 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm text-slate-400">
+        <i class='bx bxs-edit'></i>
+    </div>
+    <h3 class="font-bold text-xl text-slate-900 dark:text-white mb-2">Manage Website Content</h3>
+    <p class="text-slate-500 dark:text-slate-400 mb-8 max-w-md mx-auto">Update your agency's "About Us" text, add new photos to the gallery, or upload recruitment testimonials.</p>
+    <a href="{% url 'manage_agency_site' %}" class="inline-flex items-center gap-2 bg-slate-900 dark:bg-blue-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-blue-700 transition shadow-lg hover:-translate-y-1">
+        <span>Open Website Builder</span>
+        <i class='bx bx-right-arrow-alt text-xl'></i>
+    </a>
+</div>
+
+{% else %}
+
 <div class="mb-8">
     <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Overview</h2>
     <p class="text-slate-500 dark:text-slate-400 mt-1">Welcome back, {{ agent.name }}</p>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-    
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-blue-300 dark:hover:border-blue-500 transition">
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-purple-300 dark:hover:border-purple-500 transition">
         <div>
             <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Profile Views</p>
             <h3 class="text-4xl font-bold text-slate-900 dark:text-white mt-2">{{ agent.profile_views }}</h3>
@@ -28,7 +86,7 @@
         </div>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-blue-300 dark:hover:border-blue-500 transition">
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-amber-300 dark:hover:border-amber-500 transition">
         <div>
             <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Testimonials</p>
             <h3 class="text-4xl font-bold text-slate-900 dark:text-white mt-2">{{ agent.testimonials.count }}</h3>
@@ -37,7 +95,6 @@
             <i class='bx bxs-star'></i>
         </div>
     </div>
-
 </div>
 
 <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
@@ -126,7 +183,7 @@
             <div>
                 <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase block mb-2">Message</label>
                 <div class="bg-slate-50 dark:bg-slate-700/50 p-5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto" id="modalMessage">
-                    </div>
+                </div>
             </div>
 
             <div class="flex gap-3 pt-2">
@@ -170,4 +227,6 @@
         document.getElementById('leadModal').classList.add('hidden');
     }
 </script>
+
+{% endif %}
 {% endblock %}

@@ -95,18 +95,4 @@ THEMES = {
         'font_body': '"Inter", sans-serif',
     },
 
-    # 5. CRIMSON (Deep Red & White)
-    'crimson': {
-        'name': 'Crimson Elite',
-        'bg_page': '#450a0a',       # Red-950 (Deep Wine)
-        'bg_card': '#7f1d1d',       # Red-900
-        'bg_secondary': '#991b1b',  # Red-800
-        'text_main': '#ffffff',     # White
-        'text_muted': '#fca5a5',    # Red-300
-        'accent': '#f87171',        # Red-400 (Bright Red)
-        'hero_start': '#450a0a',    # Deep Wine
-        'hero_end': '#7f1d1d',      # Red-900
-        'font_heading': '"Playfair Display", serif',
-        'font_body': '"Lato", sans-serif',
-    }
 }

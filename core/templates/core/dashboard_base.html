@@ -48,37 +48,48 @@
         <nav class="flex-1 px-4 space-y-1.5 overflow-y-auto">
             {% with "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 group relative" as nav_class %}
             
-            <a href="{% url 'dashboard' %}" class="{{ nav_class }} {% if section == 'stats' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
-                {% if section == 'stats' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
-                <i class='bx bxs-dashboard text-xl {% if section == 'stats' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
-                Overview
-            </a>
-            
-            <a href="{% url 'manage_profile' %}" class="{{ nav_class }} {% if section == 'profile' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
-                {% if section == 'profile' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
-                <i class='bx bxs-user-detail text-xl {% if section == 'profile' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
-                Profile & Bio
-            </a>
+            {% if not is_agency_admin %}
+                <a href="{% url 'dashboard' %}" class="{{ nav_class }} {% if section == 'stats' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                    {% if section == 'stats' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
+                    <i class='bx bxs-dashboard text-xl {% if section == 'stats' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
+                    Overview
+                </a>
+                
+                <a href="{% url 'manage_profile' %}" class="{{ nav_class }} {% if section == 'profile' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                    {% if section == 'profile' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
+                    <i class='bx bxs-user-detail text-xl {% if section == 'profile' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
+                    Profile & Bio
+                </a>
 
-            <a href="{% url 'manage_testimonials' %}" class="{{ nav_class }} {% if section == 'testimonials' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
-                {% if section == 'testimonials' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
-                <i class='bx bxs-quote-alt-left text-xl {% if section == 'testimonials' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
-                Testimonials
-            </a>
-            <a href="{% url 'manage_services' %}" class="{{ nav_class }} {% if section == 'services' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
-                {% if section == 'services' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
-                <i class='bx bxs-briefcase-alt-2 text-xl {% if section == 'services' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
-                Services
-            </a>
-            <a href="{% url 'manage_articles' %}" class="{{ nav_class }} {% if section == 'articles' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
-                {% if section == 'articles' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
-                <i class='bx bxs-news text-xl {% if section == 'articles' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
-                Articles
-            </a>
-            <a href="{% url 'manage_agency_site' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition hover:bg-slate-50 text-slate-600 font-bold">
-                <i class='bx bxs-layout text-xl'></i>
-                <span>Agency Builder</span>
-            </a>
+                <a href="{% url 'manage_testimonials' %}" class="{{ nav_class }} {% if section == 'testimonials' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                    {% if section == 'testimonials' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
+                    <i class='bx bxs-quote-alt-left text-xl {% if section == 'testimonials' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
+                    Testimonials
+                </a>
+                <a href="{% url 'manage_services' %}" class="{{ nav_class }} {% if section == 'services' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                    {% if section == 'services' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
+                    <i class='bx bxs-briefcase-alt-2 text-xl {% if section == 'services' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
+                    Services
+                </a>
+                <a href="{% url 'manage_articles' %}" class="{{ nav_class }} {% if section == 'articles' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                    {% if section == 'articles' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
+                    <i class='bx bxs-news text-xl {% if section == 'articles' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
+                    Articles
+                </a>
+            {% endif %}
+
+            {% if is_agency_admin or agency %}
+                <a href="{% url 'dashboard' %}" class="{{ nav_class }} {% if section == 'stats' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                    {% if section == 'stats' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
+                    <i class='bx bxs-bar-chart-alt-2 text-xl {% if section == 'stats' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
+                    Agency Analytics
+                </a>
+
+                <a href="{% url 'manage_agency_site' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold mt-2">
+                    <i class='bx bxs-layout text-xl text-purple-600'></i>
+                    <span>Website Builder</span>
+                </a>
+            {% endif %}
 
             <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-700 mx-2"></div>
 
@@ -92,10 +103,17 @@
         </nav>
 
         <div class="p-4 m-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700">
-            <a href="{% url 'agent_profile' request.user.agent.slug %}" target="_blank" class="flex items-center justify-between text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition group">
-                <span>View Live Page</span>
-                <i class='bx bx-link-external group-hover:translate-x-1 transition'></i>
-            </a>
+            {% if is_agency_admin or agency %}
+                <a href="http://{{ agency.domain|default:'#' }}" target="_blank" class="flex items-center justify-between text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition group">
+                    <span>View Agency Site</span>
+                    <i class='bx bx-link-external group-hover:translate-x-1 transition'></i>
+                </a>
+            {% elif request.user.agent %}
+                <a href="{% url 'agent_profile' request.user.agent.slug %}" target="_blank" class="flex items-center justify-between text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition group">
+                    <span>View Live Page</span>
+                    <i class='bx bx-link-external group-hover:translate-x-1 transition'></i>
+                </a>
+            {% endif %}
         </div>
 
         <div class="p-6 border-t border-slate-100 dark:border-slate-700">

@@ -164,7 +164,7 @@ class Agency(models.Model):
     owner = models.OneToOneField(User, on_delete=models.CASCADE, related_name='agency_site', null=True, blank=True)
     name = models.CharField(max_length=100, default="YQ Partners")
     domain = models.CharField(max_length=100, unique=True, help_text="e.g. yq-partners.com")
-    
+    page_views = models.PositiveIntegerField(default=0)
     # Branding
     logo = models.ImageField(upload_to='agency/logos/', blank=True, null=True)
     primary_color = models.CharField(max_length=7, default="#2563EB", help_text="Hex code (e.g. #2563EB)")
