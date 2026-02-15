@@ -28,15 +28,17 @@ class Agent(models.Model):
     bio = models.TextField(blank=True)
 
     # --- THEMES & LAYOUTS ---
+    # In core/models.py
+
     THEME_CHOICES = [
         ('luxe', 'Luxe Minimal (Stone & Amber)'),
         ('corporate', 'Corporate Blue (Navy & White)'),
         ('midnight', 'Midnight Neon (Dark & Cyan)'),
-        ('sunset', 'Sunset (Warm Orange & Cream)'),
-        ('cotton', 'Cotton (Monochrome Black & White)'),
-        ('glacier', 'Glacier (White & Icy Blue)'),
-        ('blush', 'Blush (White & Rose Gold)'),
-        ('midnight_rose', 'Midnight Rose (Obsidian & Soft Pink)'),
+        ('midnight_rose', 'Midnight Rose (Black & Pink)'),
+        ('executive', 'Executive Gold (Black & Gold)'),
+        ('emerald', 'Private Client (Deep Green)'),
+        ('obsidian', 'Obsidian (Black & White)'),
+        ('royal', 'Royal Navy (Deep Blue & Silver)'),
     ]
     theme = models.CharField(max_length=20, choices=THEME_CHOICES, default='luxe')
 
