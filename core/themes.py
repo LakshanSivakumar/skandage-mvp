@@ -94,5 +94,33 @@ THEMES = {
         'font_heading': '"Plus Jakarta Sans", sans-serif',
         'font_body': '"Inter", sans-serif',
     },
+    'vogue': {
+        'name': 'Vogue Editorial',
+        'bg_page': '#fdfbf7',       # Warm Alabaster (Paper feel)
+        'bg_card': '#ffffff',       # Pure White
+        'bg_secondary': '#f2f0e9',  # Darker Alabaster
+        'text_main': '#1c1917',     # Charcoal (Not pure black)
+        'text_muted': '#57534e',    # Warm Stone
+        'accent': '#a8a29e',        # Stone-400 (Subtle, not loud)
+        'hero_start': '#fdfbf7',
+        'hero_end': '#f2f0e9',
+        'font_heading': '"Playfair Display", serif',
+        'font_body': '"Lato", sans-serif',
+    },
+
+    # 3. STERLING (Fintech / Precision)
+    'sterling': {
+        'name': 'Sterling Fintech',
+        'bg_page': '#0f172a',       # Slate-900 (Tech Dark)
+        'bg_card': '#1e293b',       # Slate-800 (Glass base)
+        'bg_secondary': '#334155',  # Slate-700
+        'text_main': '#f8fafc',     # Slate-50
+        'text_muted': '#94a3b8',    # Slate-400
+        'accent': '#38bdf8',        # Sky-400 (Electric Blue)
+        'hero_start': '#0f172a',
+        'hero_end': '#1e293b',
+        'font_heading': '"Inter", sans-serif', # Clean Tech Sans
+        'font_body': '"Inter", sans-serif',
+    },
 
 }

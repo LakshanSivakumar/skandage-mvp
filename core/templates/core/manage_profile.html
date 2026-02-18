@@ -30,53 +30,60 @@
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Premium Architecture</label>
-                        <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">New</span>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label class="relative cursor-pointer group block">
                             <input type="radio" name="theme" value="executive" class="peer sr-only" {% if form.theme.value == 'executive' %}checked{% endif %} onchange="updatePreview()">
-                            
                             <div class="h-full p-1 rounded-2xl border-2 border-slate-100 dark:border-slate-700 peer-checked:border-amber-500 peer-checked:ring-1 peer-checked:ring-amber-500 bg-white dark:bg-slate-900 transition-all duration-300 hover:border-amber-300">
-                                <div class="bg-[#0a0a0a] rounded-xl overflow-hidden relative aspect-[16/9] shadow-inner group-hover:shadow-md transition">
+                                <div class="bg-[#0a0a0a] rounded-xl overflow-hidden relative aspect-[16/9] shadow-inner">
                                     <div class="absolute inset-0 p-5 flex flex-col justify-center">
                                         <div class="w-8 h-0.5 bg-amber-500 mb-2"></div>
                                         <div class="text-xl font-serif text-white leading-none mb-1">Wealth.</div>
                                         <div class="text-xl font-serif text-amber-500 italic leading-none">Protected.</div>
                                     </div>
-                                    <div class="absolute top-3 right-3 w-6 h-6 bg-amber-500 rounded-full items-center justify-center text-black hidden peer-checked:flex shadow-lg z-10">
-                                        <i class='bx bx-check font-bold'></i>
-                                    </div>
+                                    <div class="absolute top-3 right-3 w-6 h-6 bg-amber-500 rounded-full items-center justify-center text-black hidden peer-checked:flex shadow-lg z-10"><i class='bx bx-check font-bold'></i></div>
                                 </div>
-                                
                                 <div class="mt-3 px-2 pb-2">
                                     <div class="flex justify-between items-center mb-1">
-                                        <span class="font-bold text-slate-900 dark:text-white text-sm">Executive Gold</span>
+                                        <span class="font-bold text-slate-900 dark:text-white text-sm">Executive</span>
                                         <span class="text-[9px] font-bold bg-slate-900 text-amber-500 px-1.5 py-0.5 rounded uppercase tracking-wider">Editorial</span>
                                     </div>
-                                    <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">Wall Street Journal style. High-contrast, serif typography, and authority-focused structure.</p>
                                 </div>
                             </div>
                         </label>
+
+                        <label class="relative cursor-pointer group block">
+                            <input type="radio" name="theme" value="vogue" class="peer sr-only" {% if form.theme.value == 'vogue' %}checked{% endif %} onchange="updatePreview()">
+                            <div class="h-full p-1 rounded-2xl border-2 border-slate-100 dark:border-slate-700 peer-checked:border-stone-500 peer-checked:ring-1 peer-checked:ring-stone-500 bg-white dark:bg-slate-900 transition-all duration-300 hover:border-stone-300">
+                                <div class="bg-[#fdfbf7] rounded-xl overflow-hidden relative aspect-[16/9] shadow-inner">
+                                    <div class="absolute inset-0 p-5 flex flex-col justify-center items-center text-center">
+                                        <div class="text-3xl font-serif text-stone-900 leading-none italic">Vogue.</div>
+                                        <div class="text-[8px] font-sans text-stone-500 uppercase tracking-[0.3em] mt-2">Lifestyle</div>
+                                    </div>
+                                    <div class="absolute top-3 right-3 w-6 h-6 bg-stone-800 rounded-full items-center justify-center text-white hidden peer-checked:flex shadow-lg z-10"><i class='bx bx-check font-bold'></i></div>
+                                </div>
+                                <div class="mt-3 px-2 pb-2">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-bold text-slate-900 dark:text-white text-sm">Vogue</span>
+                                        <span class="text-[9px] font-bold bg-[#fdfbf7] text-stone-800 px-1.5 py-0.5 rounded uppercase tracking-wider border border-stone-200">Lifestyle</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+
                         
-                        <div class="opacity-40 p-1 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 cursor-not-allowed grayscale">
-                            <div class="bg-slate-50 dark:bg-slate-800 rounded-xl overflow-hidden relative aspect-[16/9] flex items-center justify-center">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">More Premium<br>Layouts Soon</span>
-                            </div>
-                            <div class="mt-3 px-2 pb-2">
-                                <span class="font-bold text-slate-400 text-sm">Coming Soon</span>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
 
                 <hr class="border-slate-100 dark:border-slate-700">
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Standard Series (Color Themes)</label>
+                    <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Standard Series</label>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {% for value, label in form.theme.field.choices %}
-                            {% if value != 'executive' %}
+                            {% if value != 'executive' and value != 'vogue' and value != 'sterling' %}
                             <label class="cursor-pointer group relative block">
                                 <input type="radio" name="theme" value="{{ value }}" class="peer sr-only" {% if form.theme.value == value %}checked{% endif %} onchange="updatePreview()">
                                 <div class="p-3 rounded-xl border-2 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 peer-checked:border-blue-500 peer-checked:ring-1 peer-checked:ring-blue-500 hover:border-blue-300 transition-all text-center h-full flex flex-col items-center justify-center">
@@ -84,15 +91,13 @@
                                         <div class="w-5 h-5 rounded-full border border-black/10 shadow-sm swatch-bg-{{ value }}"></div>
                                         <div class="w-5 h-5 rounded-full border border-black/10 shadow-sm swatch-accent-{{ value }}"></div>
                                     </div>
-                                    <span class="font-bold text-slate-600 dark:text-slate-300 peer-checked:text-blue-600 dark:peer-checked:text-blue-400 text-xs">{{ label }}</span>
+                                    <span class="font-bold text-slate-600 dark:text-slate-300 peer-checked:text-blue-600 dark:peer-checked:text-blue-400 text-[10px]">{{ label }}</span>
                                 </div>
                             </label>
                             {% endif %}
                         {% endfor %}
                     </div>
                 </div>
-
-                <hr class="border-slate-100 dark:border-slate-700">
 
                 <div id="layout-selector">
                     <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">
@@ -128,7 +133,6 @@
                 <div class="absolute inset-0 opacity-5 dark:opacity-10" style="background-image: radial-gradient(#64748b 1px, transparent 1px); background-size: 24px 24px;"></div>
                 
                 <div id="preview-container" class="w-full max-w-[320px] aspect-[9/18] rounded-[2.5rem] shadow-2xl dark:shadow-none overflow-hidden relative transition-all duration-500 ease-in-out transform hover:scale-[1.02] border-[8px] border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10 bg-white">
-                    
                     <div id="preview-content" class="h-full w-full flex flex-col p-6 transition-colors duration-300 relative overflow-hidden">
                         
                         <div class="flex justify-between items-center mb-8 z-20">
@@ -138,15 +142,9 @@
 
                         <div id="preview-hero" class="flex-1 flex flex-col justify-center relative z-20 transition-all duration-500">
                             </div>
-
-                        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 z-0"></div>
-                        <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 z-0"></div>
                     </div>
-
                     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-white dark:bg-slate-800 rounded-b-2xl z-50"></div>
                 </div>
-                
-                <p class="absolute bottom-6 text-slate-400 dark:text-slate-600 text-xs font-medium uppercase tracking-widest">Interactive Mobile Preview</p>
             </div>
         </div>
     </div>
@@ -154,102 +152,50 @@
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div class="xl:col-span-2 space-y-8">
             <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
-                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                    <i class='bx bxs-id-card text-blue-500 bg-blue-50 dark:bg-blue-900/30 p-1.5 rounded-lg'></i> 
-                    Personal Details
-                </h3>
-                
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2"><i class='bx bxs-id-card text-blue-500 bg-blue-50 dark:bg-blue-900/30 p-1.5 rounded-lg'></i> Personal Details</h3>
                 <div class="space-y-6">
                     <div class="hidden">{{ form.headshot }}</div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Display Name</label>
-                            {{ form.name }} 
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Job Title</label>
-                            {{ form.title }}
-                        </div>
+                        <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Display Name</label>{{ form.name }}</div>
+                        <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Job Title</label>{{ form.title }}</div>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Company</label>
-                            {{ form.company }}
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">WhatsApp</label>
-                            {{ form.phone_number }}
-                        </div>
+                        <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Company</label>{{ form.company }}</div>
+                        <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">WhatsApp</label>{{ form.phone_number }}</div>
                     </div>
-
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tagline</label>
-                        {{ form.tagline }}
-                    </div>
-
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Bio</label>
-                        {{ form.bio }}
-                    </div>
+                    <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tagline</label>{{ form.tagline }}</div>
+                    <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Bio</label>{{ form.bio }}</div>
                 </div>
             </div>
-
+            
             <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
-                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                    <i class='bx bxs-share-alt text-pink-500 bg-pink-50 dark:bg-pink-900/30 p-1.5 rounded-lg'></i> 
-                    Social Media
-                </h3>
-                
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2"><i class='bx bxs-share-alt text-pink-500 bg-pink-50 dark:bg-pink-900/30 p-1.5 rounded-lg'></i> Social Media</h3>
                 <div class="space-y-4">
-                    <div class="relative">
-                        <span class="absolute left-4 top-3.5 text-slate-400 text-lg"><i class='bx bxl-linkedin-square'></i></span>
-                        {{ form.linkedin }}
-                    </div>
-                    <div class="relative">
-                        <span class="absolute left-4 top-3.5 text-slate-400 text-lg"><i class='bx bxl-instagram-alt'></i></span>
-                        {{ form.instagram }}
-                    </div>
-                    <div class="relative">
-                        <span class="absolute left-4 top-3.5 text-slate-400 text-lg"><i class='bx bxl-facebook-circle'></i></span>
-                        {{ form.facebook }}
-                    </div>
+                    <div class="relative"><span class="absolute left-4 top-3.5 text-slate-400 text-lg"><i class='bx bxl-linkedin-square'></i></span>{{ form.linkedin }}</div>
+                    <div class="relative"><span class="absolute left-4 top-3.5 text-slate-400 text-lg"><i class='bx bxl-instagram-alt'></i></span>{{ form.instagram }}</div>
+                    <div class="relative"><span class="absolute left-4 top-3.5 text-slate-400 text-lg"><i class='bx bxl-facebook-circle'></i></span>{{ form.facebook }}</div>
                 </div>
             </div>
 
             <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
-                        <i class='bx bxs-trophy text-amber-500 bg-amber-50 dark:bg-amber-900/30 p-1.5 rounded-lg'></i>
-                        Credentials
-                    </h3>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2"><i class='bx bxs-trophy text-amber-500 bg-amber-50 dark:bg-amber-900/30 p-1.5 rounded-lg'></i> Credentials</h3>
                     <a href="{% url 'add_credential' %}" class="text-sm bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition">+ Add</a>
                 </div>
-            
                 {% if credentials %}
                 <div id="credential-list" class="space-y-3">
                     {% for cred in credentials %}
                     <div class="credential-item p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 flex justify-between items-center group hover:border-blue-300 dark:hover:border-blue-500 transition cursor-move" data-id="{{ cred.pk }}">
                         <div class="flex items-center gap-3 flex-1">
-                            <div class="text-slate-400 cursor-move hover:text-blue-600 dark:hover:text-blue-400">
-                                <i class='bx bx-grid-vertical text-2xl'></i>
-                            </div>
+                            <div class="text-slate-400 cursor-move hover:text-blue-600 dark:hover:text-blue-400"><i class='bx bx-grid-vertical text-2xl'></i></div>
                             <div>
                                 <div class="font-bold text-slate-900 dark:text-white">{{ cred.title }}</div>
                                 <div class="text-xs text-slate-500 dark:text-slate-400 uppercase">{{ cred.issuer }} &bull; {{ cred.year }}</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
-                            <a href="{% url 'edit_credential' cred.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-blue-600 hover:border-blue-600 dark:hover:text-blue-400 dark:hover:border-blue-400 transition shadow-sm">
-                                <i class='bx bxs-edit-alt'></i>
-                            </a>
-                            <form action="{% url 'delete_credential' cred.pk %}" method="post" onsubmit="return confirm('Delete this credential?');">
-                                {% csrf_token %}
-                                <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-red-600 hover:border-red-600 dark:hover:text-red-400 dark:hover:border-red-400 transition shadow-sm">
-                                    <i class='bx bxs-trash'></i>
-                                </button>
-                            </form>
+                            <a href="{% url 'edit_credential' cred.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-blue-600 hover:border-blue-600 dark:hover:text-blue-400 dark:hover:border-blue-400 transition shadow-sm"><i class='bx bxs-edit-alt'></i></a>
+                            <form action="{% url 'delete_credential' cred.pk %}" method="post" onsubmit="return confirm('Delete this credential?');">{% csrf_token %}<button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-red-600 hover:border-red-600 dark:hover:text-red-400 dark:hover:border-red-400 transition shadow-sm"><i class='bx bxs-trash'></i></button></form>
                         </div>
                     </div>
                     {% endfor %}
@@ -258,18 +204,11 @@
                 <p class="text-slate-400 text-sm text-center py-4 border-2 border-dashed dark:border-slate-700 rounded-xl">No credentials yet.</p>
                 {% endif %}
             </div>
-
+            
             <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
-                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                    <i class='bx bxs-check-shield text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 p-1.5 rounded-lg'></i> 
-                    Legal & Compliance
-                </h3>
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2"><i class='bx bxs-check-shield text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 p-1.5 rounded-lg'></i> Legal & Compliance</h3>
                 <div class="space-y-4">
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Footer Disclaimer</label>
-                        {{ form.disclaimer }}
-                        <p class="text-xs text-slate-400 dark:text-slate-500">This text will appear on every page of your website.</p>
-                    </div>
+                    <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Footer Disclaimer</label>{{ form.disclaimer }}</div>
                 </div>
             </div>
         </div>
@@ -285,9 +224,7 @@
                             <div class="w-32 h-32 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-4xl text-slate-300 dark:text-slate-500"><i class='bx bxs-camera'></i></div>
                         {% endif %}
                     </div>
-                    <label for="id_headshot" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-white py-2 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-600 cursor-pointer transition shadow-sm flex items-center justify-center gap-2">
-                        <i class='bx bx-upload'></i> Change Photo
-                    </label>
+                    <label for="id_headshot" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-white py-2 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-600 cursor-pointer transition shadow-sm flex items-center justify-center gap-2"><i class='bx bx-upload'></i> Change Photo</label>
                 </div>
             </div>
         </div>
@@ -302,6 +239,7 @@
     .swatch-bg-midnight_rose { background-color: #0a0a0a; } .swatch-accent-midnight_rose { background-color: #f472b6; }
     .swatch-bg-emerald { background-color: #022c22; } .swatch-accent-emerald { background-color: #34d399; }
     .swatch-bg-obsidian { background-color: #000000; } .swatch-accent-obsidian { background-color: #ffffff; }
+    .swatch-bg-royal { background-color: #020617; } .swatch-accent-royal { background-color: #38bdf8; }
 </style>
 
 <script>
@@ -312,9 +250,11 @@
         'midnight_rose': { bg: '#0a0a0a', text: '#ffffff', accent: '#f472b6', font: '"Plus Jakarta Sans", sans-serif' },
         'emerald': { bg: '#022c22', text: '#ffffff', accent: '#34d399', font: '"Plus Jakarta Sans", sans-serif' },
         'obsidian': { bg: '#000000', text: '#ffffff', accent: '#ffffff', font: '"Playfair Display", serif' },
+        'royal': { bg: '#020617', text: '#ffffff', accent: '#38bdf8', font: '"Plus Jakarta Sans", sans-serif' },
         
-        /* EXECUTIVE OVERRIDE */
-        'executive': { bg: '#0a0a0a', text: '#ffffff', accent: '#fbbf24', font: '"Playfair Display", serif' }
+        'executive': { bg: '#0a0a0a', text: '#ffffff', accent: '#fbbf24', font: '"Playfair Display", serif' },
+        'vogue': { bg: '#fdfbf7', text: '#1c1917', accent: '#a8a29e', font: '"Playfair Display", serif' },
+        'sterling': { bg: '#0f172a', text: '#ffffff', accent: '#38bdf8', font: '"Inter", sans-serif' }
     };
 
     function updatePreview() {
@@ -322,8 +262,8 @@
         const layoutKey = document.querySelector('input[name="layout"]:checked').value;
         const layoutSelector = document.getElementById('layout-selector');
         
-        // Disable Layout Selector if Executive is chosen (Visual UX)
-        if (themeKey === 'executive') {
+        // Disable Layout Selector for Premium Themes
+        if (['executive', 'vogue', 'sterling'].includes(themeKey)) {
             layoutSelector.style.opacity = '0.5';
             layoutSelector.style.pointerEvents = 'none';
         } else {
@@ -347,7 +287,7 @@
                             {% if agent.headshot %}<img src="{{ agent.headshot.url }}" class="w-full h-full object-cover">{% else %}<i class='bx bxs-user'></i>{% endif %}
                         </div>`;
 
-        // EXECUTIVE OVERRIDE LOGIC
+        // --- PREVIEW LOGIC FOR NEW THEMES ---
         if (themeKey === 'executive') {
             hero.style.textAlign = 'left';
             hero.style.alignItems = 'flex-start';
@@ -355,49 +295,42 @@
                 <div class="mb-4">
                     <span style="${accentStyle}" class="text-[8px] font-bold uppercase tracking-[0.2em] block mb-2">Private Client</span>
                     <h1 class="text-3xl font-medium leading-[0.9] mb-3">Wealth.<br><span style="${accentStyle}" class="italic">Protected.</span></h1>
-                    <div style="border-left: 1px solid ${theme.accent}; padding-left: 0.5rem;">
-                        <p class="text-[9px] opacity-70 leading-relaxed">Serving high-net-worth individuals with discreet financial planning.</p>
-                    </div>
-                </div>
-                <div class="w-full h-32 bg-white/5 rounded-lg border border-white/10 relative overflow-hidden mt-2">
-                    {% if agent.headshot %}
-                    <img src="{{ agent.headshot.url }}" class="w-full h-full object-cover opacity-80 contrast-125">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
-                    {% endif %}
                 </div>
             `;
-        } 
-        // STANDARD LAYOUT LOGIC
-        else {
+        } else if (themeKey === 'vogue') {
+            hero.style.textAlign = 'center';
+            hero.style.alignItems = 'center';
+            html = `
+                <h1 class="text-4xl font-serif italic mb-2 leading-none">The<br>Vision.</h1>
+                <p style="${accentStyle}" class="text-[8px] uppercase tracking-[0.3em] mb-4">Lifestyle & Legacy</p>
+                <div class="w-full h-24 bg-stone-200 rounded-none relative overflow-hidden">
+                    {% if agent.headshot %}<img src="{{ agent.headshot.url }}" class="w-full h-full object-cover opacity-80">{% endif %}
+                </div>
+            `;
+        } else if (themeKey === 'sterling') {
+            hero.style.textAlign = 'left';
+            hero.style.alignItems = 'flex-start';
+            html = `
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 0.5rem; backdrop-filter: blur(4px);">
+                    <div style="width: 20px; height: 3px; background-color: ${theme.accent}; margin-bottom: 0.5rem;"></div>
+                    <h1 class="text-2xl font-bold tracking-tight mb-1">${name}</h1>
+                    <p class="text-[9px] opacity-70 uppercase tracking-widest">${title}</p>
+                </div>
+            `;
+        } else {
+            // Standard Layouts
             if (layoutKey === 'classic') {
                 hero.style.textAlign = 'left';
                 hero.style.alignItems = 'flex-start';
-                html = `
-                    <div class="flex items-center gap-4 mb-4">${avatar}</div>
-                    <h1 class="text-2xl font-bold leading-tight mb-2">Hello, I'm <br><span style="${accentStyle}">${name}</span></h1>
-                    <p class="text-xs opacity-70">${title}</p>
-                    <div class="mt-4 px-3 py-1.5 rounded-full bg-white/10 text-[10px] font-bold inline-block backdrop-blur-md">Save Contact</div>
-                `;
+                html = `<div class="flex items-center gap-4 mb-4">${avatar}</div><h1 class="text-2xl font-bold leading-tight mb-2">${name}</h1><p class="text-xs opacity-70">${title}</p>`;
             } else if (layoutKey === 'centered') {
                 hero.style.textAlign = 'center';
                 hero.style.alignItems = 'center';
-                html = `
-                    ${avatar}
-                    <h1 class="text-3xl font-bold leading-tight mb-2"><span style="${accentStyle}">${name}</span></h1>
-                    <div class="w-10 h-1 rounded-full mb-3" style="background-color: ${theme.accent}"></div>
-                    <p class="text-xs opacity-70 mb-4">${title}</p>
-                    <div class="px-3 py-1.5 rounded-full bg-white/10 text-[10px] font-bold inline-block backdrop-blur-md">Save Contact</div>
-                `;
+                html = `${avatar}<h1 class="text-3xl font-bold leading-tight mb-2">${name}</h1><div class="w-8 h-1 rounded-full mb-3" style="background-color: ${theme.accent}"></div><p class="text-xs opacity-70">${title}</p>`;
             } else if (layoutKey === 'minimal') {
                 hero.style.textAlign = 'left';
                 hero.style.alignItems = 'flex-start';
-                html = `
-                    <div style="border-left: 2px solid ${theme.accent}; padding-left: 1rem;">
-                        <p style="${accentStyle}" class="text-[8px] font-bold uppercase tracking-widest mb-2">Portfolio</p>
-                        <h1 class="text-3xl font-bold leading-none mb-2">${name}<span style="${accentStyle}">.</span></h1>
-                        <p class="text-xs opacity-70 max-w-[150px]">${title}</p>
-                    </div>
-                `;
+                html = `<div style="border-left: 2px solid ${theme.accent}; padding-left: 1rem;"><h1 class="text-3xl font-bold leading-none mb-2">${name}<span style="${accentStyle}">.</span></h1><p class="text-xs opacity-70">${title}</p></div>`;
             }
         }
         

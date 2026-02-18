@@ -13,23 +13,13 @@
     <meta property="og:description" content="{{ agent.tagline|default:'Connect with me for trusted financial advice and legacy planning.' }}" />
     {% if agent.headshot %}
         <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ agent.headshot.url }}" />
-        <meta property="og:image:width" content="300" />
-        <meta property="og:image:height" content="300" />
     {% endif %}
     <meta property="og:url" content="{{ request.build_absolute_uri }}" />
     <meta property="og:type" content="profile" />
 
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ agent.name }}">
-    <meta name="twitter:description" content="{{ agent.tagline }}">
-    {% if agent.headshot %}
-        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ agent.headshot.url }}">
-    {% endif %}
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Lato:wght@300;400;700&family=Plus+Jakarta+Sans:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lato:wght@300;400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     
     <style>
@@ -47,28 +37,27 @@
         }
         body { font-family: var(--font-body); background-color: var(--bg-page); color: var(--text-main); }
         h1, h2, h3, .serif-font { font-family: var(--font-heading); }
-        .text-theme-main { color: var(--text-main); }
-        .text-theme-muted { color: var(--text-muted); }
-        .text-theme-accent { color: var(--accent); }
-        .bg-theme-card { background-color: var(--bg-card); }
-        .bg-theme-secondary { background-color: var(--bg-secondary); }
-        .bg-theme-accent { background-color: var(--accent); }
-        .border-theme-accent { border-color: var(--accent); }
-        .hero-bg { background: linear-gradient(to bottom, var(--hero-start), var(--hero-end)); }
-        .paper-card { background-color: var(--bg-card); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
         
-        .content-toggle {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
-            opacity: 0;
-        }
-        .content-toggle.expanded {
-            max-height: 5000px;
-            opacity: 1;
-        }
+        .paper-card { background-color: var(--bg-card); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+        .hero-bg { background: linear-gradient(to bottom, var(--hero-start), var(--hero-end)); }
+        
+        .content-toggle { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
+        .content-toggle.expanded { max-height: 5000px; }
         .rotate-icon { transition: transform 0.3s ease; }
         .expanded .rotate-icon { transform: rotate(180deg); }
+
+        /* Marquee Animation for Vogue */
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            animation: marquee 20s linear infinite;
+        }
+        
+        /* Hide scrollbar for horizontal scroll */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 
@@ -261,6 +250,275 @@
             <p class="text-[10px] text-gray-700 max-w-2xl mx-auto px-6 leading-relaxed">{{ agent.disclaimer }}</p>
         </footer>
 
+    </div>
+
+    {% elif agent.theme == 'vogue' %}
+    <div class="min-h-screen bg-[#fdfbf7] text-[#1c1917] font-sans selection:bg-[#a8a29e] selection:text-white">
+        
+        <nav class="px-8 py-6 flex justify-between items-center sticky top-0 bg-[#fdfbf7]/90 backdrop-blur-sm z-50">
+            <span class="text-xs font-bold uppercase tracking-[0.2em] border-b border-black pb-1">{{ agent.name }}</span>
+            <a href="#vogue-contact" class="text-xs font-serif italic hover:text-[#a8a29e] transition">Inquire</a>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[85vh] px-4 lg:px-8 pb-8 gap-4">
+            <div class="lg:col-span-5 flex flex-col justify-end pb-12 lg:pb-24 relative order-last lg:order-first">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] mb-4 text-[#a8a29e]">Portfolio {{ agent.company }}</p>
+                <h1 class="text-6xl md:text-8xl font-serif italic leading-[0.9] mb-8">
+                    Life.<br>By Design.
+                </h1>
+                <p class="text-lg font-light leading-relaxed max-w-sm mb-8 text-[#57534e]">
+                    {{ agent.tagline|default:"Curating financial legacies for the modern professional." }}
+                </p>
+                <div class="flex items-center gap-6">
+                    <a href="{% url 'download_vcard' agent.slug %}" class="text-xs font-bold uppercase tracking-widest border border-[#1c1917] px-6 py-3 hover:bg-[#1c1917] hover:text-white transition">Save Contact</a>
+                    
+                    <div class="flex gap-4">
+                        {% if agent.linkedin %}<a href="{{ agent.linkedin }}" target="_blank" class="text-[#1c1917] hover:text-[#a8a29e] transition text-2xl"><i class='bx bxl-linkedin'></i></a>{% endif %}
+                        {% if agent.instagram %}<a href="{{ agent.instagram }}" target="_blank" class="text-[#1c1917] hover:text-[#a8a29e] transition text-2xl"><i class='bx bxl-instagram'></i></a>{% endif %}
+                        {% if agent.facebook %}<a href="{{ agent.facebook }}" target="_blank" class="text-[#1c1917] hover:text-[#a8a29e] transition text-2xl"><i class='bx bxl-facebook'></i></a>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 relative h-[60vh] lg:h-auto overflow-hidden rounded-none lg:rounded-[10rem] lg:rounded-tr-none lg:rounded-bl-none">
+                {% if agent.headshot %}
+                    <img src="{{ agent.headshot.url }}" class="absolute inset-0 w-full h-full object-cover  transition duration-1000">
+                {% else %}
+                    <div class="absolute inset-0 bg-[#f2f0e9] flex items-center justify-center font-serif text-9xl text-[#e5e5e5] italic">{{ agent.name|slice:":1" }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="border-y border-[#e7e5e4] py-3 overflow-hidden bg-white">
+            <div class="flex gap-12 whitespace-nowrap animate-marquee">
+                {% for i in "12345" %} 
+                    {% for cred in credentials %}
+                    <span class="text-xs font-bold uppercase tracking-widest text-[#a8a29e]">{{ cred.title }} <span class="text-black mx-2">//</span> {{ cred.issuer }} <span class="text-black ml-1">{{ cred.year }}</span></span>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="px-4 lg:px-8 py-24 max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-black pt-8">
+                <div class="md:col-span-1">
+                    <span class="text-xs font-bold uppercase tracking-widest">(01) Expertise</span>
+                </div>
+                <div class="md:col-span-2 grid gap-12">
+                    {% for service in services %}
+                    <div class="group cursor-default">
+                        <h3 class="text-3xl font-serif italic mb-2 group-hover:pl-4 transition-all duration-300">{{ service.title }}</h3>
+                        <p class="text-sm text-[#57534e] max-w-md leading-relaxed border-l border-[#e7e5e4] pl-4 ml-1">{{ service.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {% if testimonials %}
+        <div class="bg-[#1c1917] text-[#fdfbf7] py-24 px-4 lg:px-8 overflow-hidden relative">
+            <div class="flex justify-between items-end mb-12 max-w-7xl mx-auto">
+                <h2 class="text-4xl font-serif italic text-center md:text-left">Client Diaries</h2>
+                <a href="{% url 'agent_testimonials' agent.slug %}" class="text-xs font-bold uppercase tracking-widest text-[#a8a29e] hover:text-white border-b border-[#a8a29e] pb-1 transition">View All Stories</a>
+            </div>
+            
+            <div class="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory hide-scrollbar px-4 lg:px-0">
+                {% for review in testimonials %}
+                <div class="snap-center shrink-0 w-[85vw] md:w-[400px] bg-[#292524] p-8 md:p-12 relative flex flex-col justify-between">
+                    {% if review.screenshot %}
+                        <img src="{{ review.screenshot.url }}" class="w-full h-48 object-cover mb-6 opacity-80  transition duration-500">
+                    {% endif %}
+                    <p class="font-serif text-xl italic leading-relaxed mb-6 opacity-90">"{{ review.review_text|truncatewords:30 }}"</p>
+                    <div class="border-t border-white/10 pt-4 flex justify-between items-center">
+                        <span class="text-xs font-bold uppercase tracking-widest">{{ review.client_name }}</span>
+                        <a href="{% url 'single_testimonial' agent.slug review.id %}" class="text-xs text-[#a8a29e] hover:text-white">Read Full</a>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <a href="{% url 'agent_testimonials' agent.slug %}" class="snap-center shrink-0 w-[200px] bg-[#292524] flex items-center justify-center hover:bg-[#a8a29e] transition cursor-pointer group">
+                    <span class="text-xs font-bold uppercase tracking-widest text-white group-hover:text-black">View All -></span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if articles %}
+        <div class="px-4 lg:px-8 py-24 bg-white border-t border-[#e7e5e4]">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex justify-between items-end mb-12 border-b border-black pb-4">
+                    <span class="text-xs font-bold uppercase tracking-widest">(02) Journal</span>
+                    <span class="text-xs font-serif italic text-[#a8a29e]">Latest Insights</span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {% for article in articles %}
+                    <a href="{% url 'article_detail' article.slug %}" class="group block">
+                        <div class="aspect-[4/5] overflow-hidden bg-[#f2f0e9] mb-4">
+                            {% if article.cover_image %}
+                                <img src="{{ article.cover_image.url }}" class="w-full h-full object-cover transition duration-700 group-hover:scale-105 grayscale group-hover:grayscale-0">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center text-[#a8a29e] font-serif text-4xl italic">Aa.</div>
+                            {% endif %}
+                        </div>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="text-xl font-serif italic leading-tight mb-2 group-hover:text-[#a8a29e] transition">{{ article.title }}</h4>
+                                <p class="text-xs text-[#a8a29e] uppercase tracking-widest">{{ article.created_at|date:"M d" }}</p>
+                            </div>
+                            <span class="text-lg font-serif italic opacity-0 group-hover:opacity-100 transition">-></span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <section id="vogue-contact" class="py-24 px-8 text-center bg-[#f2f0e9]">
+            <h2 class="text-5xl font-serif italic mb-8">Start the Conversation</h2>
+            <form action="{% url 'agent_profile' agent.slug %}" method="post" class="max-w-md mx-auto space-y-6">
+                {% csrf_token %}
+                <input type="text" name="name" placeholder="Full Name" required class="w-full bg-transparent border-b border-[#1c1917] py-3 focus:outline-none placeholder-[#a8a29e]">
+                <input type="text" name="phone" placeholder="Phone Number" required class="w-full bg-transparent border-b border-[#1c1917] py-3 focus:outline-none placeholder-[#a8a29e]">
+                <input type="email" name="email" placeholder="Email Address" required class="w-full bg-transparent border-b border-[#1c1917] py-3 focus:outline-none placeholder-[#a8a29e]">
+                <textarea name="message" rows="1" placeholder="Message" required class="w-full bg-transparent border-b border-[#1c1917] py-3 focus:outline-none placeholder-[#a8a29e]"></textarea>
+                <button class="w-full bg-[#1c1917] text-white py-4 text-xs font-bold uppercase tracking-widest hover:bg-[#a8a29e] transition">Send</button>
+            </form>
+        </section>
+        
+        <footer class="py-12 border-t border-black/5 text-center">
+            <p class="text-xs text-[#57534e] font-bold uppercase tracking-widest mb-4">&copy; {% now "Y" %} {{ agent.name }}.</p>
+            <p class="text-[10px] text-[#57534e] max-w-2xl mx-auto px-6 leading-relaxed">{{ agent.disclaimer }}</p>
+        </footer>
+    </div>
+
+    {% elif agent.theme == 'sterling' %}
+    <div class="min-h-screen bg-[#0f172a] text-[#f8fafc] font-sans selection:bg-[#38bdf8] selection:text-black">
+        
+        <div class="fixed inset-0 pointer-events-none opacity-20" style="background-image: linear-gradient(#38bdf8 1px, transparent 1px), linear-gradient(90deg, #38bdf8 1px, transparent 1px); background-size: 40px 40px;"></div>
+
+        <nav class="fixed top-0 w-full z-50 border-b border-white/10 bg-[#0f172a]/80 backdrop-blur-md px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2 text-[#38bdf8]">
+                <i class='bx bx-cube-alt text-xl'></i>
+                <span class="font-mono text-sm tracking-tighter font-bold uppercase">{{ agent.name }}</span>
+            </div>
+            <a href="#sterling-contact" class="text-xs bg-white/10 hover:bg-[#38bdf8] hover:text-black px-4 py-2 rounded transition font-mono border border-white/10">CONNECT_</a>
+        </nav>
+
+        <div class="max-w-6xl mx-auto pt-32 px-6 relative z-10">
+            
+            <div class="grid lg:grid-cols-2 gap-12 items-center mb-24">
+                <div data-aos="fade-right">
+                    <div class="inline-block px-3 py-1 bg-[#38bdf8]/10 border border-[#38bdf8]/30 rounded text-[#38bdf8] text-[10px] font-mono mb-6 tracking-widest">
+                        STATUS: ONLINE // ACCEPTING CLIENTS
+                    </div>
+                    <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight">
+                        Precision in <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#94a3b8]">Wealth Planning.</span>
+                    </h1>
+                    <p class="text-[#94a3b8] text-lg mb-8 font-light max-w-md border-l-2 border-[#38bdf8] pl-6">
+                        {{ agent.tagline|default:"Data-driven strategies for your financial future." }}
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="{% url 'download_vcard' agent.slug %}" class="bg-[#38bdf8] text-[#0f172a] font-bold px-6 py-3 rounded hover:bg-white transition flex items-center gap-2">
+                            <i class='bx bxs-contact'></i> vCard
+                        </a>
+                        <a href="#sterling-stats" class="border border-white/20 text-white px-6 py-3 rounded hover:bg-white/10 transition">View Metrics</a>
+                    </div>
+                </div>
+
+                <div class="relative" data-aos="fade-left">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-[#38bdf8] to-purple-600 rounded-2xl blur opacity-30"></div>
+                    <div class="relative bg-[#1e293b] border border-white/10 rounded-2xl p-2 overflow-hidden">
+                        {% if agent.headshot %}
+                            <img src="{{ agent.headshot.url }}" class="rounded-xl w-full object-cover grayscale contrast-125">
+                        {% else %}
+                            <div class="h-96 flex items-center justify-center bg-[#0f172a] text-[#38bdf8] text-6xl"><i class='bx bx-user'></i></div>
+                        {% endif %}
+                        
+                        <div class="absolute bottom-6 left-6 right-6 bg-[#0f172a]/90 backdrop-blur border border-white/10 p-4 rounded-lg flex justify-between items-center">
+                            <div>
+                                <div class="text-[10px] text-[#94a3b8] uppercase">Current Role</div>
+                                <div class="text-sm font-bold text-white">{{ agent.title }}</div>
+                            </div>
+                            <div class="h-8 w-8 rounded bg-[#38bdf8]/20 flex items-center justify-center text-[#38bdf8]">
+                                <i class='bx bx-check'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sterling-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-24">
+                {% for cred in credentials %}
+                <div class="bg-[#1e293b]/50 border border-white/5 p-6 rounded-xl hover:border-[#38bdf8]/50 transition group">
+                    <div class="text-[#38bdf8] text-xs font-mono mb-2 group-hover:text-white transition">{{ cred.year }}</div>
+                    <div class="text-white font-bold text-lg leading-tight">{{ cred.title }}</div>
+                    <div class="text-[#64748b] text-xs mt-1">{{ cred.issuer }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-24">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="h-px bg-white/10 flex-1"></div>
+                    <h2 class="font-mono text-[#38bdf8] uppercase tracking-widest text-sm">System Modules</h2>
+                    <div class="h-px bg-white/10 flex-1"></div>
+                </div>
+                <div class="grid md:grid-cols-3 gap-6">
+                    {% for service in services %}
+                    <div class="bg-gradient-to-b from-[#1e293b] to-[#0f172a] border border-white/10 p-8 rounded-2xl hover:shadow-[0_0_30px_-5px_rgba(56,189,248,0.3)] transition duration-500">
+                        <i class='bx {{ service.icon }} text-3xl text-[#38bdf8] mb-4'></i>
+                        <h3 class="text-xl font-bold text-white mb-2">{{ service.title }}</h3>
+                        <p class="text-[#94a3b8] text-sm leading-relaxed">{{ service.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if testimonials %}
+            <div class="mb-24">
+                <h2 class="text-3xl font-bold mb-8">User Feedback <span class="text-[#38bdf8]">.log</span></h2>
+                <div class="space-y-4">
+                    {% for review in testimonials %}
+                    <div class="bg-white/5 border border-white/10 p-6 rounded-xl backdrop-blur-sm flex flex-col md:flex-row gap-6 items-start">
+                        <div class="flex-1">
+                            <p class="text-[#cbd5e1] italic mb-4">"{{ review.review_text }}"</p>
+                            <div class="flex items-center gap-2">
+                                <div class="h-2 w-2 rounded-full bg-green-500"></div>
+                                <span class="text-xs font-mono font-bold text-white">{{ review.client_name }}</span>
+                            </div>
+                        </div>
+                        {% if review.screenshot %}
+                        <div class="w-full md:w-32 h-24 bg-black/50 rounded overflow-hidden border border-white/10 shrink-0">
+                            <img src="{{ review.screenshot.url }}" class="w-full h-full object-cover opacity-60 hover:opacity-100 transition">
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <section id="sterling-contact" class="mb-24 bg-[#38bdf8] rounded-2xl p-12 text-center text-[#0f172a]">
+                <h2 class="text-4xl font-bold mb-6">Initialize Partnership</h2>
+                <form action="{% url 'agent_profile' agent.slug %}" method="post" class="max-w-lg mx-auto space-y-4">
+                    {% csrf_token %}
+                    <input type="text" name="name" placeholder="IDENTIFIER (Name)" required class="w-full bg-[#0f172a]/10 border border-[#0f172a]/20 p-4 rounded font-mono placeholder-[#0f172a]/60 focus:outline-none focus:bg-white/20">
+                    <input type="email" name="email" placeholder="CONTACT_POINT (Email)" required class="w-full bg-[#0f172a]/10 border border-[#0f172a]/20 p-4 rounded font-mono placeholder-[#0f172a]/60 focus:outline-none focus:bg-white/20">
+                    <textarea name="message" rows="2" placeholder="PAYLOAD (Message)" required class="w-full bg-[#0f172a]/10 border border-[#0f172a]/20 p-4 rounded font-mono placeholder-[#0f172a]/60 focus:outline-none focus:bg-white/20"></textarea>
+                    <button class="w-full bg-[#0f172a] text-white font-bold font-mono py-4 rounded hover:bg-white hover:text-[#0f172a] transition shadow-lg">
+                        >>> EXECUTE_SEND
+                    </button>
+                </form>
+            </section>
+            
+            <footer class="py-12 border-t border-white/10 text-center">
+                <p class="text-xs text-[#64748b] font-mono uppercase tracking-widest mb-4">&copy; {% now "Y" %} {{ agent.name }}.</p>
+                <p class="text-[10px] text-[#475569] max-w-2xl mx-auto px-6 leading-relaxed">{{ agent.disclaimer }}</p>
+            </footer>
+
+        </div>
     </div>
 
     {% else %}
@@ -568,9 +826,16 @@
 
     {% if agent.phone_number %}
     <div class="fixed bottom-8 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none">
-        <a href="https://wa.me/{{ agent.phone_number }}" target="_blank" class="pointer-events-auto bg-gray-900 text-white pl-6 pr-8 py-3.5 rounded-full shadow-2xl flex items-center gap-4 transform hover:-translate-y-1 hover:scale-105 transition duration-300 border border-gray-700/50 group">
-            <div class="bg-[#25D366] p-2 rounded-full text-white shadow-lg group-hover:rotate-12 transition"><i class='bx bxl-whatsapp text-xl'></i></div>
-            <div class="flex flex-col text-left"><span class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Have a question?</span><span class="text-base font-bold">WhatsApp Me</span></div>
+        <a href="https://api.whatsapp.com/send?phone={{ agent.phone_number|cut:'+'|cut:' ' }}&text={{ agent.whatsapp_message|urlencode }}" 
+           target="_blank" 
+           class="pointer-events-auto bg-gray-900 text-white pl-6 pr-8 py-3.5 rounded-full shadow-2xl flex items-center gap-4 transform hover:-translate-y-1 hover:scale-105 transition duration-300 border border-gray-700/50 group">
+            <div class="bg-[#25D366] p-2 rounded-full text-white shadow-lg group-hover:rotate-12 transition">
+                <i class='bx bxl-whatsapp text-xl'></i>
+            </div>
+            <div class="flex flex-col text-left">
+                <span class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Have a question?</span>
+                <span class="text-base font-bold">WhatsApp Me</span>
+            </div>
         </a>
     </div>
     {% endif %}

@@ -36,6 +36,8 @@ class Agent(models.Model):
         ('midnight', 'Midnight Neon (Dark & Cyan)'),
         ('midnight_rose', 'Midnight Rose (Black & Pink)'),
         ('executive', 'Executive Gold (Black & Gold)'),
+        ('vogue', 'Vogue Editorial (Alabaster & Charcoal)'), # NEW
+        ('sterling', 'Sterling Fintech (Slate & Blue)'),
         ('emerald', 'Private Client (Deep Green)'),
         ('obsidian', 'Obsidian (Black & White)'),
         ('royal', 'Royal Navy (Deep Blue & Silver)'),
