@@ -45,7 +45,7 @@
 
     <nav class="p-6">
         <div class="max-w-4xl mx-auto flex items-center gap-4">
-            <a href="{% url 'agent_profile' agent.slug %}" class="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition shadow-sm">
+            <a href="{% url 'agent_profile' agent.slug %}" class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center transition shadow-sm bg-[var(--bg-card)] text-[var(--text-muted)] hover:brightness-110">
                 <i class='bx bx-left-arrow-alt text-2xl'></i>
             </a>
             <div class="flex items-center gap-3">
@@ -59,9 +59,9 @@
         {% if agent.headshot %}
         <div class="shrink-0 relative group">
             <div class="absolute inset-0 bg-current opacity-10 rounded-full blur-2xl transform translate-y-4" style="color: var(--accent)"></div>
-            <img src="{{ agent.headshot.url }}" class="relative w-48 h-48 md:w-56 md:h-56 rounded-full object-cover shadow-2xl border-4 border-white transform transition duration-500 hover:scale-105" alt="{{ agent.name }}">
+            <img src="{{ agent.headshot.url }}" class="relative w-48 h-48 md:w-56 md:h-56 rounded-full object-cover shadow-2xl border-4 border-white/10 transform transition duration-500 hover:scale-105" alt="{{ agent.name }}">
             
-            <div class="absolute bottom-2 right-2 md:bottom-4 md:right-4 bg-white text-blue-600 w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-white text-xl">
+            <div class="absolute bottom-2 right-2 md:bottom-4 md:right-4 w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-white/10 text-xl bg-[var(--bg-card)] text-[var(--accent)]">
                 <i class='bx bxs-badge-check'></i>
             </div>
         </div>
@@ -84,24 +84,24 @@
         {% for review in testimonials %}
         <div class="inline-block w-full mb-8 break-inside-avoid p-8 rounded-3xl shadow-sm relative hover:shadow-md transition-all duration-300 group" style="background-color: var(--bg-secondary);">
             
-            <a href="{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white border border-stone-200 text-stone-500 hover:text-white transition z-20 shadow-sm hover:brightness-110" style="--tw-hover-bg: var(--accent); --tw-hover-border: var(--accent);" onmouseover="this.style.backgroundColor=getComputedStyle(document.documentElement).getPropertyValue('--accent'); this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent');" onmouseout="this.style.backgroundColor='white'; this.style.borderColor='#e7e5e4';" title="Share this review">
+            <a href="{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full border border-white/10 transition z-20 shadow-sm hover:brightness-110 bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-white" style="--tw-hover-bg: var(--accent); --tw-hover-border: var(--accent);" onmouseover="this.style.backgroundColor=getComputedStyle(document.documentElement).getPropertyValue('--accent'); this.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--accent');" onmouseout="this.style.backgroundColor=''; this.style.borderColor='';" title="Share this review">
                 <i class='bx bx-share-alt text-xl'></i>
             </a>
 
             {% if review.screenshot %}
-                <div class="mb-6 rounded-2xl overflow-hidden border border-black/5 shadow-sm relative z-10">
+                <div class="mb-6 rounded-2xl overflow-hidden border border-white/10 shadow-sm relative z-10">
                     <img src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Proof">
                 </div>
 
                 <div class="mb-4">
-                    <button onclick="toggleContent('text-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition px-4 py-2 rounded-lg bg-white shadow-sm group w-full justify-center" style="color: var(--text-muted); border: 1px solid rgba(0,0,0,0.05)">
+                    <button onclick="toggleContent('text-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition px-4 py-2 rounded-lg shadow-sm group w-full justify-center bg-[var(--bg-card)] text-[var(--text-muted)]" style="border: 1px solid rgba(255,255,255,0.1)">
                         <span>Read Review Text</span>
                         <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
                     </button>
                 </div>
 
                 <div id="text-{{ forloop.counter }}" class="content-toggle mb-6 relative z-10">
-                    <div class="p-4 bg-white/50 rounded-xl border border-black/5">
+                    <div class="p-4 rounded-xl border border-white/5 bg-[var(--bg-card)]">
                         <p class="text-lg italic leading-relaxed font-serif" style="color: var(--text-muted)">
                             "{{ review.review_text }}"
                         </p>
@@ -119,8 +119,8 @@
                 </div>
             {% endif %}
 
-            <div class="flex items-center gap-4 pt-6 border-t border-gray-200/50 relative z-10">
-                <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center font-bold font-serif text-xl shadow-sm" style="color: var(--text-muted)">
+            <div class="flex items-center gap-4 pt-6 border-t border-white/10 relative z-10">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold font-serif text-xl shadow-sm bg-[var(--bg-card)]" style="color: var(--text-muted)">
                     {{ review.client_name|slice:":1" }}
                 </div>
                 <div>
@@ -140,19 +140,19 @@
     
     <div class="text-center mt-20">
         <p class="text-sm mb-4" style="color: var(--text-muted)">Ready to start your own journey?</p>
-        <a href="{% url 'agent_profile' agent.slug %}#contact" class="inline-block text-white px-8 py-4 rounded-full font-bold transition shadow-lg hover:brightness-110" style="background-color: var(--text-main)">
+        <a href="{% url 'agent_profile' agent.slug %}#contact" class="inline-block px-8 py-4 rounded-full font-bold transition shadow-lg hover:brightness-110 text-[var(--bg-page)]" style="background-color: var(--text-main)">
             Get in Touch
         </a>
     </div>
 
-    <footer class="py-16 border-t border-gray-200/60 mt-20 relative z-10" style="background-color: var(--bg-card);">
+    <footer class="py-16 border-t border-white/10 mt-20 relative z-10" style="background-color: var(--bg-card);">
         <div class="max-w-6xl mx-auto px-6 text-center">
             
             {% if agent.linkedin or agent.instagram or agent.facebook %}
             <div class="flex justify-center gap-6 mb-10">
-                {% if agent.linkedin %}<a href="{{ agent.linkedin }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-white hover:bg-[#0077b5] hover:border-[#0077b5] transition text-xl shadow-sm"><i class='bx bxl-linkedin'></i></a>{% endif %}
-                {% if agent.instagram %}<a href="{{ agent.instagram }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-white hover:bg-[#E1306C] hover:border-[#E1306C] transition text-xl shadow-sm"><i class='bx bxl-instagram'></i></a>{% endif %}
-                {% if agent.facebook %}<a href="{{ agent.facebook }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-white hover:bg-[#1877F2] hover:border-[#1877F2] transition text-xl shadow-sm"><i class='bx bxl-facebook'></i></a>{% endif %}
+                {% if agent.linkedin %}<a href="{{ agent.linkedin }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full border border-white/10 hover:text-white hover:bg-[#0077b5] hover:border-[#0077b5] transition text-xl shadow-sm bg-[var(--bg-page)] text-[var(--text-muted)]"><i class='bx bxl-linkedin'></i></a>{% endif %}
+                {% if agent.instagram %}<a href="{{ agent.instagram }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full border border-white/10 hover:text-white hover:bg-[#E1306C] hover:border-[#E1306C] transition text-xl shadow-sm bg-[var(--bg-page)] text-[var(--text-muted)]"><i class='bx bxl-instagram'></i></a>{% endif %}
+                {% if agent.facebook %}<a href="{{ agent.facebook }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full border border-white/10 hover:text-white hover:bg-[#1877F2] hover:border-[#1877F2] transition text-xl shadow-sm bg-[var(--bg-page)] text-[var(--text-muted)]"><i class='bx bxl-facebook'></i></a>{% endif %}
             </div>
             {% endif %}
 
