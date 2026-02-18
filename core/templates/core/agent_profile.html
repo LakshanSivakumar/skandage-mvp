@@ -139,14 +139,14 @@
 
                 <div class="mt-12 md:mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 border-t border-white/10 pt-8 font-sans">
                     {% if credentials %}
-                    {% for cred in credentials %}
-                    <div class="flex md:block items-center justify-between border-b md:border-b-0 border-white/5 pb-2 md:pb-0">
-                        <div class="text-xl md:text-3xl font-bold text-white mb-0 md:mb-1 break-words leading-tight">{{ cred.title }}</div>
-                        <div class="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest text-right md:text-left min-w-[80px]">
-                            {{ cred.issuer }} <span class="text-[#fbbf24] ml-1">{{ cred.year }}</span>
+                        {% for cred in credentials %}
+                        <div class="flex md:block items-center justify-between border-b md:border-b-0 border-white/5 pb-2 md:pb-0">
+                            <div class="text-xl md:text-3xl font-bold text-white mb-0 md:mb-1 break-words leading-tight">{{ cred.title }}</div>
+                            <div class="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest text-right md:text-left min-w-[80px]">
+                                {{ cred.issuer }} <span class="text-[#fbbf24] ml-1">{{ cred.year }}</span>
+                            </div>
                         </div>
-                    </div>
-                    {% endfor %}
+                        {% endfor %}
                     {% else %}
                         <div><div class="text-3xl font-bold text-white mb-1">Top 1%</div><div class="text-xs text-gray-500 uppercase tracking-widest">Industry Rank</div></div>
                         <div><div class="text-3xl font-bold text-white mb-1">MDRT</div><div class="text-xs text-gray-500 uppercase tracking-widest">Qualified Member</div></div>
@@ -208,9 +208,18 @@
                         {% endif %}
 
                         <div class="border-l-2 border-white/10 pl-8 py-2 hover:border-[#fbbf24] transition duration-500">
-                            <p class="font-serif text-2xl italic leading-relaxed mb-6 opacity-80">"{{ review.review_text|truncatewords:40 }}"</p>
-                            <div class="flex items-center gap-4">
-                                <div class="text-xs font-bold uppercase tracking-widest opacity-50">{{ review.client_name }}</div>
+                            <div class="mb-4">
+                                <button onclick="toggleContent('exec-text-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-[10px] font-bold text-[#fbbf24] uppercase tracking-widest hover:text-white transition border border-white/20 px-3 py-1.5 hover:bg-white/10">
+                                    <span>Read Review</span> <i class='bx bx-chevron-down text-base rotate-icon ml-1'></i>
+                                </button>
+                            </div>
+
+                            <div id="exec-text-{{ forloop.counter }}" class="content-toggle">
+                                <p class="font-serif text-2xl italic leading-relaxed mb-6 opacity-80 text-white">"{{ review.review_text }}"</p>
+                            </div>
+
+                            <div class="flex items-center gap-4 mt-6">
+                                <div class="text-xs font-bold uppercase tracking-widest opacity-50 text-gray-400">{{ review.client_name }}</div>
                                 <div class="w-12 h-px bg-white/20"></div>
                                 <div class="text-xs font-bold uppercase tracking-widest text-[#fbbf24]">Verified Client</div>
                             </div>
@@ -555,8 +564,10 @@
         </div>
     </footer>
 
+    {% endif %}
+
     {% if agent.phone_number %}
-    <div class="fixed bottom-8 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
+    <div class="fixed bottom-8 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none">
         <a href="https://wa.me/{{ agent.phone_number }}" target="_blank" class="pointer-events-auto bg-gray-900 text-white pl-6 pr-8 py-3.5 rounded-full shadow-2xl flex items-center gap-4 transform hover:-translate-y-1 hover:scale-105 transition duration-300 border border-gray-700/50 group">
             <div class="bg-[#25D366] p-2 rounded-full text-white shadow-lg group-hover:rotate-12 transition"><i class='bx bxl-whatsapp text-xl'></i></div>
             <div class="flex flex-col text-left"><span class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Have a question?</span><span class="text-base font-bold">WhatsApp Me</span></div>
@@ -564,7 +575,6 @@
     </div>
     {% endif %}
 
-    {% endif %}
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
         AOS.init({ once: true, offset: 50, duration: 800, easing: 'ease-out-cubic' });
@@ -577,10 +587,10 @@
             const textSpan = button.querySelector('span');
             // If the container IS expanded, set button to "Hide"
             if (container.classList.contains('expanded')) {
-                textSpan.textContent = "Hide Review Text";
+                textSpan.textContent = "Hide Review";
             } else {
                 // If it is collapsed, set button to "Read"
-                textSpan.textContent = "Read Review Text";
+                textSpan.textContent = "Read Review";
             }
         }
     </script>
