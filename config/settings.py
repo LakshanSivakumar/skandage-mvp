@@ -98,7 +98,8 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-
+#ENCRYPTION FOR EMAILS
+ENCRYPTION_KEY = b'PKhR0eKUBNCRHxdl3ewdgFNwb6XsiC-cTBX7TMluMEY='
 #EMAIL BACKEND
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.resend.com'

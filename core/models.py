@@ -2,7 +2,9 @@ import uuid
 from django.db import models
 from django.utils.text import slugify
 from django.contrib.auth.models import User
-
+import hashlib
+from cryptography.fernet import Fernet
+from django.conf import settings
 class Agent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)
@@ -206,19 +208,6 @@ class AgencyReview(models.Model):
     review_text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
-class Subscriber(models.Model):
-    agent = models.ForeignKey(Agent, related_name='subscribers', on_delete=models.CASCADE)
-    name = models.CharField(max_length=100, blank=True)
-    email = models.EmailField()
-    source = models.CharField(max_length=50, default='manual') # 'lead', 'csv', 'manual'
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('agent', 'email') # Prevents duplicate emails for the same agent
-
-    def __str__(self):
-        return f"{self.name} ({self.email})"
 
 class Newsletter(models.Model):
     agent = models.ForeignKey(Agent, related_name='newsletters', on_delete=models.CASCADE)
@@ -232,3 +221,41 @@ class Newsletter(models.Model):
 
     def __str__(self):
         return self.subject
+    
+def hash_email(email):
+    return hashlib.sha256(email.lower().strip().encode('utf-8')).hexdigest()
+
+class Subscriber(models.Model):
+    agent = models.ForeignKey('Agent', related_name='subscribers', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, blank=True)
+    
+    # --- THE VAULT ---
+    email_hash = models.CharField(max_length=64, help_text="Used for duplicate checking") 
+    encrypted_email = models.BinaryField(help_text="The securely vaulted email")
+    
+    source = models.CharField(max_length=50, default='manual')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('agent', 'email_hash') 
+
+    # --- MAGIC GETTER & SETTER ---
+    @property
+    def email(self):
+        try:
+            f = Fernet(settings.ENCRYPTION_KEY)
+            return f.decrypt(self.encrypted_email).decode('utf-8')
+        except:
+            return "Decryption Error"
+
+    @email.setter
+    def email(self, raw_email):
+        clean_email = raw_email.lower().strip()
+        f = Fernet(settings.ENCRYPTION_KEY)
+        self.encrypted_email = f.encrypt(clean_email.encode('utf-8'))
+        self.email_hash = hash_email(clean_email)
+
+    def __str__(self):
+        return f"{self.name} (Encrypted)"
+    

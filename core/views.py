@@ -22,7 +22,7 @@ from django.utils import timezone
 from .models import Subscriber, Newsletter
 from django.core.mail import get_connection, EmailMultiAlternatives
 from django.utils.html import strip_tags
-
+from .models import hash_email
 # ==========================
 # VCARD DOWNLOAD VIEW
 # ==========================
@@ -185,11 +185,11 @@ def agent_profile(request, slug):
             lead = form.save(commit=False)
             lead.agent = agent
             lead.save()
-            Subscriber.objects.get_or_create(
-                agent=agent,
-                email=lead.email,
-                defaults={'name': lead.name, 'source': 'website_lead'}
-            )
+            hashed = hash_email(lead.email)
+            if not Subscriber.objects.filter(agent=agent, email_hash=hashed).exists():
+                sub = Subscriber(agent=agent, name=lead.name, source='website_lead')
+                sub.email = lead.email # Triggers the encryption setter!
+                sub.save()
             # ---------------------------
             return redirect('agent_profile', slug=slug)
     else:
@@ -637,14 +637,16 @@ def manage_subscribers(request):
     # Handle Manual Add
     if request.method == 'POST' and 'add_subscriber' in request.POST:
         name = request.POST.get('name')
-        email = request.POST.get('email')
+        raw_email = request.POST.get('email')
+        hashed = hash_email(raw_email)
         
-        # Check if exists
-        if Subscriber.objects.filter(agent=agent, email=email).exists():
-            messages.warning(request, f"Skipped: {email} is already on your list.")
+        if Subscriber.objects.filter(agent=agent, email_hash=hashed).exists():
+            messages.warning(request, f"Skipped: That client is already in your vault.")
         else:
-            Subscriber.objects.create(agent=agent, name=name, email=email, source='manual')
-            messages.success(request, f"Added {email} to your audience.")
+            sub = Subscriber(agent=agent, name=name, source='manual')
+            sub.email = raw_email # Encrypts it
+            sub.save()
+            messages.success(request, f"Securely vaulted new client.")
         return redirect('manage_subscribers')
 
     # Handle CSV Import
@@ -657,8 +659,7 @@ def manage_subscribers(request):
         decoded_file = csv_file.read().decode('utf-8')
         io_string = io.StringIO(decoded_file)
         reader = csv.reader(io_string, delimiter=',')
-        
-        next(reader, None) # Skip header row
+        next(reader, None) 
 
         added = 0
         skipped_emails = []
@@ -666,24 +667,22 @@ def manage_subscribers(request):
         for row in reader:
             if len(row) >= 2:
                 name = row[0].strip()
-                email = row[1].strip()
+                raw_email = row[1].strip()
                 
-                if email:
-                    obj, created = Subscriber.objects.get_or_create(
-                        agent=agent, 
-                        email=email,
-                        defaults={'name': name, 'source': 'csv_import'}
-                    )
-                    if created:
+                if raw_email:
+                    hashed = hash_email(raw_email)
+                    if not Subscriber.objects.filter(agent=agent, email_hash=hashed).exists():
+                        sub = Subscriber(agent=agent, name=name, source='csv_import')
+                        sub.email = raw_email # Encrypts it
+                        sub.save()
                         added += 1
                     else:
-                        skipped_emails.append(email)
+                        skipped_emails.append(raw_email)
         
         if added > 0:
-            messages.success(request, f"Successfully imported {added} new clients!")
+            messages.success(request, f"Successfully vaulted {added} new clients!")
         if skipped_emails:
-            # As requested: Notify exactly which emails were skipped
-            skipped_str = ", ".join(skipped_emails[:5]) # Show first 5 to avoid massive alert box
+            skipped_str = ", ".join(skipped_emails[:5]) 
             more = f" and {len(skipped_emails) - 5} more" if len(skipped_emails) > 5 else ""
             messages.warning(request, f"Skipped duplicates: {skipped_str}{more}.")
             
