@@ -14,6 +14,14 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import F, Max
 from .utils import scrape_and_save_testimonials
 from django.core.signing import Signer, BadSignature
+import csv
+import io
+from django.core.mail import send_mass_mail
+from email.mime.application import MIMEApplication # <--- NEW IMPORT
+from django.utils import timezone
+from .models import Subscriber, Newsletter
+from django.core.mail import get_connection, EmailMultiAlternatives
+from django.utils.html import strip_tags
 
 # ==========================
 # VCARD DOWNLOAD VIEW
@@ -177,6 +185,12 @@ def agent_profile(request, slug):
             lead = form.save(commit=False)
             lead.agent = agent
             lead.save()
+            Subscriber.objects.get_or_create(
+                agent=agent,
+                email=lead.email,
+                defaults={'name': lead.name, 'source': 'website_lead'}
+            )
+            # ---------------------------
             return redirect('agent_profile', slug=slug)
     else:
         form = LeadForm()
@@ -615,3 +629,215 @@ def import_testimonials(request):
             print(f"Import Error: {e}")
             messages.error(request, "An error occurred during import.")
     return redirect('manage_testimonials')
+
+@login_required
+def manage_subscribers(request):
+    agent = request.user.agent
+    
+    # Handle Manual Add
+    if request.method == 'POST' and 'add_subscriber' in request.POST:
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        
+        # Check if exists
+        if Subscriber.objects.filter(agent=agent, email=email).exists():
+            messages.warning(request, f"Skipped: {email} is already on your list.")
+        else:
+            Subscriber.objects.create(agent=agent, name=name, email=email, source='manual')
+            messages.success(request, f"Added {email} to your audience.")
+        return redirect('manage_subscribers')
+
+    # Handle CSV Import
+    if request.method == 'POST' and 'import_csv' in request.POST:
+        csv_file = request.FILES.get('csv_file')
+        if not csv_file or not csv_file.name.endswith('.csv'):
+            messages.error(request, "Please upload a valid .csv file.")
+            return redirect('manage_subscribers')
+
+        decoded_file = csv_file.read().decode('utf-8')
+        io_string = io.StringIO(decoded_file)
+        reader = csv.reader(io_string, delimiter=',')
+        
+        next(reader, None) # Skip header row
+
+        added = 0
+        skipped_emails = []
+        
+        for row in reader:
+            if len(row) >= 2:
+                name = row[0].strip()
+                email = row[1].strip()
+                
+                if email:
+                    obj, created = Subscriber.objects.get_or_create(
+                        agent=agent, 
+                        email=email,
+                        defaults={'name': name, 'source': 'csv_import'}
+                    )
+                    if created:
+                        added += 1
+                    else:
+                        skipped_emails.append(email)
+        
+        if added > 0:
+            messages.success(request, f"Successfully imported {added} new clients!")
+        if skipped_emails:
+            # As requested: Notify exactly which emails were skipped
+            skipped_str = ", ".join(skipped_emails[:5]) # Show first 5 to avoid massive alert box
+            more = f" and {len(skipped_emails) - 5} more" if len(skipped_emails) > 5 else ""
+            messages.warning(request, f"Skipped duplicates: {skipped_str}{more}.")
+            
+        return redirect('manage_subscribers')
+
+    subscribers = agent.subscribers.all().order_by('-created_at')
+    return render(request, 'core/manage_subscribers.html', {'agent': agent, 'subscribers': subscribers, 'section': 'audience'})
+
+@login_required
+def newsletter_dashboard(request):
+    agent = request.user.agent
+    newsletters = agent.newsletters.all().order_by('-created_at')
+    audience_count = agent.subscribers.filter(is_active=True).count()
+    return render(request, 'core/newsletter_dashboard.html', {'newsletters': newsletters, 'audience_count': audience_count, 'section': 'broadcasts'})
+@login_required
+def compose_newsletter(request):
+    agent = request.user.agent
+    if request.method == 'POST':
+        subject = request.POST.get('subject')
+        content = request.POST.get('content') 
+        attachment = request.FILES.get('attachment') 
+        html_file = request.FILES.get('html_file') # <--- NEW
+        
+        Newsletter.objects.create(
+            agent=agent, 
+            subject=subject, 
+            content=content,
+            attachment=attachment,
+            html_file=html_file # <--- NEW
+        )
+        messages.success(request, "Broadcast saved as draft.")
+        return redirect('newsletter_dashboard')
+        
+    return render(request, 'core/compose_newsletter.html', {'section': 'broadcasts'})
+
+@login_required
+def send_newsletter(request, pk):
+    agent = request.user.agent
+    newsletter = get_object_or_404(Newsletter, pk=pk, agent=agent)
+    
+    subscribers = agent.subscribers.filter(is_active=True)
+    if not subscribers.exists():
+        messages.error(request, "You have no active subscribers.")
+        return redirect('newsletter_dashboard')
+
+    if newsletter.status == 'sent':
+        messages.error(request, "This broadcast has already been sent.")
+        return redirect('newsletter_dashboard')
+
+    from_email = f"{agent.name} <updates@skandage.com>"
+    messages_to_send = []
+    
+    # ---------------------------------------------------------
+    # 1. READ THE PDF SAFELY (IF IT EXISTS)
+    # ---------------------------------------------------------
+    file_content = None
+    file_name = ""
+    pdf_url = ""
+    
+    if newsletter.attachment:
+        try:
+            # Build the absolute URL so we can link to it in the email body
+            pdf_url = request.build_absolute_uri(newsletter.attachment.url)
+            
+            # Open and read the file from the database safely
+            newsletter.attachment.open()
+            file_content = newsletter.attachment.read()
+            file_name = newsletter.attachment.name.split('/')[-1]
+            newsletter.attachment.close()
+        except Exception as e:
+            print(f"Attachment Read Error: {e}")
+
+    # ---------------------------------------------------------
+    # 1.5 READ THE CUSTOM HTML FILE (IF IT EXISTS)
+    # ---------------------------------------------------------
+    custom_html_template = ""
+    # Check if the model actually has the html_file field defined and uploaded
+    if hasattr(newsletter, 'html_file') and newsletter.html_file:
+        try:
+            newsletter.html_file.open()
+            # Read the bytes and decode to a string
+            custom_html_template = newsletter.html_file.read().decode('utf-8', errors='ignore')
+            newsletter.html_file.close()
+        except Exception as e:
+            print(f"HTML File Read Error: {e}")
+
+    # ---------------------------------------------------------
+    # 2. BUILD THE EMAILS
+    # ---------------------------------------------------------
+    for sub in subscribers:
+        client_name = sub.name or "there"
+        
+        # If there's a PDF, generate a massive, beautiful button
+        pdf_button_html = ""
+        if pdf_url:
+            pdf_button_html = f"""
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{pdf_url}" target="_blank" style="background-color: #2563eb; color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    📄 View Full PDF Newsletter
+                </a>
+            </div>
+            """
+
+        # --- LOGIC: CHOOSE BETWEEN HTML FILE OR TEXT EDITOR ---
+        if custom_html_template:
+            # Use the uploaded HTML file, allow dynamic name insertion
+            html_message = custom_html_template.replace('{{ client_name }}', client_name)
+            if pdf_button_html:
+                html_message += pdf_button_html # Append button to the bottom if PDF exists
+        else:
+            # Use the standard Text Editor fallback
+            html_message = f"""
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1917; line-height: 1.6;">
+                <p>Hi {client_name},</p>
+                {newsletter.content}
+                {pdf_button_html}
+                <br>
+                <p>Best regards,<br><strong>{agent.name}</strong><br>{agent.title} at {agent.company}</p>
+            </div>
+            """
+        
+        text_message = strip_tags(html_message)
+        
+        msg = EmailMultiAlternatives(
+            subject=newsletter.subject,
+            body=text_message,
+            from_email=from_email,
+            to=[sub.email]
+        )
+        msg.attach_alternative(html_message, "text/html")
+        
+        # ---------------------------------------------------------
+        # 3. ATTACH AS INLINE (Triggers Apple Mail's Native Preview)
+        # ---------------------------------------------------------
+        if file_content:
+            mime_pdf = MIMEApplication(file_content, _subtype="pdf")
+            # 'inline' tells the email client to try and display it in the body!
+            mime_pdf.add_header('Content-Disposition', 'inline', filename=file_name)
+            msg.attach(mime_pdf)
+            
+        messages_to_send.append(msg)
+
+    # ---------------------------------------------------------
+    # 4. SEND BATCH
+    # ---------------------------------------------------------
+    try:
+        connection = get_connection()
+        connection.send_messages(messages_to_send)
+        
+        newsletter.status = 'sent'
+        newsletter.sent_at = timezone.now()
+        newsletter.save()
+        messages.success(request, f"Blast off! Sent to {subscribers.count()} clients.")
+    except Exception as e:
+        messages.error(request, f"Failed to send. Error: {str(e)}")
+
+    return redirect('newsletter_dashboard')

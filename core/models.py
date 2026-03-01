@@ -205,3 +205,30 @@ class AgencyReview(models.Model):
     fc_photo = models.ImageField(upload_to='agency/fc_reviews/', blank=True, null=True)
     review_text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+class Subscriber(models.Model):
+    agent = models.ForeignKey(Agent, related_name='subscribers', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, blank=True)
+    email = models.EmailField()
+    source = models.CharField(max_length=50, default='manual') # 'lead', 'csv', 'manual'
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('agent', 'email') # Prevents duplicate emails for the same agent
+
+    def __str__(self):
+        return f"{self.name} ({self.email})"
+
+class Newsletter(models.Model):
+    agent = models.ForeignKey(Agent, related_name='newsletters', on_delete=models.CASCADE)
+    subject = models.CharField(max_length=255)
+    content = models.TextField(help_text="HTML content of the newsletter")
+    attachment = models.FileField(upload_to='newsletters/attachments/', blank=True, null=True, help_text="Optional PDF attachment")
+    html_file = models.FileField(upload_to='newsletters/html/', blank=True, null=True, help_text="Upload a custom HTML template")
+    status = models.CharField(max_length=20, choices=[('draft', 'Draft'), ('sent', 'Sent')], default='draft')
+    sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.subject

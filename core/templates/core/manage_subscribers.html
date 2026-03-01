@@ -1,0 +1,71 @@
+{% extends 'core/dashboard_base.html' %}
+{% block dashboard_content %}
+<div class="mb-8">
+    <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Audience Manager</h2>
+    <p class="text-slate-500 dark:text-slate-400 mt-1">Manage your client list for newsletters and market updates.</p>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-8 items-start">
+    <div class="space-y-6">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <h3 class="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2"><i class='bx bxs-file-import text-blue-500'></i> Bulk Import (CSV)</h3>
+            <p class="text-xs text-slate-500 mb-4">Upload a CSV file containing columns for <strong class="dark:text-slate-300">Name</strong> and <strong class="dark:text-slate-300">Email</strong>. Duplicates will be safely skipped.</p>
+            <form method="post" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="import_csv" value="1">
+                <input type="file" name="csv_file" accept=".csv" required class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                <button type="submit" class="w-full bg-slate-900 dark:bg-blue-600 text-white font-bold py-2.5 rounded-xl text-sm hover:opacity-90 transition">Run Import</button>
+            </form>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <h3 class="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2"><i class='bx bxs-user-plus text-emerald-500'></i> Add Single Client</h3>
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="add_subscriber" value="1">
+                <div>
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Name</label>
+                    <input type="text" name="name" required class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Email</label>
+                    <input type="email" name="email" required class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <button type="submit" class="w-full border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-bold py-2.5 rounded-xl text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition">Add to Audience</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+            <h3 class="font-bold text-slate-900 dark:text-white">Active Subscribers</h3>
+            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">{{ subscribers.count }}</span>
+        </div>
+        <div class="max-h-[600px] overflow-y-auto">
+            <table class="w-full text-left">
+                <thead class="sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-400">
+                    <tr><th class="p-4 font-bold">Client</th><th class="p-4 font-bold hidden sm:table-cell">Source</th><th class="p-4 font-bold">Date Added</th></tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50 dark:divide-slate-700/50 text-sm">
+                    {% for sub in subscribers %}
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+                        <td class="p-4">
+                            <div class="font-bold text-slate-900 dark:text-white">{{ sub.name }}</div>
+                            <div class="text-slate-500 text-xs">{{ sub.email }}</div>
+                        </td>
+                        <td class="p-4 hidden sm:table-cell">
+                            {% if sub.source == 'website_lead' %}<span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Web Lead</span>
+                            {% elif sub.source == 'csv_import' %}<span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Imported</span>
+                            {% else %}<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Manual</span>{% endif %}
+                        </td>
+                        <td class="p-4 text-slate-500 text-xs">{{ sub.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="p-8 text-center text-slate-400 italic">No subscribers yet. Wait for leads or import a list!</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'core/dashboard_base.html' %}
+{% block dashboard_content %}
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+    <div>
+        <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Broadcasts</h2>
+        <p class="text-slate-500 mt-1">Send market updates and insights to your <span class="font-bold text-blue-600">{{ audience_count }}</span> active clients.</p>
+    </div>
+    <a href="{% url 'compose_newsletter' %}" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center gap-2">
+        <i class='bx bxs-edit'></i> Compose New
+    </a>
+</div>
+
+<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+    <table class="w-full text-left border-collapse">
+        <thead>
+            <tr class="bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-400">
+                <th class="p-5 font-bold">Campaign Subject</th>
+                <th class="p-5 font-bold hidden sm:table-cell">Created</th>
+                <th class="p-5 font-bold">Status</th>
+                <th class="p-5 font-bold text-right">Action</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50 dark:divide-slate-700/50 text-sm">
+            {% for nl in newsletters %}
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+                <td class="p-5 font-bold text-slate-900 dark:text-white text-base">{{ nl.subject }}</td>
+                <td class="p-5 text-slate-500 hidden sm:table-cell">{{ nl.created_at|date:"M d, Y" }}</td>
+                <td class="p-5">
+                    {% if nl.status == 'sent' %}<span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full flex items-center gap-1 inline-flex"><i class='bx bx-check'></i> Sent</span>
+                    {% else %}<span class="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full inline-flex">Draft</span>{% endif %}
+                </td>
+                <td class="p-5 text-right">
+                    {% if nl.status == 'draft' %}
+                        <form action="{% url 'send_newsletter' nl.pk %}" method="post" onsubmit="return confirm('Blast this email to ALL {{ audience_count }} clients? This cannot be undone.');">
+                            {% csrf_token %}
+                            <button type="submit" class="text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition">Send Now <i class='bx bxs-paper-plane'></i></button>
+                        </form>
+                    {% else %}
+                        <span class="text-xs text-slate-400 font-medium">Delivered {{ nl.sent_at|date:"M d" }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="p-12 text-center text-slate-400 font-medium">You haven't written any broadcasts yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -55,5 +55,9 @@ urlpatterns = [
     path('dashboard/agency/image/delete/<int:pk>/', views.delete_agency_image, name='delete_agency_image'),
     path('dashboard/agency/<int:agency_pk>/review/add/', views.add_agency_review, name='add_agency_review'),
     path('dashboard/agency/review/delete/<int:pk>/', views.delete_agency_review, name='delete_agency_review'),
+    path('dashboard/audience/', views.manage_subscribers, name='manage_subscribers'),
+    path('dashboard/broadcasts/', views.newsletter_dashboard, name='newsletter_dashboard'),
+    path('dashboard/broadcasts/compose/', views.compose_newsletter, name='compose_newsletter'),
+    path('dashboard/broadcasts/send/<int:pk>/', views.send_newsletter, name='send_newsletter'),
 
 ]

@@ -99,6 +99,14 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+#EMAIL BACKEND
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.resend.com'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'resend'
+EMAIL_HOST_PASSWORD = 're_P5vUN1Ae_7ixeBPH1YF8muB3R73J353za' # GET THIS FROM RESEND
+DEFAULT_FROM_EMAIL = 'updates@skandage.com'
 
 # ==========================================
 # STATIC & MEDIA FILES (The Important Part)
