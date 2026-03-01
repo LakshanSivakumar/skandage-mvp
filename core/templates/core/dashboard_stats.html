@@ -61,15 +61,15 @@
 {% else %}
 
 <div class="mb-8">
-    <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Overview</h2>
+    <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Command Center</h2>
     <p class="text-slate-500 dark:text-slate-400 mt-1">Welcome back, {{ agent.name }}</p>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
     <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-purple-300 dark:hover:border-purple-500 transition">
         <div>
-            <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Profile Views</p>
-            <h3 class="text-4xl font-bold text-slate-900 dark:text-white mt-2">{{ agent.profile_views }}</h3>
+            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Profile Views</p>
+            <h3 class="text-3xl font-bold text-slate-900 dark:text-white mt-1">{{ agent.profile_views }}</h3>
         </div>
         <div class="w-12 h-12 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition">
             <i class='bx bx-show'></i>
@@ -78,21 +78,53 @@
 
     <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-blue-300 dark:hover:border-blue-500 transition">
         <div>
-            <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Leads</p>
-            <h3 class="text-4xl font-bold text-slate-900 dark:text-white mt-2">{{ leads.count }}</h3>
+            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Total Leads</p>
+            <h3 class="text-3xl font-bold text-slate-900 dark:text-white mt-1">{{ leads.count }}</h3>
         </div>
         <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition">
             <i class='bx bxs-envelope'></i>
         </div>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-amber-300 dark:hover:border-amber-500 transition">
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-emerald-300 dark:hover:border-emerald-500 transition">
         <div>
-            <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Testimonials</p>
-            <h3 class="text-4xl font-bold text-slate-900 dark:text-white mt-2">{{ agent.testimonials.count }}</h3>
+            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Conversion Rate</p>
+            <h3 class="text-3xl font-bold text-slate-900 dark:text-white mt-1">{{ conversion_rate }}<span class="text-xl text-slate-400 ml-1">%</span></h3>
         </div>
-        <div class="w-12 h-12 bg-amber-50 dark:bg-amber-900/20 text-amber-500 dark:text-amber-400 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition">
-            <i class='bx bxs-star'></i>
+        <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition">
+            <i class='bx bx-line-chart'></i>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-indigo-300 dark:hover:border-indigo-500 transition">
+        <div>
+            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">vCard Downloads</p>
+            <h3 class="text-3xl font-bold text-slate-900 dark:text-white mt-1">{{ agent.vcard_downloads }}</h3>
+        </div>
+        <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition">
+            <i class='bx bxs-contact'></i>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-rose-300 dark:hover:border-rose-500 transition">
+        <div>
+            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Audience Size</p>
+            <h3 class="text-3xl font-bold text-slate-900 dark:text-white mt-1">{{ audience_size }}</h3>
+        </div>
+        <div class="w-12 h-12 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition">
+            <i class='bx bxs-group'></i>
+        </div>
+    </div>
+    
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between group hover:border-sky-300 dark:hover:border-sky-500 transition">
+        <div>
+            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Broadcasts Sent</p>
+            <h3 class="text-3xl font-bold text-slate-900 dark:text-white mt-1">{{ broadcasts_sent }}</h3>
+        </div>
+        <div class="w-12 h-12 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition">
+            <i class='bx bxs-paper-plane'></i>
         </div>
     </div>
 </div>

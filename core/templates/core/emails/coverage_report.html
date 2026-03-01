@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Coverage Gap Report</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <tr>
+                        <td style="background-color: #0f172a; padding: 40px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: bold; letter-spacing: 1px;">COVERAGE ANALYSIS</h1>
+                            <p style="color: #94a3b8; margin: 10px 0 0 0; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">Prepared by {{ agent.name }}</p>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="color: #334155; font-size: 16px; line-height: 24px; margin: 0 0 20px 0;">Hi {{ client_name }},</p>
+                            <p style="color: #334155; font-size: 16px; line-height: 24px; margin: 0 0 30px 0;">Thank you for using the Coverage Gap Calculator. Based on the financial parameters you provided, here is your personalized risk assessment.</p>
+                            
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; border-radius: 8px; margin-bottom: 30px;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 8px 0; color: #64748b; font-size: 14px; border-bottom: 1px solid #e2e8f0;">Annual Income</td>
+                                                <td align="right" style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">{{ income }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; color: #64748b; font-size: 14px; border-bottom: 1px solid #e2e8f0;">Total Liabilities</td>
+                                                <td align="right" style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">{{ liabilities }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; color: #64748b; font-size: 14px; border-bottom: 1px solid #e2e8f0;">Current Coverage</td>
+                                                <td align="right" style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: bold; border-bottom: 1px solid #e2e8f0;">{{ existing }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 16px 0 8px 0; color: #0f172a; font-size: 18px; font-weight: bold;">Identified Gap</td>
+                                                <td align="right" style="padding: 16px 0 8px 0; color: #dc2626; font-size: 18px; font-weight: bold;">{{ gap }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="color: #334155; font-size: 16px; line-height: 24px; margin: 0 0 30px 0;">An unmitigated gap of <strong>{{ gap }}</strong> represents the exact financial shortfall your dependents would face if your income were to suddenly stop. Proper structuring can close this gap efficiently.</p>
+                            
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{{ request.scheme }}://{{ request.get_host }}/agent/{{ agent.slug }}" style="background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 16px; font-weight: bold; display: inline-block;">Discuss Your Strategy</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <p style="color: #94a3b8; font-size: 12px; line-height: 18px; margin: 0;"><strong>{{ agent.name }}</strong> | {{ agent.title }}<br>{{ agent.company }}</p>
+                            <p style="color: #94a3b8; font-size: 10px; line-height: 16px; margin: 15px 0 0 0;">This calculation is an estimate for informational purposes only and does not constitute financial advice. Please consult with a qualified advisor for a comprehensive review.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

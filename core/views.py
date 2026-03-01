@@ -23,11 +23,18 @@ from .models import Subscriber, Newsletter
 from django.core.mail import get_connection, EmailMultiAlternatives
 from django.utils.html import strip_tags
 from .models import hash_email
+from django.template.loader import render_to_string
 # ==========================
 # VCARD DOWNLOAD VIEW
 # ==========================
 def download_vcard(request, slug):
     agent = get_object_or_404(Agent, slug=slug, is_public=True)
+    
+    # --- NEW: Track the download ---
+    agent.vcard_downloads = F('vcard_downloads') + 1
+    agent.save(update_fields=['vcard_downloads'])
+    # -------------------------------
+    
     vcard_data = [
         "BEGIN:VCARD",
         "VERSION:3.0",
@@ -191,7 +198,43 @@ def agent_profile(request, slug):
                 sub.email = lead.email # Triggers the encryption setter!
                 sub.save()
             # ---------------------------
-            return redirect('agent_profile', slug=slug)
+        is_calculator = request.POST.get('is_calculator')
+        if is_calculator == 'true':
+            client_name = request.POST.get('name', 'there').replace(' (Calculator Lead)', '')
+            client_email = request.POST.get('email')
+            
+            context = {
+                'agent': agent,
+                'client_name': client_name,
+                'income': request.POST.get('calc_income'),
+                'dependents': request.POST.get('calc_dependents'),
+                'liabilities': request.POST.get('calc_liabilities'),
+                'existing': request.POST.get('calc_existing'),
+                'recommended': request.POST.get('calc_recommended'),
+                'gap': request.POST.get('calc_gap'),
+                'request': request,
+            }
+            
+            html_content = render_to_string('core/emails/coverage_report.html', context)
+            text_content = strip_tags(html_content)
+            
+            msg = EmailMultiAlternatives(
+                subject=f"Your Coverage Gap Analysis - {agent.name}",
+                body=text_content,
+                from_email=f"{agent.name} <updates@skandage.com>",
+                to=[client_email]
+            )
+            msg.attach_alternative(html_content, "text/html")
+            
+            try:
+                msg.send()
+            except Exception as e:
+                print(f"Failed to send calc report: {e}")
+        # -----------------------------------
+        
+        messages.success(request, "Your message has been sent successfully!")
+        return redirect('agent_profile', slug=agent.slug)
+
     else:
         form = LeadForm()
 
@@ -271,37 +314,46 @@ def client_review_submission(request, token):
 
 @login_required
 def dashboard_stats(request):
-    # Check if this user owns an Agency
     agency = Agency.objects.filter(owner=request.user).first()
     
-    # Check if this user is an Agent
     try:
         agent = request.user.agent
     except Agent.DoesNotExist:
         agent = None
 
-    # LOGIC: If they are an Agency Owner and NOT an agent yet, 
-    # treat them purely as an Admin (do not auto-create agent profile).
     if agency and not agent:
         context = {
             'agency': agency,
-            'is_agency_admin': True, # Flag for template
+            'is_agency_admin': True, 
             'section': 'stats'
         }
         return render(request, 'core/dashboard_stats.html', context)
 
-    # Fallback: If they are not an agency owner, or they are BOTH, 
-    # ensure they have an agent profile (Normal Agent Flow)
     if not agent:
         agent = Agent.objects.create(user=request.user, name=request.user.username)
 
     leads = Lead.objects.filter(agent=agent).order_by('-created_at')
     
+    # ==========================================
+    # NEW: ADVANCED ANALYTICS CALCULATIONS
+    # ==========================================
+    audience_size = agent.subscribers.filter(is_active=True).count()
+    broadcasts_sent = agent.newsletters.filter(status='sent').count()
+    
+    # Calculate Conversion Rate (%) safely to avoid ZeroDivisionError
+    conversion_rate = 0
+    if agent.profile_views > 0:
+        conversion_rate = round((leads.count() / agent.profile_views) * 100, 1)
+
     context = {
         'agent': agent,
-        'agency': agency, # Pass this too, in case they are both
+        'agency': agency, 
         'leads': leads,
-        'section': 'stats'
+        'section': 'stats',
+        # Pass new variables to the template:
+        'audience_size': audience_size,
+        'broadcasts_sent': broadcasts_sent,
+        'conversion_rate': conversion_rate,
     }
     return render(request, 'core/dashboard_stats.html', context)
 

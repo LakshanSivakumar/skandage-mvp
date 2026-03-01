@@ -12,6 +12,7 @@ class Agent(models.Model):
     title = models.CharField(max_length=100, default="Financial Consultant")
     company = models.CharField(max_length=100, default="Great Eastern")
     tagline = models.CharField(max_length=200, default="Here for you, always.")
+    vcard_downloads = models.PositiveIntegerField(default=0) # <--- NEW FIELD
     profile_views = models.PositiveIntegerField(default=0)
     calendly_link = models.URLField(max_length=255, blank=True, null=True, help_text="e.g., https://calendly.com/your-username")
     # WhatsApp Feature
