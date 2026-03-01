@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',       # Your App
     'storages',   # AWS S3 Library
+    'django.contrib.sitemaps',
 ]
 
 MIDDLEWARE = [

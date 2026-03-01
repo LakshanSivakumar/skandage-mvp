@@ -1,6 +1,12 @@
 from django.urls import path, include
 from . import views
+from django.contrib.sitemaps.views import sitemap # <--- ADD THIS IMPORT
+from core.sitemaps import AgentSitemap            # <--- ADD THIS IMPORT
 
+# Define the dictionary of sitemaps
+sitemaps = {
+    'agents': AgentSitemap,
+}
 urlpatterns = [
     # --- PUBLIC DOMAIN ROUTER ---
     path('', views.domain_router, name='home'),
@@ -59,5 +65,6 @@ urlpatterns = [
     path('dashboard/broadcasts/', views.newsletter_dashboard, name='newsletter_dashboard'),
     path('dashboard/broadcasts/compose/', views.compose_newsletter, name='compose_newsletter'),
     path('dashboard/broadcasts/send/<int:pk>/', views.send_newsletter, name='send_newsletter'),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 
 ]
