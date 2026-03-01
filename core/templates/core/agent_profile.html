@@ -17,6 +17,39 @@
     <meta property="og:url" content="{{ request.build_absolute_uri }}" />
     <meta property="og:type" content="profile" />
 
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "FinancialService",
+      "name": "{{ agent.name }}",
+      "description": "{{ agent.tagline|default:'Financial Consultant' }}",
+      "provider": {
+        "@type": "Person",
+        "name": "{{ agent.name }}",
+        "jobTitle": "{{ agent.title }}",
+        "worksFor": {
+          "@type": "Organization",
+          "name": "{{ agent.company }}"
+        }
+      },
+      "url": "{{ request.build_absolute_uri }}"
+      {% if agent.headshot %}
+      ,"image": "{{ request.scheme }}://{{ request.get_host }}{{ agent.headshot.url }}"
+      {% endif %}
+      {% if agent.phone_number %}
+      ,"telephone": "{{ agent.phone_number }}"
+      {% endif %}
+      {% if total_testimonials > 0 %}
+      ,"aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "bestRating": "5",
+        "worstRating": "1",
+        "reviewCount": "{{ total_testimonials }}"
+      }
+      {% endif %}
+    }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lato:wght@300;400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
