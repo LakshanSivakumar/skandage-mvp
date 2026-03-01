@@ -51,6 +51,25 @@
     }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        theme: {
+                            page: 'var(--bg-page)',
+                            card: 'var(--bg-card)',
+                            secondary: 'var(--bg-secondary)',
+                            main: 'var(--text-main)',
+                            muted: 'var(--text-muted)',
+                            accent: 'var(--accent)'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lato:wght@300;400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
