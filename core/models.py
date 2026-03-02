@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 import hashlib
 from cryptography.fernet import Fernet
 from django.conf import settings
+from django.utils import timezone
 class Agent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)
@@ -260,3 +261,15 @@ class Subscriber(models.Model):
     def __str__(self):
         return f"{self.name} (Encrypted)"
     
+
+class GlobalNewsletter(models.Model):
+    title = models.CharField(max_length=200, help_text="Internal title (e.g., 'March 2026 Update')")
+    subject = models.CharField(max_length=200, help_text="The exact email subject line clients will see")
+    content = models.TextField(help_text="Paste your plain text or paragraph content here. Do not add HTML, the wrapper handles that.")
+    
+    is_sent = models.BooleanField(default=False)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} - {'SENT' if self.is_sent else 'DRAFT'}"
