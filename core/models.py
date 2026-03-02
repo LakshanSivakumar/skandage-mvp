@@ -247,8 +247,20 @@ class Subscriber(models.Model):
     def email(self):
         try:
             f = Fernet(settings.ENCRYPTION_KEY)
-            return f.decrypt(self.encrypted_email).decode('utf-8')
-        except:
+            
+            # 1. Fetch the data from the database
+            token = self.encrypted_email
+            
+            # 2. Django returns BinaryFields as 'memoryview'. Convert it to bytes!
+            if isinstance(token, memoryview):
+                token = token.tobytes()
+            elif isinstance(token, str):
+                token = token.encode('utf-8')
+                
+            # 3. Decrypt and decode
+            return f.decrypt(token).decode('utf-8')
+        except Exception as e:
+            print(f"Decryption Failed: {e}") # This will print the actual error to your console if it fails
             return "Decryption Error"
 
     @email.setter
