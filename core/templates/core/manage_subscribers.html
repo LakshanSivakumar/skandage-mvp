@@ -1,23 +1,42 @@
 {% extends 'core/dashboard_base.html' %}
 {% block dashboard_content %}
 
-<div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-    <div>
-        <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Vault Manager</h2>
-        <p class="text-slate-500 dark:text-slate-400 mt-1">Search, segment, and manage your encrypted client list.</p>
+<div class="mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Vault Manager</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-0.5 text-sm">Search, segment, and manage your encrypted client list.</p>
+        </div>
+        {# Desktop: buttons inline with title #}
+        <div class="hidden sm:flex items-center gap-3 flex-shrink-0">
+            <button onclick="document.getElementById('freq-modal').classList.remove('hidden')"
+                    class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-5 rounded-xl text-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-2">
+                <i class='bx bx-revision'></i> Update Frequency
+            </button>
+            <button onclick="document.getElementById('import-modal').classList.remove('hidden')"
+                    class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-5 rounded-xl text-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                <i class='bx bx-upload mr-1'></i> Import
+            </button>
+            <button onclick="document.getElementById('add-modal').classList.remove('hidden')"
+                    class="bg-blue-600 text-white font-bold py-2.5 px-5 rounded-xl text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
+                <i class='bx bx-plus mr-1'></i> Add Client
+            </button>
+        </div>
     </div>
-    <div class="flex items-center gap-3 flex-wrap">
-        <button onclick="document.getElementById('freq-modal').classList.remove('hidden')"
-                class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-5 rounded-xl text-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-2">
-            <i class='bx bx-revision'></i> Update Frequency
+    {# Mobile: action buttons as a full-width row #}
+    <div class="flex sm:hidden items-center gap-2">
+        <button onclick="document.getElementById('add-modal').classList.remove('hidden')"
+                class="flex-1 bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl text-sm hover:bg-blue-700 transition shadow-md shadow-blue-200 dark:shadow-blue-900/30 flex items-center justify-center gap-1.5">
+            <i class='bx bx-plus text-base'></i> Add Client
         </button>
         <button onclick="document.getElementById('import-modal').classList.remove('hidden')"
-                class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-5 rounded-xl text-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition">
-            <i class='bx bx-upload mr-1'></i> Import CSV
+                class="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-4 rounded-xl text-sm shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-1.5">
+            <i class='bx bx-upload text-base'></i> Import
         </button>
-        <button onclick="document.getElementById('add-modal').classList.remove('hidden')"
-                class="bg-blue-600 text-white font-bold py-2.5 px-5 rounded-xl text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
-            <i class='bx bx-plus mr-1'></i> Add Client
+        <button onclick="document.getElementById('freq-modal').classList.remove('hidden')"
+                class="w-11 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-sm shadow-sm hover:bg-slate-50 transition flex items-center justify-center flex-shrink-0"
+                title="Update Frequency">
+            <i class='bx bx-revision text-lg'></i>
         </button>
     </div>
 </div>
@@ -44,9 +63,9 @@
             <thead class="bg-slate-50 dark:bg-slate-800/50">
                 <tr>
                     <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Client Name</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Demographics</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Tags</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">Email Address</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">Demographics</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">Tags</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Next Review</th>
                     <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -60,19 +79,31 @@
                         {% if sub.pipeline_status == 'prospect' %}
                         <span class="text-[10px] font-bold uppercase text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded">Prospect</span>
                         {% endif %}
+                        {# Mobile-only: show email + tags summary inline #}
+                        <div class="md:hidden mt-1 text-xs text-slate-400 truncate max-w-[160px]">
+                            {% if sub.email %}{{ sub.email }}{% else %}<em>No email</em>{% endif %}
+                        </div>
+                        {% if sub.tag_list %}
+                        <div class="md:hidden flex flex-wrap gap-1 mt-1">
+                            {% for tag in sub.tag_list|slice:":2" %}
+                            <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">{{ tag }}</span>
+                            {% endfor %}
+                            {% if sub.tag_list|length > 2 %}<span class="text-[9px] text-slate-400">+{{ sub.tag_list|length|add:"-2" }}</span>{% endif %}
+                        </div>
+                        {% endif %}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
                         <div class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
                             {% if sub.email %}<i class='bx bx-lock-alt text-green-500'></i> {{ sub.email }}{% else %}<span class="text-slate-400 italic text-xs">No Email</span>{% endif %}
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
                         <div class="text-xs text-slate-500 dark:text-slate-400">
                             {{ sub.get_race_display }} · {{ sub.get_gender_display }}
                             {% if sub.date_of_birth %}<br><span class="font-medium text-slate-700 dark:text-slate-300">{{ sub.age }} yo · DOB {{ sub.date_of_birth|date:"d M Y" }}</span>{% endif %}
                         </div>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4 hidden md:table-cell">
                         <div class="flex flex-wrap gap-1">
                             {% for tag in sub.tag_list %}
                                 <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50">{{ tag }}</span>
