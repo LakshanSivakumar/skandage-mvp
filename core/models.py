@@ -273,7 +273,12 @@ class Subscriber(models.Model):
     # ==========================================
     def _decrypt_field(self, field_data):
         if not field_data: return ""
-        try: return fernet.decrypt(field_data).decode()
+        try:
+            # PostgreSQL BinaryField returns memoryview objects, not bytes.
+            # fernet.decrypt() requires bytes — convert before decrypting.
+            if isinstance(field_data, memoryview):
+                field_data = bytes(field_data)
+            return fernet.decrypt(field_data).decode()
         except Exception: return ""
 
     def _encrypt_field(self, string_val):
