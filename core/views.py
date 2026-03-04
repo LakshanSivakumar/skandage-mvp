@@ -764,6 +764,11 @@ def manage_subscribers(request):
                     client['race_display'] = race_display.get(client.get('race', 'O'), 'Others')
                     client['gender_display'] = gender_display.get(client.get('gender', 'U'), 'Unspecified')
 
+                    # Preserve the original CSV 'status' column value BEFORE the
+                    # duplicate-check code overwrites client['status'] to 'new'/'duplicate'.
+                    # This is used later for pipeline_status mapping.
+                    csv_pipeline_status = str(client.get('status', '')).lower()
+
                     # 1. DUPLICATE CHECKING (Secure Hash Lookups)
                     if email_raw:
                         hashed = hash_email(email_raw)
@@ -798,11 +803,8 @@ def manage_subscribers(request):
                         client.get('notes') or client.get('Notes') or client.get('Contact Notes') or ''
                     )
 
-                    # Map Pipeline Status
-                    raw_status = str(
-                        client.get('status') or client.get('Status') or ''
-                    ).lower()
-                    client['pipeline_status'] = 'prospect' if 'prospect' in raw_status else 'client'
+                    # Map Pipeline Status using the ORIGINAL csv status value (not 'new'/'duplicate')
+                    client['pipeline_status'] = 'prospect' if 'prospect' in csv_pipeline_status else 'client'
 
                     # --- SMART REVIEW DATE PARSER ---
                     # Priority 1: Direct "Next Review Date" column → use as-is
@@ -949,23 +951,29 @@ def preview_import(request):
                         skipped_count += 1
                         continue
 
-                # Create with encrypted payloads and anonymized indexes
+                # --- BUILD WITH ONLY PLAIN MODEL FIELDS IN CONSTRUCTOR ---
+                # IMPORTANT: Do NOT pass encrypted properties (name, race, gender,
+                # date_of_birth) as constructor kwargs. Django's Model.__init__ does
+                # not reliably call @property setters when multiple property kwargs are
+                # mixed with model field kwargs — the encrypted fields end up as b''
+                # (empty). Set every encrypted field explicitly AFTER construction.
                 sub = Subscriber(
                     agent=agent,
-                    name=client_data.get('name', ''),
                     source='csv_import',
-                    date_of_birth=dob_value,
-                    race=client_data.get('race', 'O'),
-                    gender=client_data.get('gender', 'U'),
                     pipeline_status=client_data.get('pipeline_status', 'client'),
                     next_review_date=next_review_val,
                     last_review_date=last_review_val,
                     review_freq_months=freq_months_val,
                 )
+                # Set all encrypted / property fields explicitly
+                sub.name = client_data.get('name', '')
+                sub.race = client_data.get('race', 'O')
+                sub.gender = client_data.get('gender', 'U')
+                sub.date_of_birth = dob_value
                 sub.email = email_raw
-                sub.phone = client_data.get('phone', '')   # Encrypted
-                sub.address = client_data.get('address', '') # Encrypted
-                sub.notes = client_data.get('notes', '')   # Encrypted
+                sub.phone = client_data.get('phone', '')
+                sub.address = client_data.get('address', '')
+                sub.notes = client_data.get('notes', '')
                 sub.save()
                 added_count += 1
 
