@@ -6,6 +6,7 @@ import hashlib
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.utils import timezone
+fernet = Fernet(settings.ENCRYPTION_KEY.encode() if isinstance(settings.ENCRYPTION_KEY, str) else settings.ENCRYPTION_KEY)
 class Agent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)
@@ -26,7 +27,8 @@ class Agent(models.Model):
         default="The content on this website is strictly for information and educational purposes only and does not constitute financial advice. Investments are subject to market risks. Please consult a qualified financial consultant before making any decisions. Views expressed here are my own and do not necessarily reflect the official policy or position of my company.\n\nThis advertisement has not been reviewed by the Monetary Authority of Singapore.",
         help_text="This text appears in the footer of every page."
     )
-    
+    automation_mode = models.CharField(max_length=10, choices=[('manual', 'Manual Approval'), ('auto', 'Fully Automated')], default='manual')
+    notification_email = models.EmailField(blank=True, null=True, help_text="Optional: Receive daily summaries here instead of your login email.")
     # Profile Details
     headshot = models.ImageField(upload_to='headshots/', blank=True, null=True)
     bio = models.TextField(blank=True)
@@ -228,51 +230,177 @@ def hash_email(email):
     return hashlib.sha256(email.lower().strip().encode('utf-8')).hexdigest()
 
 class Subscriber(models.Model):
-    agent = models.ForeignKey('Agent', related_name='subscribers', on_delete=models.CASCADE)
-    name = models.CharField(max_length=100, blank=True)
+    agent = models.ForeignKey('Agent', on_delete=models.CASCADE, related_name='subscribers')
+    name = models.CharField(max_length=255)
     
-    # --- THE VAULT ---
-    email_hash = models.CharField(max_length=64, help_text="Used for duplicate checking") 
-    encrypted_email = models.BinaryField(help_text="The securely vaulted email")
-    
-    source = models.CharField(max_length=50, default='manual')
+    # --- THE RESTORED DATABASE FIELD ---
     is_active = models.BooleanField(default=True)
+    
+    # --- DEMOGRAPHIC FIELDS FOR CARD ENGINE ---
+    RACE_CHOICES = [
+        ('C', 'Chinese'), 
+        ('M', 'Malay'), 
+        ('I', 'Indian'), 
+        ('O', 'Others')
+    ]
+    GENDER_CHOICES = [
+        ('M', 'Male'), 
+        ('F', 'Female'), 
+        ('U', 'Unspecified')
+    ]
+    
+    date_of_birth = models.DateField(null=True, blank=True)
+    race = models.CharField(max_length=1, choices=RACE_CHOICES, default='O')
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, default='U')
+    
+    # --- PDPA SECURE ENCRYPTED FIELDS ---
+    email_hash = models.CharField(max_length=64)
+    encrypted_email = models.BinaryField()
+    source = models.CharField(max_length=100, default='manual')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('agent', 'email_hash') 
+        # This is the constraint that was crashing earlier. 
+        # The uuid logic below prevents it from crashing on empty emails.
+        unique_together = ('agent', 'email_hash')
 
-    # --- MAGIC GETTER & SETTER ---
     @property
     def email(self):
+        if not self.encrypted_email:
+            return ""
         try:
-            f = Fernet(settings.ENCRYPTION_KEY)
-            
-            # 1. Fetch the data from the database
             token = self.encrypted_email
-            
-            # 2. Django returns BinaryFields as 'memoryview'. Convert it to bytes!
+            # Django BinaryField returns memoryview — convert to bytes
             if isinstance(token, memoryview):
                 token = token.tobytes()
             elif isinstance(token, str):
                 token = token.encode('utf-8')
-                
-            # 3. Decrypt and decode
-            return f.decrypt(token).decode('utf-8')
-        except Exception as e:
-            print(f"Decryption Failed: {e}") # This will print the actual error to your console if it fails
-            return "Decryption Error"
+            if not token:
+                return ""
+            decrypted = fernet.decrypt(token).decode('utf-8')
+            # Hide placeholder emails from display
+            if decrypted.endswith('@placeholder.internal'):
+                return ""
+            return decrypted
+        except Exception:
+            return ""
 
     @email.setter
-    def email(self, raw_email):
-        clean_email = raw_email.lower().strip()
-        f = Fernet(settings.ENCRYPTION_KEY)
-        self.encrypted_email = f.encrypt(clean_email.encode('utf-8'))
-        self.email_hash = hash_email(clean_email)
+    def email(self, value):
+        if value:
+            self._email_decrypted = value.strip().lower()
+            self.email_hash = hash_email(self._email_decrypted)
+            self.encrypted_email = fernet.encrypt(self._email_decrypted.encode())
+        else:
+            self._email_decrypted = ""
+            # Generate a unique placeholder so empty emails don't collide
+            self.email_hash = f"empty_{uuid.uuid4().hex}"
+            self.encrypted_email = b''
+
+    def save(self, *args, **kwargs):
+        # Final safety check before database commit to prevent IntegrityErrors
+        current_email = getattr(self, '_email_decrypted', '')
+        
+        if not current_email:
+            if not self.email_hash or not self.email_hash.startswith('empty_'):
+                self.email_hash = f"empty_{uuid.uuid4().hex}"
+            self.encrypted_email = b''
+        else:
+            self.email_hash = hash_email(current_email)
+            self.encrypted_email = fernet.encrypt(current_email.encode())
+
+        super().save(*args, **kwargs)
+
+    @property
+    def age(self):
+        """Calculate age from date_of_birth. Returns None if DOB not set."""
+        if not self.date_of_birth:
+            return None
+        from datetime import date
+        today = date.today()
+        return today.year - self.date_of_birth.year - (
+            (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day)
+        )
+
+    @property
+    def auto_tags(self):
+        """Auto-generate festival tags based on race (CMIO)."""
+        tags = []
+        race_tags = {
+            'C': ['Lunar New Year', 'Mid-Autumn Festival'],
+            'M': ['Hari Raya Aidilfitri', 'Hari Raya Haji'],
+            'I': ['Deepavali', 'Pongal', 'Thaipusam'],
+        }
+        if self.race in race_tags:
+            tags.extend(race_tags[self.race])
+        tags.extend(['Christmas', 'New Year'])
+        return tags
 
     def __str__(self):
-        return f"{self.name} (Encrypted)"
-    
+        return self.name
+
+class CardTemplate(models.Model):
+    """
+    Phase 3: Asset Matrix — each card design has targeting rules.
+    The system picks a matching template based on demographics.
+    """
+    GENDER_TARGET_CHOICES = [
+        ('M', 'Males Only'),
+        ('F', 'Females Only'),
+        ('A', 'Any Gender'),
+    ]
+
+    OCCASION_CHOICES = [
+        ('Birthday', 'Birthday'),
+        ('Lunar New Year', 'Lunar New Year'),
+        ('Mid-Autumn Festival', 'Mid-Autumn Festival'),
+        ('Deepavali', 'Deepavali'),
+        ('Hari Raya Aidilfitri', 'Hari Raya Aidilfitri'),
+        ('Hari Raya Haji', 'Hari Raya Haji'),
+        ('Christmas', 'Christmas'),
+        ('New Year', 'New Year'),
+        ('Pongal', 'Pongal'),
+        ('Other', 'Other'),
+    ]
+
+    # Each agent manages their own card library
+    agent = models.ForeignKey('Agent', on_delete=models.CASCADE, related_name='card_templates', null=True, blank=True)
+
+    name = models.CharField(max_length=100, help_text="Internal name (e.g., 'Professional Navy Blue')")
+    image = models.ImageField(upload_to='card_templates/', blank=True, null=True, help_text="The card design image (optional)")
+    occasion = models.CharField(max_length=100, choices=OCCASION_CHOICES, help_text="e.g., 'Lunar New Year', 'Deepavali', 'Birthday', 'Christmas'")
+    default_message = models.TextField(
+        default="Wishing you joy and happiness on this special occasion!",
+        help_text="Default message sent with this card design"
+    )
+
+    # Targeting rules
+    target_gender = models.CharField(max_length=1, choices=GENDER_TARGET_CHOICES, default='A')
+    target_age_min = models.PositiveIntegerField(default=0, help_text="Minimum age (inclusive)")
+    target_age_max = models.PositiveIntegerField(default=120, help_text="Maximum age (inclusive)")
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['occasion', 'name']
+
+    def matches_subscriber(self, subscriber):
+        """Check if this card template matches a subscriber's demographics."""
+        # Gender check
+        if self.target_gender != 'A':
+            if subscriber.gender != self.target_gender:
+                return False
+        # Age check
+        age = subscriber.age
+        if age is not None:
+            if age < self.target_age_min or age > self.target_age_max:
+                return False
+        return True
+
+    def __str__(self):
+        return f"{self.name} ({self.occasion}) — {self.get_target_gender_display()}, Ages {self.target_age_min}-{self.target_age_max}"
+
 
 class GlobalNewsletter(models.Model):
     title = models.CharField(max_length=200, help_text="Internal title (e.g., 'March 2026 Update')")
@@ -285,3 +413,33 @@ class GlobalNewsletter(models.Model):
 
     def __str__(self):
         return f"{self.title} - {'SENT' if self.is_sent else 'DRAFT'}"
+    
+class CardLog(models.Model):
+    """
+    Tracks every card generated, whether sent, pending, or failed.
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending Approval'),
+        ('sent', 'Sent'),
+        ('failed', 'Failed'),
+    ]
+
+    agent = models.ForeignKey(Agent, on_delete=models.CASCADE, related_name='card_logs')
+    subscriber = models.ForeignKey(Subscriber, on_delete=models.CASCADE, related_name='card_logs')
+    card_template = models.ForeignKey(CardTemplate, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    occasion = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    scheduled_date = models.DateField(help_text="The actual date of the birthday/festival")
+    sent_at = models.DateTimeField(null=True, blank=True)
+    error_message = models.TextField(blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('subscriber', 'occasion', 'scheduled_date')
+        ordering = ['-scheduled_date', 'subscriber__name']
+
+    def __str__(self):
+        return f"{self.occasion} for {self.subscriber.name} ({self.status})"

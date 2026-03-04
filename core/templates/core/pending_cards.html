@@ -1,0 +1,80 @@
+{% extends 'core/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="mb-8 flex items-center justify-between">
+    <div>
+        <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold uppercase tracking-widest text-blue-500 dark:text-blue-400">CRM</span>
+            <i class='bx bx-chevron-right text-slate-300 dark:text-slate-600'></i>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-400">Action Center</span>
+        </div>
+        <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Pending Approvals</h2>
+    </div>
+    
+    <form method="POST" action="{% url 'pending_cards' %}">
+        {% csrf_token %}
+        {% if pending_logs %}
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg transition">
+            Approve & Send All
+        </button>
+        {% else %}
+        <button disabled class="bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-bold py-2.5 px-6 rounded-xl cursor-not-allowed">
+            Nothing to Send
+        </button>
+        {% endif %}
+    </form>
+</div>
+
+<div class="bg-white dark:bg-slate-800 shadow-sm rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+        <thead class="bg-slate-50 dark:bg-slate-800/50">
+            <tr>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Client</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Occasion</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Matched Template</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+            {% for log in pending_logs %}
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="font-bold text-slate-900 dark:text-white">{{ log.subscriber.name }}</div>
+                    <div class="text-xs text-slate-500">{{ log.subscriber.email|default:"No Email" }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
+                    <span class="font-bold">{{ log.occasion }}</span>
+                    <div class="text-xs text-slate-500 mt-1">{{ log.scheduled_date|date:"M d, Y" }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {% if log.card_template %}
+                        <div class="flex items-center gap-3">
+                            {% if log.card_template.image %}
+                            <img src="{{ log.card_template.image.url }}" class="h-10 w-10 object-cover rounded shadow-sm border border-slate-200">
+                            {% endif %}
+                            <span class="text-sm font-bold text-slate-700 dark:text-slate-300">{{ log.card_template.name }}</span>
+                        </div>
+                    {% else %}
+                        <span class="text-sm font-bold text-red-500">Missing Template</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {% if log.card_template and log.subscriber.email %}
+                        <span class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-green-100 text-green-700">Ready</span>
+                    {% else %}
+                        <span class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-amber-100 text-amber-700">Incomplete Data</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="px-6 py-16 text-center text-slate-500">
+                    <div class="text-4xl mb-3 text-slate-300 dark:text-slate-600"><i class='bx bx-check-circle'></i></div>
+                    <p class="font-bold">No pending cards scheduled.</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

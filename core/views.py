@@ -19,11 +19,17 @@ import io
 from django.core.mail import send_mass_mail
 from email.mime.application import MIMEApplication # <--- NEW IMPORT
 from django.utils import timezone
-from .models import Subscriber, Newsletter
+from .models import Subscriber, Newsletter, CardTemplate
 from django.core.mail import get_connection, EmailMultiAlternatives
 from django.utils.html import strip_tags
 from .models import hash_email
 from django.template.loader import render_to_string
+from .utils_import import smart_parse_clients
+from datetime import datetime
+from datetime import date
+from django.db.models import Q
+from .models import CardLog
+from django.conf import settings
 # ==========================
 # VCARD DOWNLOAD VIEW
 # ==========================
@@ -221,7 +227,7 @@ def agent_profile(request, slug):
             msg = EmailMultiAlternatives(
                 subject=f"Your Coverage Gap Analysis - {agent.name}",
                 body=text_content,
-                from_email=f"{agent.name} <updates@skandage.com>",
+                from_email=f"{agent.name} <reports@skandage.com>",
                 to=[client_email]
             )
             msg.attach_alternative(html_content, "text/html")
@@ -685,64 +691,173 @@ def import_testimonials(request):
 @login_required
 def manage_subscribers(request):
     agent = request.user.agent
-    
-    # Handle Manual Add
-    if request.method == 'POST' and 'add_subscriber' in request.POST:
-        name = request.POST.get('name')
-        raw_email = request.POST.get('email')
-        hashed = hash_email(raw_email)
-        
-        if Subscriber.objects.filter(agent=agent, email_hash=hashed).exists():
-            messages.warning(request, f"Skipped: That client is already in your vault.")
-        else:
-            sub = Subscriber(agent=agent, name=name, source='manual')
-            sub.email = raw_email # Encrypts it
-            sub.save()
-            messages.success(request, f"Securely vaulted new client.")
-        return redirect('manage_subscribers')
 
-    # Handle CSV Import
-    if request.method == 'POST' and 'import_csv' in request.POST:
-        csv_file = request.FILES.get('csv_file')
-        if not csv_file or not csv_file.name.endswith('.csv'):
-            messages.error(request, "Please upload a valid .csv file.")
+    if request.method == 'POST':
+        # --- SINGLE CLIENT ADD ---
+        if 'add_subscriber' in request.POST:
+            name = request.POST.get('name', '').strip()
+            email_raw = request.POST.get('email', '').strip().lower()
+
+            if not name or not email_raw:
+                messages.error(request, "Name and email are required.")
+                return redirect('manage_subscribers')
+
+            hashed = hash_email(email_raw)
+            if Subscriber.objects.filter(agent=agent, email_hash=hashed).exists():
+                messages.warning(request, f"A client with that email already exists in your vault.")
+                return redirect('manage_subscribers')
+
+            sub = Subscriber(agent=agent, name=name, source='manual')
+            sub.email = email_raw
+            sub.save()
+            messages.success(request, f"{name} has been added to your vault.")
             return redirect('manage_subscribers')
 
-        decoded_file = csv_file.read().decode('utf-8')
-        io_string = io.StringIO(decoded_file)
-        reader = csv.reader(io_string, delimiter=',')
-        next(reader, None) 
+        # --- CSV/EXCEL BULK IMPORT ---
+        if 'import_csv' in request.POST:
+            file_obj = request.FILES.get('csv_file')
+            if not file_obj or not file_obj.name.endswith(('.csv', '.xls', '.xlsx')):
+                messages.error(request, "Please upload a valid .csv or .xlsx file.")
+                return redirect('manage_subscribers')
 
-        added = 0
-        skipped_emails = []
-        
-        for row in reader:
-            if len(row) >= 2:
-                name = row[0].strip()
-                raw_email = row[1].strip()
+            try:
+                parsed_data = smart_parse_clients(file_obj)
                 
-                if raw_email:
-                    hashed = hash_email(raw_email)
-                    if not Subscriber.objects.filter(agent=agent, email_hash=hashed).exists():
-                        sub = Subscriber(agent=agent, name=name, source='csv_import')
-                        sub.email = raw_email # Encrypts it
-                        sub.save()
-                        added += 1
+                if not parsed_data:
+                    messages.error(request, "Could not find any valid names or emails in this file.")
+                    return redirect('manage_subscribers')
+
+                # Human-readable display maps
+                race_display = {'C': 'Chinese', 'M': 'Malay', 'I': 'Indian', 'O': 'Others'}
+                gender_display = {'M': 'Male', 'F': 'Female', 'U': 'Unspecified'}
+
+                # --- THE WATERFALL DUPLICATE HUNTER ---
+                for client in parsed_data:
+                    existing_sub = None
+                    email_raw = client.get('email', '')
+
+                    # Add display-friendly values for the preview table
+                    client['race_display'] = race_display.get(client.get('race', 'O'), 'Others')
+                    client['gender_display'] = gender_display.get(client.get('gender', 'U'), 'Unspecified')
+
+                    if email_raw:
+                        hashed = hash_email(email_raw)
+                        existing_sub = Subscriber.objects.filter(agent=agent, email_hash=hashed).first()
                     else:
-                        skipped_emails.append(raw_email)
-        
-        if added > 0:
-            messages.success(request, f"Successfully vaulted {added} new clients!")
-        if skipped_emails:
-            skipped_str = ", ".join(skipped_emails[:5]) 
-            more = f" and {len(skipped_emails) - 5} more" if len(skipped_emails) > 5 else ""
-            messages.warning(request, f"Skipped duplicates: {skipped_str}{more}.")
-            
-        return redirect('manage_subscribers')
+                        # No email — try matching by exact name in the vault
+                        existing_sub = Subscriber.objects.filter(agent=agent, name__iexact=client.get('name', '')).first()
+
+                    if existing_sub:
+                        client['status'] = 'duplicate'
+                        client['existing_name'] = existing_sub.name
+                        client['existing_dob'] = existing_sub.date_of_birth.strftime('%d/%m/%Y') if existing_sub.date_of_birth else '—'
+                        client['existing_race'] = race_display.get(existing_sub.race, 'Others')
+                        client['existing_gender'] = gender_display.get(existing_sub.gender, 'Unspecified')
+                        client['action'] = 'skip'
+                    else:
+                        client['status'] = 'new'
+                        client['action'] = 'add'
+
+                request.session['pending_import'] = parsed_data
+                return redirect('preview_import')
+
+            except Exception as e:
+                messages.error(request, f"Could not read the file. Error: {str(e)}")
+                return redirect('manage_subscribers')
 
     subscribers = agent.subscribers.all().order_by('-created_at')
     return render(request, 'core/manage_subscribers.html', {'agent': agent, 'subscribers': subscribers, 'section': 'audience'})
+@login_required
+def preview_import(request):
+    try:
+        agent = request.user.agent
+    except Agent.DoesNotExist:
+        return redirect('dashboard')
 
+    # Fetch the parsed data from the session
+    pending_import = request.session.get('pending_import')
+
+    if not pending_import:
+        messages.warning(request, "No pending import found. Please upload your file again.")
+        return redirect('manage_subscribers')
+
+    if request.method == 'POST':
+        import uuid
+        added_count = 0
+        updated_count = 0
+        skipped_count = 0
+
+        for i, client_data in enumerate(pending_import):
+            action = request.POST.get(f'action_{i}', 'skip')
+            email_raw = client_data.get('email', '')
+            dob_value = client_data.get('dob_db') or None  # Convert '' to None
+
+            if action == 'skip':
+                skipped_count += 1
+                continue
+
+            elif action == 'add':
+                # For no-email clients, generate a unique placeholder so
+                # the unique_together constraint doesn't collide
+                if email_raw:
+                    hashed = hash_email(email_raw)
+                    if Subscriber.objects.filter(agent=agent, email_hash=hashed).exists():
+                        skipped_count += 1
+                        continue
+                    email_to_store = email_raw
+                else:
+                    email_to_store = f"noemail-{uuid.uuid4().hex[:12]}@placeholder.internal"
+
+                sub = Subscriber(
+                    agent=agent,
+                    name=client_data.get('name', ''),
+                    source='csv_import',
+                    date_of_birth=dob_value,
+                    race=client_data.get('race', 'O'),
+                    gender=client_data.get('gender', 'U')
+                )
+                sub.email = email_to_store
+                sub.save()
+                added_count += 1
+
+            elif action == 'replace':
+                existing_sub = None
+                if email_raw:
+                    hashed = hash_email(email_raw)
+                    existing_sub = Subscriber.objects.filter(agent=agent, email_hash=hashed).first()
+                else:
+                    existing_sub = Subscriber.objects.filter(agent=agent, name__iexact=client_data.get('name', '')).first()
+
+                if existing_sub:
+                    if client_data.get('name'): existing_sub.name = client_data.get('name')
+                    if dob_value: existing_sub.date_of_birth = dob_value
+                    if client_data.get('race'): existing_sub.race = client_data.get('race')
+                    if client_data.get('gender'): existing_sub.gender = client_data.get('gender')
+                    existing_sub.save()
+                    updated_count += 1
+
+        del request.session['pending_import']
+        messages.success(request, f"Vault updated: {added_count} added, {updated_count} updated, {skipped_count} skipped.")
+        return redirect('manage_subscribers')
+
+    # Build summary stats for the preview page
+    new_count = sum(1 for c in pending_import if c.get('status') == 'new')
+    duplicate_count = sum(1 for c in pending_import if c.get('status') == 'duplicate')
+    race_chinese = sum(1 for c in pending_import if c.get('race') == 'C')
+    race_malay = sum(1 for c in pending_import if c.get('race') == 'M')
+    race_indian = sum(1 for c in pending_import if c.get('race') == 'I')
+    race_others = sum(1 for c in pending_import if c.get('race') == 'O')
+
+    return render(request, 'core/preview_import.html', {
+        'pending_import': pending_import,
+        'section': 'audience',
+        'new_count': new_count,
+        'duplicate_count': duplicate_count,
+        'race_chinese': race_chinese,
+        'race_malay': race_malay,
+        'race_indian': race_indian,
+        'race_others': race_others,
+    })
 @login_required
 def newsletter_dashboard(request):
     agent = request.user.agent
@@ -883,7 +998,7 @@ def send_newsletter(request, pk):
     try:
         connection = get_connection()
         connection.send_messages(messages_to_send)
-        
+
         newsletter.status = 'sent'
         newsletter.sent_at = timezone.now()
         newsletter.save()
@@ -892,3 +1007,284 @@ def send_newsletter(request, pk):
         messages.error(request, f"Failed to send. Error: {str(e)}")
 
     return redirect('newsletter_dashboard')
+
+
+# ===========================================================================
+# SUBSCRIBER EDIT & DELETE
+# ===========================================================================
+
+@login_required
+def edit_subscriber(request, pk):
+    agent = request.user.agent
+    subscriber = get_object_or_404(Subscriber, pk=pk, agent=agent)
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email_raw = request.POST.get('email', '').strip().lower()
+        dob_raw = request.POST.get('date_of_birth', '').strip()
+        race = request.POST.get('race', 'O')
+        gender = request.POST.get('gender', 'U')
+
+        if not name:
+            messages.error(request, "Name is required.")
+            return redirect('manage_subscribers')
+
+        subscriber.name = name
+        subscriber.race = race
+        subscriber.gender = gender
+
+        # Handle DOB
+        if dob_raw:
+            try:
+                subscriber.date_of_birth = datetime.strptime(dob_raw, '%Y-%m-%d').date()
+            except ValueError:
+                subscriber.date_of_birth = None
+        else:
+            subscriber.date_of_birth = None
+
+        # Handle email change
+        current_email = subscriber.email  # decrypts existing
+        if email_raw and email_raw != current_email:
+            hashed = hash_email(email_raw)
+            if Subscriber.objects.filter(agent=agent, email_hash=hashed).exclude(pk=pk).exists():
+                messages.error(request, "A client with that email already exists in your vault.")
+                return redirect('manage_subscribers')
+            subscriber.email = email_raw
+        elif not email_raw and current_email:
+            # Clearing the email — store a unique placeholder
+            subscriber.email = f"noemail-{uuid.uuid4().hex[:12]}@placeholder.internal"
+
+        subscriber.save()
+        messages.success(request, f"✓ {subscriber.name} has been updated.")
+        return redirect('manage_subscribers')
+
+    return redirect('manage_subscribers')
+
+
+@login_required
+def delete_subscriber(request, pk):
+    agent = request.user.agent
+    subscriber = get_object_or_404(Subscriber, pk=pk, agent=agent)
+
+    if request.method == 'POST':
+        name = subscriber.name
+        subscriber.delete()
+        messages.success(request, f"'{name}' has been removed from your vault.")
+
+    return redirect('manage_subscribers')
+
+
+# ===========================================================================
+# CRM — BIRTHDAY CARDS MANAGEMENT
+# ===========================================================================
+
+# Maps occasion names to their demographic association (for UI display)
+OCCASION_DEMOGRAPHIC_MAP = {
+    'Birthday': {'label': 'Universal', 'color': 'amber', 'emoji': '🎂'},
+    'Lunar New Year': {'label': 'Chinese', 'color': 'red', 'emoji': '🧧'},
+    'Mid-Autumn Festival': {'label': 'Chinese', 'color': 'orange', 'emoji': '🥮'},
+    'Deepavali': {'label': 'Indian', 'color': 'purple', 'emoji': '🪔'},
+    'Pongal': {'label': 'Indian', 'color': 'yellow', 'emoji': '🌾'},
+    'Hari Raya Aidilfitri': {'label': 'Malay', 'color': 'emerald', 'emoji': '🌙'},
+    'Hari Raya Haji': {'label': 'Malay', 'color': 'teal', 'emoji': '🕌'},
+    'Christmas': {'label': 'Universal', 'color': 'green', 'emoji': '🎄'},
+    'New Year': {'label': 'Universal', 'color': 'blue', 'emoji': '🎆'},
+    'Other': {'label': 'Custom', 'color': 'slate', 'emoji': '🎉'},
+}
+
+
+@login_required
+def manage_cards(request):
+    agent = request.user.agent
+
+    if request.method == 'POST' and 'add_card' in request.POST:
+        name = request.POST.get('name', '').strip()
+        occasion = request.POST.get('occasion', '').strip()
+        default_message = request.POST.get('default_message', '').strip()
+        target_gender = request.POST.get('target_gender', 'A')
+        try:
+            target_age_min = int(request.POST.get('target_age_min', 0))
+            target_age_max = int(request.POST.get('target_age_max', 120))
+        except (ValueError, TypeError):
+            target_age_min, target_age_max = 0, 120
+        image = request.FILES.get('image')
+
+        if not name or not occasion:
+            messages.error(request, "Card name and occasion are required.")
+            return redirect('manage_cards')
+
+        card = CardTemplate(
+            agent=agent,
+            name=name,
+            occasion=occasion,
+            default_message=default_message or "Wishing you joy and happiness on this special occasion!",
+            target_gender=target_gender,
+            target_age_min=target_age_min,
+            target_age_max=target_age_max,
+            is_active=True,
+        )
+        if image:
+            card.image = image
+        card.save()
+        messages.success(request, f"✓ Card design '{name}' added to your library.")
+        return redirect('manage_cards')
+
+    # Build card queryset with demographic metadata
+    cards = CardTemplate.objects.filter(agent=agent, is_active=True).order_by('occasion', 'name')
+
+    # Enrich each card with UI metadata
+    enriched_cards = []
+    for card in cards:
+        demo_info = OCCASION_DEMOGRAPHIC_MAP.get(card.occasion, OCCASION_DEMOGRAPHIC_MAP['Other'])
+        enriched_cards.append({
+            'card': card,
+            'demo_label': demo_info['label'],
+            'demo_color': demo_info['color'],
+            'demo_emoji': demo_info['emoji'],
+        })
+
+    # Summary stats
+    occasions_used = list(cards.values_list('occasion', flat=True).distinct())
+    total_cards = cards.count()
+
+    return render(request, 'core/manage_cards.html', {
+        'agent': agent,
+        'enriched_cards': enriched_cards,
+        'all_occasion_choices': [c[0] for c in CardTemplate.OCCASION_CHOICES],
+        'occasions_used': occasions_used,
+        'total_cards': total_cards,
+        'section': 'crm',
+        'occasion_demographic_map': OCCASION_DEMOGRAPHIC_MAP,
+    })
+
+
+@login_required
+def edit_card(request, pk):
+    agent = request.user.agent
+    card = get_object_or_404(CardTemplate, pk=pk, agent=agent)
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        occasion = request.POST.get('occasion', '').strip()
+        default_message = request.POST.get('default_message', '').strip()
+        target_gender = request.POST.get('target_gender', 'A')
+        try:
+            target_age_min = int(request.POST.get('target_age_min', 0))
+            target_age_max = int(request.POST.get('target_age_max', 120))
+        except (ValueError, TypeError):
+            target_age_min, target_age_max = card.target_age_min, card.target_age_max
+        image = request.FILES.get('image')
+
+        if not name or not occasion:
+            messages.error(request, "Card name and occasion are required.")
+        else:
+            card.name = name
+            card.occasion = occasion
+            card.default_message = default_message
+            card.target_gender = target_gender
+            card.target_age_min = target_age_min
+            card.target_age_max = target_age_max
+            if image:
+                card.image = image
+            card.save()
+            messages.success(request, f"✓ '{name}' has been updated.")
+
+    return redirect('manage_cards')
+
+
+@login_required
+def delete_card(request, pk):
+    agent = request.user.agent
+    card = get_object_or_404(CardTemplate, pk=pk, agent=agent)
+
+    if request.method == 'POST':
+        name = card.name
+        card.delete()
+        messages.success(request, f"Card design '{name}' deleted.")
+
+    return redirect('manage_cards')
+
+
+@login_required
+def pending_cards(request):
+    agent = request.user.agent
+    today = date.today()
+
+    # 1. SELF-HEALING QUEUE: Auto-queue today's birthdays if the cron job hasn't run yet
+    birthdays = Subscriber.objects.filter(
+        agent=agent, is_active=True,
+        date_of_birth__month=today.month, date_of_birth__day=today.day
+    )
+    
+    for sub in birthdays:
+        if not CardLog.objects.filter(agent=agent, subscriber=sub, occasion='Birthday', scheduled_date=today).exists():
+            age = today.year - sub.date_of_birth.year
+            template = CardTemplate.objects.filter(
+                agent=agent, occasion='Birthday', is_active=True
+            ).filter(Q(target_gender='A') | Q(target_gender=sub.gender)
+            ).filter(target_age_min__lte=age, target_age_max__gte=age).first()
+            
+            if template:
+                CardLog.objects.create(
+                    agent=agent, subscriber=sub, card_template=template, 
+                    occasion='Birthday', status='pending', scheduled_date=today
+                )
+
+    # 2. FETCH QUEUE: Grab everything waiting for manual approval
+    pending_logs = CardLog.objects.filter(
+        agent=agent, status='pending', scheduled_date__lte=today
+    ).select_related('subscriber', 'card_template')
+
+    # 3. MANUAL BATCH SEND EXECUTION
+    if request.method == 'POST':
+        sent_count = 0
+        for log in pending_logs:
+            sub = log.subscriber
+            template = log.card_template
+            
+            if template and sub.email:
+                subject = f"Happy Birthday, {sub.name}!"
+                
+                # Dynamically build the absolute URL for the image
+                site_url = getattr(settings, 'SITE_URL', request.build_absolute_uri('/')[:-1])
+                image_url = f"{site_url}{template.image.url}" if template.image else ""
+                
+                # Context mapped exactly to your existing card_email.html template
+                context = {
+                    'client_name': sub.name,
+                    'agent': agent,
+                    'occasion': log.occasion,
+                    'message': template.default_message,
+                    'card_image_url': image_url,
+                    'occasion_emoji': '🎂' if log.occasion == 'Birthday' else '🎉'
+                }
+                
+                html_content = render_to_string('core/emails/card_email.html', context)
+                text_content = strip_tags(html_content)
+                
+                msg = EmailMultiAlternatives(
+                    subject=subject,
+                    body=text_content,
+                    from_email=f"{agent.name} <updates@skandage.com>",
+                    to=[sub.email]
+                )
+                msg.attach_alternative(html_content, "text/html")
+                
+                try:
+                    msg.send(fail_silently=False)
+                    log.status = 'sent'
+                    log.sent_at = timezone.now()
+                    log.save()
+                    sent_count += 1
+                except Exception as e:
+                    log.status = 'failed'
+                    log.error_message = str(e)
+                    log.save()
+                
+        messages.success(request, f"Successfully processed and sent {sent_count} cards!")
+        return redirect('pending_cards')
+
+    return render(request, 'core/pending_cards.html', {
+        'pending_logs': pending_logs,
+        'section': 'crm'
+    })

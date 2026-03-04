@@ -24,4 +24,6 @@ typing_extensions==4.15.0
 urllib3==2.6.3
 vobject==0.9.9
 whitenoise==6.11.0
-cryptography== 46.0.5
+cryptography==46.0.5
+pandas>=2.0.0
+openpyxl>=3.1.0

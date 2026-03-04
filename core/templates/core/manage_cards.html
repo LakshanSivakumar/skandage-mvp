@@ -1,0 +1,632 @@
+{% extends 'core/dashboard_base.html' %}
+{% block dashboard_content %}
+
+<!-- Page Header -->
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold uppercase tracking-widest text-blue-500 dark:text-blue-400">CRM</span>
+            <i class='bx bx-chevron-right text-slate-300 dark:text-slate-600'></i>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-400">Birthday &amp; Occasion Cards</span>
+            
+        </div>
+        <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Card Library</h2>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Design your greeting card templates for each demographic and occasion.</p>
+    </div>
+    <a href="{% url 'pending_cards' %}" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl text-sm shadow transition">
+        <i class='bx bx-bell'></i> View Pending Cards
+    </a>
+    <button onclick="openAddModal()"
+        class="inline-flex items-center gap-2 bg-blue-600 text-white font-bold py-3 px-6 rounded-xl text-sm hover:bg-blue-700 active:scale-95 transition shadow-lg shadow-blue-200 dark:shadow-blue-900/40 flex-shrink-0">
+        <i class='bx bx-plus text-lg'></i>
+        Add Card Design
+    </button>
+    
+</div>
+
+<!-- Stats Bar -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 text-center shadow-sm">
+        <div class="text-3xl font-black text-slate-900 dark:text-white">{{ total_cards }}</div>
+        <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Total Designs</div>
+    </div>
+    <div class="bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800/40 rounded-2xl p-5 text-center shadow-sm">
+        <div class="text-3xl font-black text-emerald-600 dark:text-emerald-400">{{ occasions_used|length }}</div>
+        <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Occasions</div>
+    </div>
+    <div class="bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-800/40 rounded-2xl p-5 text-center shadow-sm col-span-2">
+        <div class="flex justify-center flex-wrap gap-1.5 mb-1">
+            {% for occ in occasions_used %}
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">{{ occ }}</span>
+            {% empty %}
+            <span class="text-slate-300 dark:text-slate-600 text-xs">None yet</span>
+            {% endfor %}
+        </div>
+        <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Covered Occasions</div>
+    </div>
+</div>
+
+<!-- Occasion Filter Tabs -->
+{% if enriched_cards %}
+<div class="mb-6 -mx-1 overflow-x-auto">
+    <div class="flex items-center gap-2 px-1 pb-1 min-w-max">
+        <button onclick="filterCards('all')" id="tab-all"
+            class="filter-tab active-tab px-4 py-2 text-xs font-bold rounded-full transition whitespace-nowrap">
+            All Designs
+        </button>
+        {% for occ in occasions_used %}
+        <button onclick="filterCards('{{ occ|escapejs }}')" id="tab-{{ forloop.counter }}"
+            class="filter-tab px-4 py-2 text-xs font-bold rounded-full transition whitespace-nowrap">
+            {% for key, val in occasion_demographic_map.items %}{% if key == occ %}{{ val.emoji }} {% endif %}{% endfor %}{{ occ }}
+        </button>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Card Grid -->
+{% if enriched_cards %}
+<div id="cards-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+    {% for item in enriched_cards %}
+    {% with card=item.card color=item.demo_color label=item.demo_label emoji=item.demo_emoji %}
+    <div class="card-item group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+         data-occasion="{{ card.occasion }}">
+
+        <!-- Card Preview: Image or Gradient Placeholder -->
+        <div class="relative aspect-[4/3] overflow-hidden">
+            {% if card.image %}
+                <img src="{{ card.image.url }}" alt="{{ card.name }}"
+                     class="w-full h-full object-cover">
+            {% else %}
+                <!-- Beautiful gradient placeholder based on occasion -->
+                <div class="w-full h-full flex flex-col items-center justify-center relative
+                    {% if card.occasion == 'Birthday' %}bg-gradient-to-br from-amber-400 via-orange-400 to-rose-400
+                    {% elif card.occasion == 'Lunar New Year' %}bg-gradient-to-br from-red-600 via-red-500 to-rose-400
+                    {% elif card.occasion == 'Mid-Autumn Festival' %}bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-400
+                    {% elif card.occasion == 'Deepavali' %}bg-gradient-to-br from-purple-700 via-violet-600 to-purple-400
+                    {% elif card.occasion == 'Pongal' %}bg-gradient-to-br from-yellow-500 via-amber-400 to-lime-400
+                    {% elif card.occasion == 'Hari Raya Aidilfitri' or card.occasion == 'Hari Raya Haji' %}bg-gradient-to-br from-emerald-600 via-teal-500 to-green-400
+                    {% elif card.occasion == 'Christmas' %}bg-gradient-to-br from-red-700 via-green-700 to-green-600
+                    {% elif card.occasion == 'New Year' %}bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-500
+                    {% else %}bg-gradient-to-br from-slate-500 via-slate-400 to-slate-300{% endif %}">
+
+                    <!-- Decorative circles -->
+                    <div class="absolute top-2 right-2 w-16 h-16 bg-white/10 rounded-full"></div>
+                    <div class="absolute bottom-2 left-2 w-10 h-10 bg-white/10 rounded-full"></div>
+                    <div class="absolute -top-3 -left-3 w-20 h-20 bg-white/5 rounded-full"></div>
+
+                    <!-- Emoji + Name -->
+                    <div class="text-4xl mb-2 drop-shadow-sm">{{ emoji }}</div>
+                    <div class="text-white font-bold text-sm text-center px-4 drop-shadow">{{ card.name }}</div>
+                    <div class="text-white/70 text-xs mt-1">{{ card.occasion }}</div>
+                </div>
+            {% endif %}
+
+            <!-- Hover overlay with quick actions -->
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
+                <button onclick="openEditModal({{ card.pk }}, '{{ card.name|escapejs }}', '{{ card.occasion|escapejs }}', '{{ card.default_message|escapejs }}', '{{ card.target_gender }}', {{ card.target_age_min }}, {{ card.target_age_max }})"
+                    class="w-11 h-11 bg-white text-slate-900 rounded-xl flex items-center justify-center font-bold hover:bg-blue-50 hover:text-blue-600 transition shadow-lg"
+                    title="Edit">
+                    <i class='bx bxs-pencil text-sm'></i>
+                </button>
+                <button onclick="openDeleteCardModal('{{ card.pk }}', '{{ card.name|escapejs }}')"
+                    class="w-11 h-11 bg-white text-slate-900 rounded-xl flex items-center justify-center font-bold hover:bg-red-50 hover:text-red-600 transition shadow-lg"
+                    title="Delete">
+                    <i class='bx bxs-trash text-sm'></i>
+                </button>
+            </div>
+
+            <!-- Status badge -->
+            <div class="absolute top-3 left-3">
+                <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300 shadow">
+                    {{ card.occasion }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Card Info -->
+        <div class="p-5">
+            <!-- Name + demographic label -->
+            <div class="flex items-start justify-between gap-2 mb-3">
+                <h4 class="font-bold text-slate-900 dark:text-white leading-tight">{{ card.name }}</h4>
+                <span class="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full
+                    {% if label == 'Chinese' %}bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400
+                    {% elif label == 'Malay' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400
+                    {% elif label == 'Indian' %}bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400
+                    {% else %}bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400{% endif %}">
+                    {{ label }}
+                </span>
+            </div>
+
+            <!-- Targeting chips -->
+            <div class="flex flex-wrap gap-1.5 mb-3">
+                <!-- Gender -->
+                <span class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400">
+                    <i class='bx bx-user text-xs'></i>
+                    {% if card.target_gender == 'M' %}Males Only
+                    {% elif card.target_gender == 'F' %}Females Only
+                    {% else %}Any Gender{% endif %}
+                </span>
+                <!-- Age range -->
+                {% if card.target_age_min > 0 or card.target_age_max < 120 %}
+                <span class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400">
+                    <i class='bx bx-calendar text-xs'></i>
+                    {{ card.target_age_min }}–{{ card.target_age_max }}yrs
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- Default message preview -->
+            <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-3 border border-slate-100 dark:border-slate-700/50">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Default Message</p>
+                <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3">
+                    "{{ card.default_message }}"
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-16 text-center shadow-sm">
+    <div class="relative w-24 h-24 mx-auto mb-6">
+        <!-- Decorative gradient background circle -->
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-full"></div>
+        <div class="relative w-24 h-24 flex items-center justify-center">
+            <i class='bx bxs-gift text-5xl text-blue-400 dark:text-blue-500'></i>
+        </div>
+    </div>
+    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">No card designs yet</h3>
+    <p class="text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-8 text-sm leading-relaxed">
+        Start building your card library. Add designs for each occasion — Birthday, Lunar New Year, Deepavali — and we'll match the right card to the right client automatically.
+    </p>
+    <div class="grid sm:grid-cols-3 gap-4 max-w-2xl mx-auto mb-8 text-left">
+        <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
+            <div class="text-2xl mb-2">🎂</div>
+            <p class="text-sm font-bold text-slate-700 dark:text-slate-300">Birthday</p>
+            <p class="text-xs text-slate-400 mt-0.5">Universal — all clients</p>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
+            <div class="text-2xl mb-2">🧧</div>
+            <p class="text-sm font-bold text-slate-700 dark:text-slate-300">Lunar New Year</p>
+            <p class="text-xs text-slate-400 mt-0.5">Chinese clients</p>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
+            <div class="text-2xl mb-2">🪔</div>
+            <p class="text-sm font-bold text-slate-700 dark:text-slate-300">Deepavali</p>
+            <p class="text-xs text-slate-400 mt-0.5">Indian clients</p>
+        </div>
+    </div>
+    <button onclick="openAddModal()" class="inline-flex items-center gap-2 bg-blue-600 text-white font-bold py-3 px-8 rounded-xl text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200 dark:shadow-blue-900/40">
+        <i class='bx bx-plus text-lg'></i>
+        Create Your First Card Design
+    </button>
+</div>
+{% endif %}
+
+
+<!-- =====================================================================
+     ADD CARD MODAL
+     ===================================================================== -->
+<div id="add-modal-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-200 flex items-start justify-center p-4 overflow-y-auto">
+    <div id="add-modal" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg my-8 scale-95 transition-transform duration-200 overflow-hidden">
+
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
+            <div>
+                <h3 class="font-bold text-slate-900 dark:text-white text-lg">Add Card Design</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Create a new greeting card template</p>
+            </div>
+            <button onclick="closeAddModal()" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                <i class='bx bx-x text-xl'></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
+            {% csrf_token %}
+            <input type="hidden" name="add_card" value="1">
+
+            <!-- Name -->
+            <div>
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Card Name *</label>
+                <input type="text" name="name" required placeholder="e.g. Red Festive CNY, Gold Birthday"
+                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition placeholder-slate-300 dark:placeholder-slate-600">
+            </div>
+
+            <!-- Occasion -->
+            <div>
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Occasion *</label>
+                <select name="occasion" required
+                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    <option value="">— Choose occasion —</option>
+                    {% for occ in all_occasion_choices %}
+                    <option value="{{ occ }}">{{ occ }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Image Upload -->
+            <div>
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Card Image <span class="normal-case font-normal text-slate-400">(optional — we'll show a beautiful preview placeholder if not uploaded)</span></label>
+                <div class="relative border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl p-6 text-center hover:border-blue-400 transition cursor-pointer group" id="add-drop-zone">
+                    <input type="file" name="image" id="add-image-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div id="add-image-placeholder">
+                        <i class='bx bx-image-add text-3xl text-slate-300 dark:text-slate-600 group-hover:text-blue-400 transition mb-1'></i>
+                        <p class="text-xs text-slate-400">Drop image here or click to browse</p>
+                        <p class="text-[10px] text-slate-300 dark:text-slate-600 mt-1">JPG, PNG, WEBP</p>
+                    </div>
+                    <div id="add-image-preview" class="hidden">
+                        <img id="add-image-thumb" src="" alt="Preview" class="h-24 mx-auto rounded-lg object-cover shadow">
+                        <p id="add-image-name" class="text-xs text-slate-500 dark:text-slate-400 mt-2"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Default Message -->
+            <div>
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Default Message</label>
+                <textarea name="default_message" rows="3" placeholder="Wishing you joy and happiness on this special occasion!"
+                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none placeholder-slate-300 dark:placeholder-slate-600"></textarea>
+                <p class="text-[10px] text-slate-400 mt-1">This message is sent with the card. You can personalise it per broadcast.</p>
+            </div>
+
+            <!-- Targeting: Gender + Age -->
+            <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700 space-y-4">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Demographic Targeting</p>
+                <div>
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-2">Target Gender</label>
+                    <div class="flex gap-2">
+                        <label class="flex-1">
+                            <input type="radio" name="target_gender" value="A" checked class="peer sr-only">
+                            <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 text-xs font-bold py-2 text-center rounded-lg cursor-pointer transition">
+                                Any
+                            </div>
+                        </label>
+                        <label class="flex-1">
+                            <input type="radio" name="target_gender" value="M" class="peer sr-only">
+                            <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 text-xs font-bold py-2 text-center rounded-lg cursor-pointer transition">
+                                Males
+                            </div>
+                        </label>
+                        <label class="flex-1">
+                            <input type="radio" name="target_gender" value="F" class="peer sr-only">
+                            <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 text-xs font-bold py-2 text-center rounded-lg cursor-pointer transition">
+                                Females
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1.5">Min Age</label>
+                        <input type="number" name="target_age_min" value="0" min="0" max="120"
+                            class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1.5">Max Age</label>
+                        <input type="number" name="target_age_max" value="120" min="0" max="120"
+                            class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="flex gap-3 pt-1">
+                <button type="button" onclick="closeAddModal()" class="flex-1 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 font-bold py-3 rounded-xl text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                    Cancel
+                </button>
+                <button type="submit" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
+                    <i class='bx bxs-save mr-1'></i> Save Design
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- =====================================================================
+     EDIT CARD MODAL
+     ===================================================================== -->
+<div id="edit-card-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-200 flex items-start justify-center p-4 overflow-y-auto">
+    <div id="edit-card-modal" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg my-8 scale-95 transition-transform duration-200 overflow-hidden">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
+            <div>
+                <h3 class="font-bold text-slate-900 dark:text-white text-lg">Edit Card Design</h3>
+                <p id="edit-card-subtitle" class="text-xs text-slate-400 mt-0.5"></p>
+            </div>
+            <button onclick="closeEditCardModal()" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                <i class='bx bx-x text-xl'></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <form id="edit-card-form" method="POST" enctype="multipart/form-data" action="" class="p-6 space-y-5">
+            {% csrf_token %}
+
+            <!-- Name -->
+            <div>
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Card Name *</label>
+                <input type="text" name="name" id="edit-card-name" required
+                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+            </div>
+
+            <!-- Occasion -->
+            <div>
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Occasion *</label>
+                <select name="occasion" id="edit-card-occasion"
+                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    {% for occ in all_occasion_choices %}
+                    <option value="{{ occ }}">{{ occ }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Replace image -->
+            <div>
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Replace Image <span class="normal-case font-normal text-slate-400">(optional)</span></label>
+                <input type="file" name="image" accept="image/*"
+                    class="w-full text-xs text-slate-600 dark:text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 dark:file:bg-blue-900/20 file:text-blue-700 dark:file:text-blue-400 file:font-bold hover:file:bg-blue-100 cursor-pointer">
+            </div>
+
+            <!-- Default Message -->
+            <div>
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Default Message</label>
+                <textarea name="default_message" id="edit-card-message" rows="4"
+                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"></textarea>
+            </div>
+
+            <!-- Targeting -->
+            <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700 space-y-4">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Demographic Targeting</p>
+                <div>
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-2">Target Gender</label>
+                    <div class="flex gap-2">
+                        <label class="flex-1">
+                            <input type="radio" name="target_gender" value="A" id="edit-gender-a" class="peer sr-only">
+                            <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 text-xs font-bold py-2 text-center rounded-lg cursor-pointer transition">Any</div>
+                        </label>
+                        <label class="flex-1">
+                            <input type="radio" name="target_gender" value="M" id="edit-gender-m" class="peer sr-only">
+                            <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 text-xs font-bold py-2 text-center rounded-lg cursor-pointer transition">Males</div>
+                        </label>
+                        <label class="flex-1">
+                            <input type="radio" name="target_gender" value="F" id="edit-gender-f" class="peer sr-only">
+                            <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 text-xs font-bold py-2 text-center rounded-lg cursor-pointer transition">Females</div>
+                        </label>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1.5">Min Age</label>
+                        <input type="number" name="target_age_min" id="edit-card-age-min" min="0" max="120"
+                            class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-1.5">Max Age</label>
+                        <input type="number" name="target_age_max" id="edit-card-age-max" min="0" max="120"
+                            class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-3 pt-1">
+                <button type="button" onclick="closeEditCardModal()" class="flex-1 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 font-bold py-3 rounded-xl text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                    Cancel
+                </button>
+                <button type="submit" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
+                    <i class='bx bxs-save mr-1'></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- =====================================================================
+     DELETE CARD MODAL
+     ===================================================================== -->
+<div id="delete-card-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-200 flex items-center justify-center p-4">
+    <div id="delete-card-modal" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm scale-95 transition-transform duration-200 overflow-hidden">
+        <div class="p-6">
+            <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center mb-4">
+                <i class='bx bxs-trash text-2xl text-red-600 dark:text-red-400'></i>
+            </div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-lg mb-1">Delete Card Design?</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+                Permanently delete <strong id="delete-card-name" class="text-slate-800 dark:text-white"></strong>? This cannot be undone.
+            </p>
+        </div>
+        <form id="delete-card-form" method="POST" action="" class="border-t border-slate-100 dark:border-slate-700 flex">
+            {% csrf_token %}
+            <button type="button" onclick="closeDeleteCardModal()" class="flex-1 py-4 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                Cancel
+            </button>
+            <button type="submit" class="flex-1 py-4 text-sm font-bold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition border-l border-slate-100 dark:border-slate-700">
+                Delete
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<style>
+/* Filter tab styles */
+.filter-tab {
+    background: transparent;
+    color: #94a3b8;
+    border: 1.5px solid transparent;
+}
+.filter-tab:hover {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #e2e8f0;
+}
+.dark .filter-tab:hover {
+    background: #1e293b;
+    color: #94a3b8;
+    border-color: #334155;
+}
+.filter-tab.active-tab {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+/* line-clamp for message preview */
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
+
+
+<script>
+// ─── ADD MODAL ─────────────────────────────────────────────────────────────
+function openAddModal() {
+    const overlay = document.getElementById('add-modal-overlay');
+    const modal   = document.getElementById('add-modal');
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        overlay.classList.remove('opacity-0');
+        modal.classList.remove('scale-95');
+        document.body.style.overflow = 'hidden';
+    });
+}
+
+function closeAddModal() {
+    const overlay = document.getElementById('add-modal-overlay');
+    const modal   = document.getElementById('add-modal');
+    overlay.classList.add('opacity-0');
+    modal.classList.add('scale-95');
+    document.body.style.overflow = '';
+    setTimeout(() => overlay.classList.add('hidden'), 200);
+}
+
+// Image preview for add modal
+document.getElementById('add-image-input').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('add-image-placeholder').classList.add('hidden');
+        document.getElementById('add-image-preview').classList.remove('hidden');
+        document.getElementById('add-image-thumb').src = e.target.result;
+        document.getElementById('add-image-name').textContent = file.name;
+    };
+    reader.readAsDataURL(file);
+});
+
+// ─── EDIT CARD MODAL ───────────────────────────────────────────────────────
+function openEditModal(pk, name, occasion, message, gender, ageMin, ageMax) {
+    document.getElementById('edit-card-name').value    = name;
+    document.getElementById('edit-card-occasion').value = occasion;
+    document.getElementById('edit-card-message').value = message;
+    document.getElementById('edit-card-age-min').value = ageMin;
+    document.getElementById('edit-card-age-max').value = ageMax;
+    document.getElementById('edit-card-subtitle').textContent = name;
+
+    // Set gender radio
+    const gMap = { A: 'edit-gender-a', M: 'edit-gender-m', F: 'edit-gender-f' };
+    document.getElementById(gMap[gender] || 'edit-gender-a').checked = true;
+
+    // Set form action
+    document.getElementById('edit-card-form').action = `/dashboard/crm/card/${pk}/edit/`;
+
+    const overlay = document.getElementById('edit-card-overlay');
+    const modal   = document.getElementById('edit-card-modal');
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        overlay.classList.remove('opacity-0');
+        modal.classList.remove('scale-95');
+        document.body.style.overflow = 'hidden';
+    });
+}
+
+function closeEditCardModal() {
+    const overlay = document.getElementById('edit-card-overlay');
+    const modal   = document.getElementById('edit-card-modal');
+    overlay.classList.add('opacity-0');
+    modal.classList.add('scale-95');
+    document.body.style.overflow = '';
+    setTimeout(() => overlay.classList.add('hidden'), 200);
+}
+
+// Close on overlay click
+document.getElementById('edit-card-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeEditCardModal();
+});
+document.getElementById('add-modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeAddModal();
+});
+
+// ─── DELETE CARD MODAL ─────────────────────────────────────────────────────
+function openDeleteCardModal(pk, name) {
+    document.getElementById('delete-card-name').textContent = name;
+    document.getElementById('delete-card-form').action = `/dashboard/crm/card/${pk}/delete/`;
+    const overlay = document.getElementById('delete-card-overlay');
+    const modal   = document.getElementById('delete-card-modal');
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        overlay.classList.remove('opacity-0');
+        modal.classList.remove('scale-95');
+        document.body.style.overflow = 'hidden';
+    });
+}
+
+function closeDeleteCardModal() {
+    const overlay = document.getElementById('delete-card-overlay');
+    const modal   = document.getElementById('delete-card-modal');
+    overlay.classList.add('opacity-0');
+    modal.classList.add('scale-95');
+    document.body.style.overflow = '';
+    setTimeout(() => overlay.classList.add('hidden'), 200);
+}
+
+document.getElementById('delete-card-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteCardModal();
+});
+
+// ─── FILTER TABS ───────────────────────────────────────────────────────────
+function filterCards(occasion) {
+    // Update active tab
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active-tab'));
+    const activeId = occasion === 'all' ? 'tab-all' : null;
+    if (activeId) {
+        document.getElementById(activeId).classList.add('active-tab');
+    } else {
+        // Find the tab by text content matching the occasion
+        document.querySelectorAll('.filter-tab').forEach(t => {
+            if (t.textContent.trim().includes(occasion)) t.classList.add('active-tab');
+        });
+    }
+
+    // Show/hide cards
+    document.querySelectorAll('.card-item').forEach(card => {
+        if (occasion === 'all' || card.dataset.occasion === occasion) {
+            card.style.display = '';
+            card.style.animation = 'fadeIn 0.25s ease-out';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeAddModal();
+        closeEditCardModal();
+        closeDeleteCardModal();
+    }
+});
+</script>
+
+{% endblock %}

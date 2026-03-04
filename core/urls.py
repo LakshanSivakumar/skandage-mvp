@@ -66,5 +66,15 @@ urlpatterns = [
     path('dashboard/broadcasts/compose/', views.compose_newsletter, name='compose_newsletter'),
     path('dashboard/broadcasts/send/<int:pk>/', views.send_newsletter, name='send_newsletter'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('dashboard/audience/import-preview/', views.preview_import, name='preview_import'),
 
+    # --- SUBSCRIBER EDIT / DELETE ---
+    path('dashboard/audience/subscriber/<int:pk>/edit/', views.edit_subscriber, name='edit_subscriber'),
+    path('dashboard/audience/subscriber/<int:pk>/delete/', views.delete_subscriber, name='delete_subscriber'),
+
+    # --- CRM: BIRTHDAY CARDS ---
+    path('dashboard/crm/', views.manage_cards, name='manage_cards'),
+    path('dashboard/crm/card/<int:pk>/edit/', views.edit_card, name='edit_card'),
+    path('dashboard/crm/card/<int:pk>/delete/', views.delete_card, name='delete_card'),
+    path('dashboard/crm/pending/', views.pending_cards, name='pending_cards'),
 ]

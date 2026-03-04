@@ -1,71 +1,461 @@
 {% extends 'core/dashboard_base.html' %}
 {% block dashboard_content %}
-<div class="mb-8">
-    <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Audience Manager</h2>
-    <p class="text-slate-500 dark:text-slate-400 mt-1">Manage your client list for newsletters and market updates.</p>
+
+<!-- Page Header -->
+<div class="mb-8 flex items-start justify-between">
+    <div>
+        <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Audience Manager</h2>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Manage your client vault — the secure, encrypted home for your audience.</p>
+    </div>
+    <div class="hidden sm:flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 shadow-sm">
+        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+        <span class="text-xs font-bold text-slate-600 dark:text-slate-400">PDPA Compliant</span>
+    </div>
 </div>
 
 <div class="grid lg:grid-cols-3 gap-8 items-start">
+
+    <!-- LEFT COLUMN: Import + Add -->
     <div class="space-y-6">
+
+        <!-- Drag & Drop Import -->
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-            <h3 class="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2"><i class='bx bxs-file-import text-blue-500'></i> Bulk Import (CSV)</h3>
-            <p class="text-xs text-slate-500 mb-4">Upload a CSV file containing columns for <strong class="dark:text-slate-300">Name</strong> and <strong class="dark:text-slate-300">Email</strong>. Duplicates will be safely skipped.</p>
-            <form method="post" enctype="multipart/form-data" class="space-y-4">
+            <h3 class="font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
+                <span class="w-7 h-7 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                    <i class='bx bxs-file-import text-blue-600 dark:text-blue-400 text-sm'></i>
+                </span>
+                Smart Import
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Upload any CSV or Excel. We auto-detect <strong class="text-slate-700 dark:text-slate-300">Name</strong>, <strong class="text-slate-700 dark:text-slate-300">Email</strong>, <strong class="text-slate-700 dark:text-slate-300">DOB</strong>, <strong class="text-slate-700 dark:text-slate-300">Race</strong> &amp; <strong class="text-slate-700 dark:text-slate-300">Gender</strong>.</p>
+
+            <form method="post" enctype="multipart/form-data" id="import-form" class="space-y-4">
                 {% csrf_token %}
                 <input type="hidden" name="import_csv" value="1">
-                <input type="file" name="csv_file" accept=".csv" required class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                <button type="submit" class="w-full bg-slate-900 dark:bg-blue-600 text-white font-bold py-2.5 rounded-xl text-sm hover:opacity-90 transition">Run Import</button>
+
+                <!-- Drag & Drop Zone -->
+                <div id="drop-zone" class="relative border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all duration-200 group">
+                    <input type="file" name="csv_file" id="file-input" accept=".csv,.xls,.xlsx" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div id="drop-icon" class="pointer-events-none">
+                        <div class="w-12 h-12 mx-auto bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition">
+                            <i class='bx bxs-cloud-upload text-2xl text-slate-400 group-hover:text-blue-500 transition'></i>
+                        </div>
+                        <p class="text-sm font-bold text-slate-700 dark:text-slate-300">Drop your file here</p>
+                        <p class="text-xs text-slate-400 mt-1">or click to browse</p>
+                        <p class="text-[10px] text-slate-400 mt-2 font-medium uppercase tracking-wider">.CSV .XLS .XLSX</p>
+                    </div>
+                    <div id="file-selected" class="hidden pointer-events-none">
+                        <div class="w-12 h-12 mx-auto bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mb-3">
+                            <i class='bx bxs-check-circle text-2xl text-green-500'></i>
+                        </div>
+                        <p id="file-name" class="text-sm font-bold text-green-700 dark:text-green-400"></p>
+                        <p id="file-size" class="text-xs text-slate-400 mt-1"></p>
+                    </div>
+                </div>
+
+                <button type="submit" id="import-btn" disabled class="w-full bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-bold py-2.5 rounded-xl text-sm transition cursor-not-allowed">
+                    Select a file first
+                </button>
             </form>
         </div>
 
+        <!-- Add Single Client -->
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-            <h3 class="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2"><i class='bx bxs-user-plus text-emerald-500'></i> Add Single Client</h3>
-            <form method="post" class="space-y-4">
+            <h3 class="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <span class="w-7 h-7 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center">
+                    <i class='bx bxs-user-plus text-emerald-600 dark:text-emerald-400 text-sm'></i>
+                </span>
+                Add Single Client
+            </h3>
+            <form method="post" class="space-y-3">
                 {% csrf_token %}
                 <input type="hidden" name="add_subscriber" value="1">
                 <div>
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Name</label>
-                    <input type="text" name="name" required class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">Full Name *</label>
+                    <input type="text" name="name" required placeholder="e.g. John Tan" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition placeholder-slate-400">
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Email</label>
-                    <input type="email" name="email" required class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">Email Address *</label>
+                    <input type="email" name="email" required placeholder="john@example.com" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition placeholder-slate-400">
                 </div>
-                <button type="submit" class="w-full border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-bold py-2.5 rounded-xl text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition">Add to Audience</button>
+                <button type="submit" class="w-full border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold py-2.5 rounded-xl text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition">
+                    <i class='bx bx-plus mr-1'></i> Add to Vault
+                </button>
             </form>
+        </div>
+
+        <!-- Vault Stats -->
+        <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/40">
+            <p class="text-blue-200 text-xs font-bold uppercase tracking-widest mb-1">Vault Size</p>
+            <p class="text-4xl font-black mb-1">{{ subscribers.count }}</p>
+            <p class="text-blue-200 text-sm">encrypted client records</p>
+            <div class="mt-4 pt-4 border-t border-blue-500/50 flex items-center gap-2">
+                <i class='bx bxs-lock text-blue-300'></i>
+                <p class="text-xs text-blue-200">End-to-end encrypted · PDPA ready</p>
+            </div>
         </div>
     </div>
 
+    <!-- RIGHT COLUMN: Subscriber Table -->
     <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-        <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
-            <h3 class="font-bold text-slate-900 dark:text-white">Active Subscribers</h3>
-            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">{{ subscribers.count }}</span>
+        <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+            <div>
+                <h3 class="font-bold text-slate-900 dark:text-white">Active Subscribers</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Click a row to edit details</p>
+            </div>
+            <span class="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-bold px-3 py-1 rounded-full">{{ subscribers.count }}</span>
         </div>
+
         <div class="max-h-[600px] overflow-y-auto">
             <table class="w-full text-left">
-                <thead class="sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-400">
-                    <tr><th class="p-4 font-bold">Client</th><th class="p-4 font-bold hidden sm:table-cell">Source</th><th class="p-4 font-bold">Date Added</th></tr>
+                <thead class="sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 text-[10px] uppercase tracking-wider text-slate-400">
+                    <tr>
+                        <th class="px-5 py-3 font-bold">Client</th>
+                        <th class="px-5 py-3 font-bold hidden md:table-cell">Demographics</th>
+                        <th class="px-5 py-3 font-bold hidden sm:table-cell">Source</th>
+                        <th class="px-5 py-3 font-bold hidden lg:table-cell">Added</th>
+                        <th class="px-5 py-3 font-bold text-right">Actions</th>
+                    </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50 dark:divide-slate-700/50 text-sm">
                     {% for sub in subscribers %}
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
-                        <td class="p-4">
-                            <div class="font-bold text-slate-900 dark:text-white">{{ sub.name }}</div>
-                            <div class="text-slate-500 text-xs">{{ sub.email }}</div>
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition group"
+                        data-pk="{{ sub.pk }}"
+                        data-name="{{ sub.name|escapejs }}"
+                        data-email="{{ sub.email|escapejs }}"
+                        data-dob="{{ sub.date_of_birth|date:'Y-m-d'|default:'' }}"
+                        data-race="{{ sub.race }}"
+                        data-gender="{{ sub.gender }}">
+
+                        <td class="px-5 py-3.5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                                    {{ sub.name|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div class="font-bold text-slate-900 dark:text-white text-sm">{{ sub.name }}</div>
+                                    {% if sub.email %}
+                                        <div class="text-slate-400 text-xs">{{ sub.email }}</div>
+                                    {% else %}
+                                        <div class="text-slate-300 dark:text-slate-600 text-xs italic">No Email</div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </td>
-                        <td class="p-4 hidden sm:table-cell">
-                            {% if sub.source == 'website_lead' %}<span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Web Lead</span>
-                            {% elif sub.source == 'csv_import' %}<span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Imported</span>
-                            {% else %}<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Manual</span>{% endif %}
+
+                        <td class="px-5 py-3.5 hidden md:table-cell">
+                            <div class="flex flex-wrap gap-1">
+                                {% if sub.date_of_birth %}
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">
+                                        <i class='bx bx-cake text-xs'></i>{{ sub.date_of_birth|date:"d/m/Y" }}
+                                    </span>
+                                {% endif %}
+                                <span class="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full
+                                    {% if sub.race == 'C' %}bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400
+                                    {% elif sub.race == 'M' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400
+                                    {% elif sub.race == 'I' %}bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400
+                                    {% else %}bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400{% endif %}">
+                                    {{ sub.get_race_display }}
+                                </span>
+                                <span class="inline-flex text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 px-2 py-0.5 rounded-full">
+                                    {{ sub.get_gender_display }}
+                                </span>
+                            </div>
                         </td>
-                        <td class="p-4 text-slate-500 text-xs">{{ sub.created_at|date:"M d, Y" }}</td>
+
+                        <td class="px-5 py-3.5 hidden sm:table-cell">
+                            {% if sub.source == 'website_lead' %}
+                                <span class="text-[10px] bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Web Lead</span>
+                            {% elif sub.source == 'csv_import' %}
+                                <span class="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Imported</span>
+                            {% else %}
+                                <span class="text-[10px] bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Manual</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="px-5 py-3.5 hidden lg:table-cell text-xs text-slate-400">
+                            {{ sub.created_at|date:"M d, Y" }}
+                        </td>
+
+                        <td class="px-5 py-3.5 text-right">
+                            <div class="flex items-center justify-end gap-1 opacity-60 group-hover:opacity-100 transition">
+                                <!-- Edit Button -->
+                                <button type="button"
+                                    onclick="openEditDrawer(this)"
+                                    data-pk="{{ sub.pk }}"
+                                    data-name="{{ sub.name|escapejs }}"
+                                    data-email="{{ sub.email|escapejs }}"
+                                    data-dob="{{ sub.date_of_birth|date:'Y-m-d'|default:'' }}"
+                                    data-race="{{ sub.race }}"
+                                    data-gender="{{ sub.gender }}"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition"
+                                    title="Edit">
+                                    <i class='bx bxs-pencil text-sm'></i>
+                                </button>
+                                <!-- Delete Button -->
+                                <button type="button"
+                                    onclick="openDeleteModal('{{ sub.pk }}', '{{ sub.name|escapejs }}')"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition"
+                                    title="Delete">
+                                    <i class='bx bxs-trash text-sm'></i>
+                                </button>
+                            </div>
+                        </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="3" class="p-8 text-center text-slate-400 italic">No subscribers yet. Wait for leads or import a list!</td></tr>
+                    <tr>
+                        <td colspan="5" class="px-5 py-16 text-center">
+                            <div class="w-16 h-16 mx-auto bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-4">
+                                <i class='bx bxs-group text-3xl text-slate-300 dark:text-slate-500'></i>
+                            </div>
+                            <p class="font-bold text-slate-400 dark:text-slate-500">No subscribers yet</p>
+                            <p class="text-xs text-slate-400 dark:text-slate-600 mt-1">Import a file or add clients manually to get started.</p>
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+
+<!-- =====================================================================
+     EDIT SUBSCRIBER DRAWER (slides from right)
+     ===================================================================== -->
+<div id="edit-drawer-overlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300" onclick="closeEditDrawer()"></div>
+
+<div id="edit-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-slate-800 shadow-2xl z-50 translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+
+    <!-- Drawer Header -->
+    <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
+        <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-lg">Edit Client</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Update details in the secure vault</p>
+        </div>
+        <button onclick="closeEditDrawer()" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+            <i class='bx bx-x text-xl'></i>
+        </button>
+    </div>
+
+    <!-- Drawer Body: Edit Form -->
+    <form id="edit-subscriber-form" method="POST" action="" class="flex-1 overflow-y-auto p-6 space-y-5">
+        {% csrf_token %}
+
+        <!-- Name -->
+        <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Full Name *</label>
+            <input type="text" name="name" id="edit-name" required
+                class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+        </div>
+
+        <!-- Email -->
+        <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Email Address</label>
+            <input type="email" name="email" id="edit-email"
+                placeholder="Leave blank to clear"
+                class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition placeholder-slate-300 dark:placeholder-slate-600">
+        </div>
+
+        <!-- Date of Birth -->
+        <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Date of Birth</label>
+            <input type="date" name="date_of_birth" id="edit-dob"
+                class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+        </div>
+
+        <!-- Race + Gender row -->
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Race (CMIO)</label>
+                <select name="race" id="edit-race"
+                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    <option value="C">Chinese</option>
+                    <option value="M">Malay</option>
+                    <option value="I">Indian</option>
+                    <option value="O">Others</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1.5">Gender</label>
+                <select name="gender" id="edit-gender"
+                    class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="U">Unspecified</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Auto-Tags Preview -->
+        <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Festival Tags (Auto-Generated)</p>
+            <div id="edit-tags-preview" class="flex flex-wrap gap-1.5">
+                <!-- populated by JS -->
+            </div>
+        </div>
+    </form>
+
+    <!-- Drawer Footer -->
+    <div class="p-6 border-t border-slate-100 dark:border-slate-700 flex gap-3">
+        <button onclick="closeEditDrawer()" type="button" class="flex-1 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 font-bold py-3 rounded-xl text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+            Cancel
+        </button>
+        <button onclick="document.getElementById('edit-subscriber-form').submit()" type="button" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
+            <i class='bx bxs-save mr-1'></i> Save Changes
+        </button>
+    </div>
+</div>
+
+
+<!-- =====================================================================
+     DELETE CONFIRMATION MODAL
+     ===================================================================== -->
+<div id="delete-modal-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-200 flex items-center justify-center p-4">
+    <div id="delete-modal" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm scale-95 transition-transform duration-200 overflow-hidden">
+        <div class="p-6">
+            <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center mb-4">
+                <i class='bx bxs-trash text-2xl text-red-600 dark:text-red-400'></i>
+            </div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-lg mb-1">Remove Client?</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+                You're about to permanently remove <strong id="delete-name" class="text-slate-800 dark:text-white"></strong> from your vault. This cannot be undone.
+            </p>
+        </div>
+        <form id="delete-form" method="POST" action="" class="border-t border-slate-100 dark:border-slate-700 flex">
+            {% csrf_token %}
+            <button type="button" onclick="closeDeleteModal()" class="flex-1 py-4 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                Cancel
+            </button>
+            <button type="submit" class="flex-1 py-4 text-sm font-bold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition border-l border-slate-100 dark:border-slate-700">
+                Remove
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<script>
+// ─── Festival tag map (mirrors Python CMIO logic) ─────────────────────────
+const RACE_TAGS = {
+    C: ['🧧 Lunar New Year', '🥮 Mid-Autumn Festival'],
+    M: ['🌙 Hari Raya Aidilfitri', '🕌 Hari Raya Haji'],
+    I: ['🪔 Deepavali', '🌾 Pongal'],
+};
+const UNIVERSAL_TAGS = ['🎄 Christmas', '🎆 New Year'];
+
+// ─── EDIT DRAWER ──────────────────────────────────────────────────────────
+function openEditDrawer(btn) {
+    const pk      = btn.dataset.pk;
+    const name    = btn.dataset.name;
+    const email   = btn.dataset.email;
+    const dob     = btn.dataset.dob;
+    const race    = btn.dataset.race;
+    const gender  = btn.dataset.gender;
+
+    document.getElementById('edit-name').value   = name;
+    document.getElementById('edit-email').value  = email;
+    document.getElementById('edit-dob').value    = dob;
+    document.getElementById('edit-race').value   = race;
+    document.getElementById('edit-gender').value = gender;
+
+    // Set form action
+    document.getElementById('edit-subscriber-form').action = `/dashboard/audience/subscriber/${pk}/edit/`;
+
+    // Render tags
+    renderTags(race);
+
+    // Slide in
+    const overlay = document.getElementById('edit-drawer-overlay');
+    const drawer  = document.getElementById('edit-drawer');
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        overlay.classList.remove('opacity-0');
+        drawer.classList.remove('translate-x-full');
+        document.body.style.overflow = 'hidden';
+    });
+}
+
+function closeEditDrawer() {
+    const overlay = document.getElementById('edit-drawer-overlay');
+    const drawer  = document.getElementById('edit-drawer');
+    overlay.classList.add('opacity-0');
+    drawer.classList.add('translate-x-full');
+    document.body.style.overflow = '';
+    setTimeout(() => overlay.classList.add('hidden'), 300);
+}
+
+// Re-render tags when race changes inside drawer
+document.getElementById('edit-race').addEventListener('change', function() {
+    renderTags(this.value);
+});
+
+function renderTags(race) {
+    const tags = [...(RACE_TAGS[race] || []), ...UNIVERSAL_TAGS];
+    const container = document.getElementById('edit-tags-preview');
+    container.innerHTML = tags.map(t =>
+        `<span class="text-[10px] font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">${t}</span>`
+    ).join('');
+}
+
+// ─── DELETE MODAL ─────────────────────────────────────────────────────────
+function openDeleteModal(pk, name) {
+    document.getElementById('delete-name').textContent = name;
+    document.getElementById('delete-form').action = `/dashboard/audience/subscriber/${pk}/delete/`;
+
+    const overlay = document.getElementById('delete-modal-overlay');
+    const modal   = document.getElementById('delete-modal');
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        overlay.classList.remove('opacity-0');
+        modal.classList.remove('scale-95');
+        document.body.style.overflow = 'hidden';
+    });
+}
+
+function closeDeleteModal() {
+    const overlay = document.getElementById('delete-modal-overlay');
+    const modal   = document.getElementById('delete-modal');
+    overlay.classList.add('opacity-0');
+    modal.classList.add('scale-95');
+    document.body.style.overflow = '';
+    setTimeout(() => overlay.classList.add('hidden'), 200);
+}
+
+// ─── IMPORT DRAG & DROP ───────────────────────────────────────────────────
+const dropZone  = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const dropIcon  = document.getElementById('drop-icon');
+const fileSelected = document.getElementById('file-selected');
+const fileNameEl   = document.getElementById('file-name');
+const fileSizeEl   = document.getElementById('file-size');
+const importBtn    = document.getElementById('import-btn');
+
+function showFileInfo(file) {
+    dropIcon.classList.add('hidden');
+    fileSelected.classList.remove('hidden');
+    fileNameEl.textContent = file.name;
+    const sizeKB = (file.size / 1024).toFixed(1);
+    fileSizeEl.textContent = sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(1)} MB` : `${sizeKB} KB`;
+    importBtn.disabled = false;
+    importBtn.className = 'w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-sm hover:bg-blue-700 transition cursor-pointer shadow-lg shadow-blue-200 dark:shadow-blue-900/30';
+    importBtn.innerHTML = '<i class="bx bxs-bolt mr-1"></i> Run Smart Import';
+}
+
+fileInput.addEventListener('change', function() {
+    if (this.files.length > 0) showFileInfo(this.files[0]);
+});
+
+['dragenter', 'dragover'].forEach(evt => {
+    dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('border-blue-400', 'bg-blue-50/50'); });
+});
+['dragleave', 'drop'].forEach(evt => {
+    dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.remove('border-blue-400', 'bg-blue-50/50'); });
+});
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    const files = e.dataTransfer.files;
+    if (files.length > 0) { fileInput.files = files; showFileInfo(files[0]); }
+});
+</script>
+
 {% endblock %}

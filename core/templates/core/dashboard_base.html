@@ -87,8 +87,18 @@
                 </a>
                 <a href="{% url 'newsletter_dashboard' %}" class="{{ nav_class }} {% if section == 'broadcasts' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
                     {% if section == 'broadcasts' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
-                    <i class='bx bxs-paper-plane text-xl {% if section == 'broadcasts' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i> 
+                    <i class='bx bxs-paper-plane text-xl {% if section == 'broadcasts' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i>
                     Broadcasts
+                </a>
+
+                <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-700 mx-2 mb-2">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-2 mb-2">CRM</p>
+                </div>
+
+                <a href="{% url 'manage_cards' %}" class="{{ nav_class }} {% if section == 'crm' %}bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold{% else %}text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                    {% if section == 'crm' %}<div class="absolute left-0 w-1 h-8 bg-blue-600 rounded-r-full"></div>{% endif %}
+                    <i class='bx bxs-gift text-xl {% if section == 'crm' %}text-blue-600 dark:text-blue-400{% else %}text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300{% endif %}'></i>
+                    Birthday Cards
                 </a>
             {% endif %}
 
@@ -152,6 +162,16 @@
 
     <main class="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-slate-900">
         <div class="max-w-7xl mx-auto p-8 lg:p-12">
+            {% if messages %}
+            <div class="mb-6 space-y-2">
+                {% for message in messages %}
+                <div class="px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800{% elif message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800{% else %}bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800{% endif %}">
+                    <i class='bx {% if message.tags == "success" %}bxs-check-circle{% elif message.tags == "error" %}bxs-error-circle{% elif message.tags == "warning" %}bxs-error{% else %}bxs-info-circle{% endif %} text-lg'></i>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
             {% block dashboard_content %}{% endblock %}
         </div>
     </main>
