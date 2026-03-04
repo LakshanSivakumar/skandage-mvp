@@ -72,9 +72,16 @@ urlpatterns = [
     path('dashboard/audience/subscriber/<int:pk>/edit/', views.edit_subscriber, name='edit_subscriber'),
     path('dashboard/audience/subscriber/<int:pk>/delete/', views.delete_subscriber, name='delete_subscriber'),
 
+    # --- SUBSCRIBER MASS FREQUENCY UPDATE ---
+    path('dashboard/audience/mass-update-freq/', views.mass_update_review_freq, name='mass_update_review_freq'),
+
     # --- CRM: BIRTHDAY CARDS ---
     path('dashboard/crm/', views.manage_cards, name='manage_cards'),
     path('dashboard/crm/card/<int:pk>/edit/', views.edit_card, name='edit_card'),
     path('dashboard/crm/card/<int:pk>/delete/', views.delete_card, name='delete_card'),
-    path('dashboard/crm/pending/', views.pending_cards, name='pending_cards'),
+    path('dashboard/crm/upcoming/', views.upcoming_events, name='upcoming_events'),
+
+    # --- CRM: REVIEW REMINDERS ---
+    path('dashboard/crm/review-reminder/<int:pk>/send/', views.send_review_reminder, name='send_review_reminder'),
+    path('dashboard/crm/review-reminders/bulk/', views.send_bulk_review_reminders, name='send_bulk_review_reminders'),
 ]

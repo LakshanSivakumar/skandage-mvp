@@ -1,123 +1,145 @@
-{% extends 'core/dashboard_base.html' %} {% block dashboard_content %}
+{% extends 'core/dashboard_base.html' %}
+{% block dashboard_content %}
+
 <div class="mb-6">
     <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Review Your Import</h2>
-    <p class="text-slate-500 dark:text-slate-400 mt-1">We found <strong class="text-slate-900 dark:text-white">{{ pending_import|length }}</strong> clients in your file. Review duplicates before securely vaulting them.</p>
+    <p class="text-slate-500 dark:text-slate-400 mt-1">We found <strong class="text-slate-900 dark:text-white">{{ pending_import|length }}</strong> clients in your file. Review details and handle duplicates before securely vaulting them.</p>
 </div>
 
-<!-- Summary Stats -->
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center shadow-sm">
         <div class="text-2xl font-bold text-slate-900 dark:text-white">{{ pending_import|length }}</div>
-        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-1">Total Clients</div>
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-1">Total Found</div>
     </div>
-    <div class="bg-white dark:bg-slate-800 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center">
+    <div class="bg-white dark:bg-slate-800 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center shadow-sm">
         <div class="text-2xl font-bold text-green-600">{{ new_count }}</div>
         <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-1">New Clients</div>
     </div>
-    <div class="bg-white dark:bg-slate-800 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 text-center">
-        <div class="text-2xl font-bold text-yellow-600">{{ duplicate_count }}</div>
-        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-1">Duplicates</div>
+    <div class="bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-center shadow-sm">
+        <div class="text-2xl font-bold text-amber-600">{{ duplicate_count }}</div>
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-1">Existing (Duplicates)</div>
     </div>
-    <div class="bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
-        <div class="text-2xl font-bold text-blue-600">
-            {{ race_chinese }}C / {{ race_malay }}M / {{ race_indian }}I / {{ race_others }}O
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center shadow-sm">
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Race Breakdown</div>
+        <div class="text-[10px] font-bold flex justify-center gap-2">
+            <span class="text-red-500">C: {{ race_chinese }}</span>
+            <span class="text-emerald-500">M: {{ race_malay }}</span>
+            <span class="text-purple-500">I: {{ race_indian }}</span>
         </div>
-        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-1">CMIO Breakdown</div>
     </div>
 </div>
 
-<form method="POST" action="{% url 'preview_import' %}">
+<form method="POST">
     {% csrf_token %}
 
-    <div class="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+    {# ------------------------------------------------------------------ #}
+    {# FREQUENCY PROMPT — shown only when no "Review Freq" column in file  #}
+    {# ------------------------------------------------------------------ #}
+    {% if needs_freq_prompt %}
+    <div class="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl p-6 mb-8 shadow-sm">
+        <h4 class="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-2 mb-2">
+            <i class='bx bxs-calendar-exclamation text-xl'></i> Missing Review Frequencies
+        </h4>
+        <p class="text-sm text-amber-700 dark:text-amber-500 mb-4">
+            Your file has a <strong>"Last Updated"</strong> date column but no follow-up duration column.
+            What is your standard review interval for these clients?
+        </p>
+        <div class="flex items-center gap-3">
+            <input type="number" name="default_freq" value="12" min="1" max="120"
+                   class="w-24 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-800 rounded-xl px-4 py-2 text-sm text-amber-900 dark:text-amber-200 font-bold focus:ring-2 focus:ring-amber-500 outline-none transition">
+            <span class="text-xs font-bold text-amber-800 dark:text-amber-500 uppercase tracking-widest">Months from last review</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden mb-8">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-                <thead class="bg-slate-50 dark:bg-slate-800/50">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
                     <tr>
-                        <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                        <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Client Name</th>
-                        <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Email</th>
-                        <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">DOB</th>
-                        <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Race</th>
-                        <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Gender</th>
-                        <th class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Action</th>
+                        <th class="px-6 py-4">Import Action</th>
+                        <th class="px-6 py-4">Client Details</th>
+                        <th class="px-6 py-4">Demographics</th>
+                        <th class="px-6 py-4">Next Review Date</th>
+                        <th class="px-6 py-4">Existing Vault Data</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm">
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                     {% for client in pending_import %}
-                    <tr class="{% if client.status == 'duplicate' %}bg-yellow-50/50 dark:bg-yellow-900/10{% else %}hover:bg-slate-50 dark:hover:bg-slate-700/30{% endif %} transition">
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
 
-                        <!-- Status Badge -->
-                        <td class="px-4 py-3 whitespace-nowrap">
+                        {# ---- Col 1: Action ---- #}
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <select name="action_{{ forloop.counter0 }}"
+                                    class="text-xs font-bold rounded-lg border py-1.5 px-3
+                                    {% if client.status == 'new' %}text-green-600 border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800{% else %}text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800{% endif %}">
+                                {% if client.status == 'new' %}
+                                    <option value="add" selected>+ Add New</option>
+                                    <option value="skip">Skip</option>
+                                {% else %}
+                                    <option value="replace" selected>Overwrite Existing</option>
+                                    <option value="skip">Skip / Keep Old</option>
+                                {% endif %}
+                            </select>
+                        </td>
+
+                        {# ---- Col 2: Client Details ---- #}
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-bold text-slate-900 dark:text-white">{{ client.name }}</div>
+                            <div class="text-xs text-slate-400">{{ client.email|default:"No Email" }}</div>
+                            {% if client.phone %}
+                            <div class="text-[10px] text-slate-400 mt-0.5 font-medium">📱 {{ client.phone }}</div>
+                            {% endif %}
+                        </td>
+
+                        {# ---- Col 3: Demographics ---- #}
+                        <td class="px-6 py-4">
+                            <div class="text-xs font-medium text-slate-600 dark:text-slate-300">
+                                {{ client.gender_display }} · {{ client.race_display }}
+                            </div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">
+                                DOB: {{ client.dob_db|default:"—" }}
+                            </div>
+                        </td>
+
+                        {# ---- Col 4: Next Review Date ---- #}
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if client.next_review_date_calc %}
+                                <div class="text-xs font-bold text-blue-600 dark:text-blue-400">
+                                    {{ client.next_review_date_calc }}
+                                </div>
+                                <div class="text-[10px] text-slate-400 uppercase mt-0.5">
+                                    {% if client.last_updated_for_calc %}
+                                        Calculated
+                                    {% else %}
+                                        From File
+                                    {% endif %}
+                                </div>
+                            {% elif client.last_updated_for_calc %}
+                                <div class="text-xs font-bold text-amber-600 dark:text-amber-400 italic">
+                                    Pending…
+                                </div>
+                                <div class="text-[10px] text-slate-400 uppercase mt-0.5">
+                                    Last: {{ client.last_updated_for_calc }}
+                                </div>
+                            {% else %}
+                                <span class="text-xs text-slate-300 dark:text-slate-600 italic">—</span>
+                            {% endif %}
+                        </td>
+
+                        {# ---- Col 5: Existing Vault Data ---- #}
+                        <td class="px-6 py-4">
                             {% if client.status == 'duplicate' %}
-                                <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">Duplicate</span>
+                                <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 text-[10px] leading-relaxed">
+                                    <strong class="text-amber-800 dark:text-amber-400 uppercase">Found in Vault:</strong><br>
+                                    {{ client.existing_name }}<br>
+                                    DOB: {{ client.existing_dob }} · {{ client.existing_race }}
+                                </div>
                             {% else %}
-                                <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">New</span>
+                                <span class="text-xs text-slate-300 dark:text-slate-600 italic">No duplicate found</span>
                             {% endif %}
                         </td>
 
-                        <!-- Name (old vs new for duplicates) -->
-                        <td class="px-4 py-3 whitespace-nowrap">
-                            <div class="font-bold text-slate-900 dark:text-white">{{ client.name }}</div>
-                            {% if client.status == 'duplicate' and client.existing_name %}
-                                <div class="text-[10px] text-slate-400 mt-0.5">
-                                    <span class="font-bold text-yellow-600">Old:</span> {{ client.existing_name }}
-                                </div>
-                            {% endif %}
-                        </td>
-
-                        <!-- Email -->
-                        <td class="px-4 py-3 whitespace-nowrap text-xs">
-                            {% if client.email %}
-                                <span class="text-slate-500 dark:text-slate-400">{{ client.email }}</span>
-                            {% else %}
-                                <span class="text-slate-400 italic">No Email</span>
-                            {% endif %}
-                        </td>
-
-                        <!-- DOB (old vs new for duplicates) -->
-                        <td class="px-4 py-3 whitespace-nowrap text-xs">
-                            <span class="text-slate-700 dark:text-slate-300">{{ client.dob_display|default:"—" }}</span>
-                            {% if client.status == 'duplicate' and client.existing_dob %}
-                                <div class="text-[10px] text-slate-400 mt-0.5">
-                                    <span class="font-bold text-yellow-600">Old:</span> {{ client.existing_dob }}
-                                </div>
-                            {% endif %}
-                        </td>
-
-                        <!-- Race (old vs new for duplicates) -->
-                        <td class="px-4 py-3 whitespace-nowrap text-xs">
-                            <span class="text-slate-700 dark:text-slate-300">{{ client.race_display }}</span>
-                            {% if client.status == 'duplicate' and client.existing_race %}
-                                <div class="text-[10px] text-slate-400 mt-0.5">
-                                    <span class="font-bold text-yellow-600">Old:</span> {{ client.existing_race }}
-                                </div>
-                            {% endif %}
-                        </td>
-
-                        <!-- Gender (old vs new for duplicates) -->
-                        <td class="px-4 py-3 whitespace-nowrap text-xs">
-                            <span class="text-slate-700 dark:text-slate-300">{{ client.gender_display }}</span>
-                            {% if client.status == 'duplicate' and client.existing_gender %}
-                                <div class="text-[10px] text-slate-400 mt-0.5">
-                                    <span class="font-bold text-yellow-600">Old:</span> {{ client.existing_gender }}
-                                </div>
-                            {% endif %}
-                        </td>
-
-                        <!-- Action -->
-                        <td class="px-4 py-3 whitespace-nowrap">
-                            {% if client.status == 'duplicate' %}
-                                <select name="action_{{ forloop.counter0 }}" class="block w-full pl-3 pr-8 py-1.5 text-xs border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="skip" selected>Skip (Keep Old)</option>
-                                    <option value="replace">Replace (Use New)</option>
-                                    <option value="add">Add as New</option>
-                                </select>
-                            {% else %}
-                                <input type="hidden" name="action_{{ forloop.counter0 }}" value="add">
-                                <span class="text-green-600 dark:text-green-400 font-bold text-xs">Will be Added</span>
-                            {% endif %}
-                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -125,13 +147,14 @@
         </div>
     </div>
 
-    <div class="mt-6 flex justify-between items-center">
-        <a href="{% url 'manage_subscribers' %}" class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium transition">
-            <i class='bx bx-arrow-back mr-1'></i> Cancel Import
+    <div class="flex items-center justify-between">
+        <a href="{% url 'manage_subscribers' %}" class="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-bold transition">
+            <i class='bx bx-arrow-back mr-1'></i> Cancel & Start Over
         </a>
-        <button type="submit" class="bg-blue-600 text-white font-bold py-2.5 px-8 rounded-xl text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
-            <i class='bx bxs-lock-alt mr-1'></i> Confirm & Vault {{ pending_import|length }} Clients
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-10 rounded-2xl shadow-lg shadow-blue-200 dark:shadow-blue-900/40 transition active:scale-95">
+            <i class='bx bxs-lock-open-alt mr-1'></i> Process & Vault Clients
         </button>
     </div>
 </form>
+
 {% endblock %}

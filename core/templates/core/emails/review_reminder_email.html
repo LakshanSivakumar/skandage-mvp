@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annual Review Reminder</title>
+</head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+  <tr>
+    <td align="center" style="padding:40px 16px;">
+
+      <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+
+        {# ── Header Banner ── #}
+        <tr>
+          <td style="background:linear-gradient(135deg,#1e40af 0%,#2563eb 60%,#3b82f6 100%);padding:36px 40px 32px;">
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+              <tr>
+                <td>
+                  <p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.7);">Policy Review Reminder</p>
+                  <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;line-height:1.3;">
+                    Time for Your Annual Review, {{ client_name }}
+                  </h1>
+                </td>
+                {% if agent_headshot_url %}
+                <td style="padding-left:24px;width:72px;vertical-align:middle;">
+                  <img src="{{ agent_headshot_url }}" width="64" height="64"
+                       style="border-radius:50%;border:3px solid rgba(255,255,255,0.4);object-fit:cover;display:block;">
+                </td>
+                {% endif %}
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        {# ── Body ── #}
+        <tr>
+          <td style="padding:36px 40px;">
+
+            <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#374151;">
+              Hi <strong>{{ client_name }}</strong>,
+            </p>
+
+            <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#374151;">
+              I hope this message finds you well. I'm reaching out because it's time to schedule your
+              <strong>annual policy review</strong>. A quick review ensures your coverage stays aligned with
+              your life and financial goals — and I'd love to catch up.
+            </p>
+
+            {# ── Review Date Card ── #}
+            {% if next_review_date %}
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
+              <tr>
+                <td style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:12px;padding:20px 24px;">
+                  <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#3b82f6;">Scheduled Review Date</p>
+                  <p style="margin:0;font-size:22px;font-weight:800;color:#1e40af;">{{ next_review_date|date:"d F Y" }}</p>
+                </td>
+              </tr>
+            </table>
+            {% endif %}
+
+            <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#374151;">
+              During our review, we can cover:
+            </p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
+              {% for item in "01|Life coverage adequacy,02|Investment portfolio performance,03|New protection needs or goals,04|Any major life changes since last review"|split:"," %}
+              <tr>
+                <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:14px;color:#374151;">
+                  <span style="color:#2563eb;font-weight:700;margin-right:10px;">✓</span>
+                  {{ item|slice:"3:" }}
+                </td>
+              </tr>
+              {% endfor %}
+              <tr><td style="padding:8px 0;font-size:14px;color:#374151;"><span style="color:#2563eb;font-weight:700;margin-right:10px;">✓</span>Life coverage adequacy</td></tr>
+              <tr><td style="padding:8px 0;font-size:14px;color:#374151;border-bottom:1px solid #f1f5f9;"><span style="color:#2563eb;font-weight:700;margin-right:10px;">✓</span>Investment portfolio performance</td></tr>
+              <tr><td style="padding:8px 0;font-size:14px;color:#374151;border-bottom:1px solid #f1f5f9;"><span style="color:#2563eb;font-weight:700;margin-right:10px;">✓</span>New protection needs or goals</td></tr>
+              <tr><td style="padding:8px 0;font-size:14px;color:#374151;"><span style="color:#2563eb;font-weight:700;margin-right:10px;">✓</span>Any major life changes since last review</td></tr>
+            </table>
+
+            <p style="margin:0 0 28px;font-size:15px;line-height:1.7;color:#374151;">
+              Simply reply to this email or reach out on WhatsApp to book a convenient time. I look forward to speaking with you!
+            </p>
+
+            {# ── WhatsApp CTA ── #}
+            {% if agent.phone_number %}
+            <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 8px;">
+              <tr>
+                <td style="border-radius:10px;background:#25d366;">
+                  <a href="https://wa.me/{{ agent.phone_number }}"
+                     style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.5px;">
+                    💬 Chat on WhatsApp
+                  </a>
+                </td>
+              </tr>
+            </table>
+            {% endif %}
+
+          </td>
+        </tr>
+
+        {# ── Agent Signature ── #}
+        <tr>
+          <td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:24px 40px;">
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+              <tr>
+                {% if agent_headshot_url %}
+                <td style="width:48px;vertical-align:middle;padding-right:14px;">
+                  <img src="{{ agent_headshot_url }}" width="44" height="44"
+                       style="border-radius:50%;object-fit:cover;display:block;border:2px solid #e2e8f0;">
+                </td>
+                {% endif %}
+                <td style="vertical-align:middle;">
+                  <p style="margin:0;font-size:14px;font-weight:700;color:#0f172a;">{{ agent.name }}</p>
+                  <p style="margin:2px 0 0;font-size:12px;color:#64748b;">{{ agent.title }} · {{ agent.company }}</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        {# ── Legal Footer ── #}
+        {% if agent.disclaimer %}
+        <tr>
+          <td style="padding:20px 40px;background:#f1f5f9;">
+            <p style="margin:0;font-size:10px;line-height:1.6;color:#94a3b8;">{{ agent.disclaimer }}</p>
+          </td>
+        </tr>
+        {% endif %}
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+</body>
+</html>

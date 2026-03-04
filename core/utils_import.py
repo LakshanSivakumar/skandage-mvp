@@ -46,6 +46,68 @@ RACE_PRIORITY = [
 
 GENDER_PRIORITY = ['gender', 'sex']
 
+# ---------------------------------------------------------------------------
+# ADDITIONAL COLUMN PRIORITY LISTS
+# ---------------------------------------------------------------------------
+PHONE_PRIORITY = [
+    'phone', 'mobile', 'phone_number', 'mobile_number', 'cell',
+    'contact_number', 'tel', 'telephone', 'handphone', 'hp',
+]
+
+ADDRESS_PRIORITY = [
+    'address', 'address_1', 'full_address', 'street_address',
+    'residential_address', 'home_address', 'mailing_address',
+]
+
+STATUS_PRIORITY = [
+    'status', 'pipeline_status', 'client_status', 'lead_status',
+    'relationship_status',
+]
+
+# "Last review / last updated" — the starting anchor for date calculation
+LAST_REVIEW_PRIORITY = [
+    'last_updated',           # Skandage CRM Excel
+    'last_review_date',
+    'last_review',
+    'last_updated_date',
+    'date_of_last_review',
+    'last_contact_date',
+    'last_meeting_date',
+    'previous_review_date',
+    'review_date',
+]
+
+# "Next review date" — use directly if present, no calculation needed
+NEXT_REVIEW_PRIORITY = [
+    'next_review_date',
+    'next_review',
+    'follow_up_date',
+    'due_date',
+    'review_due_date',
+    'review_due',
+    'next_followup',
+    'next_follow_up',
+    'scheduled_review',
+]
+
+# "Duration / frequency" — in months, used to calculate next review date
+REVIEW_FREQ_PRIORITY = [
+    'review_freq_(months)',   # Skandage CRM Excel: "Review Freq (months)"
+    'review_freq_months',
+    'review_freq',
+    'review_frequency',
+    'follow_up_freq',
+    'follow_up_frequency',
+    'followup_freq',
+    'followup_frequency',
+    'freq_months',
+    'interval_months',
+    'follow_up_interval',
+    'review_interval',
+    'frequency',
+    'duration',
+]
+
 # CMIO keyword matching
 RACE_KEYWORDS = {
     'C': ['chinese', 'chi', 'cn', 'han'],
@@ -286,6 +348,14 @@ def smart_parse_clients(file_obj):
     race_col = _find_column(df.columns, RACE_PRIORITY)
     gender_col = _find_column(df.columns, GENDER_PRIORITY)
 
+    # --- NEW: HQ / Review Date columns ---
+    phone_col = _find_column(df.columns, PHONE_PRIORITY)
+    address_col = _find_column(df.columns, ADDRESS_PRIORITY)
+    status_col = _find_column(df.columns, STATUS_PRIORITY)
+    last_review_col = _find_column(df.columns, LAST_REVIEW_PRIORITY)
+    next_review_col = _find_column(df.columns, NEXT_REVIEW_PRIORITY)
+    review_freq_col = _find_column(df.columns, REVIEW_FREQ_PRIORITY)
+
     # 5. Parse rows
     parsed_clients = []
     seen_emails = set()
@@ -335,6 +405,26 @@ def smart_parse_clients(file_obj):
         race_code = _parse_race(_safe_val(row, race_col))
         gender_code = _parse_gender(_safe_val(row, gender_col))
 
+        # --- HQ FIELDS ---
+        phone_raw = _safe_val(row, phone_col)
+        address_raw = _safe_val(row, address_col)
+        status_raw = _safe_val(row, status_col)
+
+        # --- REVIEW DATE FIELDS ---
+        # next_review: direct date (no calculation needed)
+        next_review_raw = _safe_val(row, next_review_col)
+
+        # last_review: date of last review — base for calculation
+        last_review_raw = _safe_val(row, last_review_col)
+
+        # review_freq: integer months until next review
+        review_freq_raw = _safe_val(row, review_freq_col)
+        # Normalise: strip any non-numeric suffix (e.g. "12 months" → "12")
+        if review_freq_raw:
+            import re as _re
+            _m = _re.match(r'^(\d+(?:\.\d+)?)', review_freq_raw.strip())
+            review_freq_raw = _m.group(1) if _m else review_freq_raw
+
         parsed_clients.append({
             'name': name,
             'email': email,
@@ -342,6 +432,14 @@ def smart_parse_clients(file_obj):
             'dob_db': dob_db,
             'race': race_code,
             'gender': gender_code,
+            # HQ fields
+            'phone': phone_raw,
+            'address': address_raw,
+            'status': status_raw,
+            # Review date fields (standardised lowercase keys)
+            'next_review_date': next_review_raw,   # direct value if column exists
+            'last_review': last_review_raw,         # base date for calculation
+            'review_freq': review_freq_raw,         # duration in months
         })
 
     return parsed_clients

@@ -1,0 +1,442 @@
+{% extends 'core/dashboard_base.html' %}
+{% block dashboard_content %}
+
+{# ===== PAGE HEADER ===== #}
+<div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+        <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold uppercase tracking-widest text-blue-500 dark:text-blue-400">CRM</span>
+            <i class='bx bx-chevron-right text-slate-300 dark:text-slate-600'></i>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-400">Proactive Planner</span>
+        </div>
+        <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Upcoming Events</h2>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">
+            Manage greetings, reviews, and client touchpoints from one place.
+        </p>
+    </div>
+    <a href="{% url 'manage_cards' %}" class="inline-flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-5 rounded-xl text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-sm whitespace-nowrap">
+        <i class='bx bx-images'></i> Card Library
+    </a>
+</div>
+
+{# ===== TABS ===== #}
+<div class="flex gap-1 mb-6 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl w-fit">
+    <button onclick="switchTab('reviews')" id="tab-reviews"
+            class="tab-btn px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2">
+        <i class='bx bx-calendar-check'></i> Reviews
+        {% if reviews %}<span class="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ reviews|length }}</span>{% endif %}
+    </button>
+    <button onclick="switchTab('birthdays')" id="tab-birthdays"
+            class="tab-btn px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2">
+        <i class='bx bxs-cake'></i> Birthdays
+        {% with bdays=upcoming|length %}{% if bdays %}<span class="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ bdays }}</span>{% endif %}{% endwith %}
+    </button>
+    <button onclick="switchTab('festivals')" id="tab-festivals"
+            class="tab-btn px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2">
+        <i class='bx bxs-star'></i> Festivals
+    </button>
+</div>
+
+{# ========================================================= #}
+{# TAB 1: REVIEWS                                            #}
+{# ========================================================= #}
+<div id="panel-reviews" class="tab-panel">
+    {# Header row with mass email button #}
+    <form id="bulk-review-form" action="{% url 'send_bulk_review_reminders' %}" method="post">
+        {% csrf_token %}
+        <div class="flex items-center justify-between mb-4">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+                Clients with a policy review due in the next <strong class="text-slate-900 dark:text-white">90 days</strong>.
+            </p>
+            <div class="flex items-center gap-3">
+                <span id="review-selected-count" class="text-xs font-bold text-slate-500 hidden"></span>
+                <button type="submit" id="bulk-review-btn"
+                        class="hidden bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition shadow-md shadow-blue-200 dark:shadow-blue-900/40 flex items-center gap-2">
+                    <i class='bx bxs-envelope'></i> Email Selected (<span id="bulk-count">0</span>)
+                </button>
+            </div>
+        </div>
+
+        {% if reviews %}
+        <div class="space-y-3">
+            {% for item in reviews %}
+            {% with sub=item.subscriber %}
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:items-center gap-4">
+
+                {# Checkbox #}
+                {% if sub.email %}
+                <div class="flex-shrink-0">
+                    <input type="checkbox" name="subscriber_ids" value="{{ sub.pk }}"
+                           onchange="updateBulkReviewBtn()"
+                           class="review-cb w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                </div>
+                {% endif %}
+
+                {# Urgency badge #}
+                <div class="flex-shrink-0">
+                    {% if item.days_until == 0 %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Today!
+                        </span>
+                    {% elif item.days_until <= 14 %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                            <span class="w-2 h-2 rounded-full bg-amber-500"></span> {{ item.days_until }}d
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span> {{ item.days_until }}d
+                        </span>
+                    {% endif %}
+                </div>
+
+                {# Client Info #}
+                <div class="flex-1 min-w-0">
+                    <div class="font-bold text-slate-900 dark:text-white">{{ sub.name }}</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-3 flex-wrap">
+                        <span><i class='bx bx-calendar mr-1'></i>Review due: <strong>{{ item.event_date|date:"d M Y" }}</strong></span>
+                        {% if item.last_review_date %}<span>Last: {{ item.last_review_date|date:"d M Y" }}</span>{% endif %}
+                        {% if item.review_freq_months %}<span>Every {{ item.review_freq_months }}m</span>{% endif %}
+                    </div>
+                </div>
+
+                {# Action Buttons #}
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    {% if sub.email %}
+                    <form action="{% url 'send_review_reminder' sub.pk %}" method="post" class="inline">
+                        {% csrf_token %}
+                        <button type="submit"
+                                onclick="return confirm('Send review reminder email to {{ sub.name|escapejs }}?')"
+                                class="inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-bold py-2 px-4 rounded-xl text-xs transition">
+                            <i class='bx bxs-envelope text-sm'></i> Email
+                        </button>
+                    </form>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700 text-slate-400 font-bold py-2 px-4 rounded-xl text-xs" title="No email on file">
+                        <i class='bx bx-envelope-open text-sm'></i> No Email
+                    </span>
+                    {% endif %}
+
+                    {% if item.wa_url %}
+                    <a href="{{ item.wa_url }}" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-1.5 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-bold py-2 px-4 rounded-xl text-xs transition">
+                        <i class='bx bxl-whatsapp text-sm'></i> WhatsApp
+                    </a>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-16 text-center shadow-sm">
+            <div class="text-5xl mb-4 text-slate-300 dark:text-slate-600"><i class='bx bx-calendar-check'></i></div>
+            <p class="font-bold text-slate-700 dark:text-slate-300">No reviews due in the next 90 days.</p>
+            <p class="text-sm text-slate-400 mt-1">Import clients with "Last Updated" and "Review Freq" data to see reviews here.</p>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+{# ========================================================= #}
+{# TAB 2: BIRTHDAYS                                          #}
+{# ========================================================= #}
+<div id="panel-birthdays" class="tab-panel hidden">
+    {# Mass card send button #}
+    <div class="flex items-center justify-between mb-4">
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+            Birthdays coming up in the next <strong class="text-slate-900 dark:text-white">30 days</strong>.
+        </p>
+        <button id="batch-action-btn" onclick="openBatchModal()"
+                class="hidden bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition shadow-md shadow-amber-200 dark:shadow-amber-900/40 flex items-center gap-2">
+            <i class='bxs-paper-plane bx'></i> Send Cards (<span id="batch-count">0</span>)
+        </button>
+    </div>
+
+    {% with bday_items=upcoming|dictsort:"days_until" %}
+    {% if bday_items %}
+    <div class="space-y-3">
+        {% for item in bday_items %}
+        {% if item.occasion == 'Birthday' %}
+        {% with sub=item.subscriber %}
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:items-center gap-4 event-row" data-occasion="Birthday">
+
+            {# Checkbox for batch send #}
+            {% if item.template and sub.email %}
+            <div class="flex-shrink-0">
+                <input type="checkbox" class="client-checkbox w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
+                       onchange="updateBatchCount()"
+                       data-template-name="{{ item.template.name }} ({{ item.template.target_age_min }}-{{ item.template.target_age_max }} yrs)"
+                       name="batch_data"
+                       value="{{ sub.id }}|{{ item.template.id }}|{{ item.occasion }}|{{ item.event_date|date:'Y-m-d' }}"
+                       form="batch-form">
+            </div>
+            {% else %}
+            <div class="flex-shrink-0 w-4 h-4 flex items-center justify-center">
+                <i class='bx bxs-error-circle text-slate-300 dark:text-slate-600' title="{% if not sub.email %}No email{% else %}No matching card template{% endif %}"></i>
+            </div>
+            {% endif %}
+
+            {# Days badge #}
+            <div class="flex-shrink-0">
+                {% if item.days_until == 0 %}
+                    <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">🎂 Today!</span>
+                {% elif item.days_until == 1 %}
+                    <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">🎂 Tomorrow</span>
+                {% else %}
+                    <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">🎂 {{ item.days_until }}d</span>
+                {% endif %}
+            </div>
+
+            {# Info #}
+            <div class="flex-1 min-w-0">
+                <div class="font-bold text-slate-900 dark:text-white">{{ sub.name }}</div>
+                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {{ item.event_date|date:"d M Y" }} · {{ item.details }}
+                </div>
+                {% if item.template %}
+                <div class="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                    <i class='bx bx-image-alt text-blue-400'></i>
+                    {{ item.template.name }}
+                </div>
+                {% else %}
+                <div class="text-xs text-red-400 mt-0.5 font-bold"><i class='bx bxs-error-circle'></i> No matching card template</div>
+                {% endif %}
+            </div>
+
+            {# Actions #}
+            <div class="flex items-center gap-2 flex-shrink-0">
+                {% if item.template and sub.email %}
+                <button onclick="openSendModal('{{ sub.id }}', '{{ sub.name|escapejs }}', '{{ item.template.id }}', '{{ item.template.default_message|escapejs }}', '{{ item.occasion|escapejs }}', '{{ item.event_date|date:'Y-m-d' }}')"
+                        class="inline-flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/20 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold py-2 px-4 rounded-xl text-xs transition">
+                    <i class='bx bxs-envelope text-sm'></i> Send Card
+                </button>
+                {% endif %}
+                {% if item.wa_url %}
+                <a href="{{ item.wa_url }}" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-1.5 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 font-bold py-2 px-4 rounded-xl text-xs transition">
+                    <i class='bx bxl-whatsapp text-sm'></i> WhatsApp
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endwith %}
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-16 text-center shadow-sm">
+        <div class="text-5xl mb-4 text-slate-300 dark:text-slate-600">🎂</div>
+        <p class="font-bold text-slate-700 dark:text-slate-300">No birthdays in the next 30 days.</p>
+    </div>
+    {% endif %}
+    {% endwith %}
+</div>
+
+{# ========================================================= #}
+{# TAB 3: FESTIVALS                                          #}
+{# ========================================================= #}
+<div id="panel-festivals" class="tab-panel hidden">
+    <div class="flex items-center justify-between mb-4">
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+            Festive greetings due in the next <strong class="text-slate-900 dark:text-white">30 days</strong>.
+        </p>
+    </div>
+
+    {% with fest_items=upcoming %}
+    {% if fest_items %}
+    {# Group by occasion #}
+    {% for occ in unique_occasions %}
+    {% if occ != 'Birthday' %}
+    <div class="mb-8">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">{{ occ }}</h3>
+        <div class="space-y-3">
+            {% for item in fest_items %}
+            {% if item.occasion == occ %}
+            {% with sub=item.subscriber %}
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:items-center gap-4">
+                {# Days badge #}
+                <div class="flex-shrink-0">
+                    {% if item.days_until == 0 %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">🎉 Today!</span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">{{ item.days_until }}d</span>
+                    {% endif %}
+                </div>
+                {# Info #}
+                <div class="flex-1 min-w-0">
+                    <div class="font-bold text-slate-900 dark:text-white">{{ sub.name }}</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ item.event_date|date:"d M Y" }}</div>
+                    {% if item.template %}
+                    <div class="text-xs text-slate-400 mt-0.5"><i class='bx bx-image-alt text-blue-400'></i> {{ item.template.name }}</div>
+                    {% else %}
+                    <div class="text-xs text-red-400 mt-0.5 font-bold"><i class='bx bxs-error-circle'></i> No matching card template</div>
+                    {% endif %}
+                </div>
+                {# Actions #}
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    {% if item.template and sub.email %}
+                    <button onclick="openSendModal('{{ sub.id }}', '{{ sub.name|escapejs }}', '{{ item.template.id }}', '{{ item.template.default_message|escapejs }}', '{{ item.occasion|escapejs }}', '{{ item.event_date|date:'Y-m-d' }}')"
+                            class="inline-flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 font-bold py-2 px-4 rounded-xl text-xs transition">
+                        <i class='bx bxs-envelope text-sm'></i> Send Card
+                    </button>
+                    {% endif %}
+                    {% if item.wa_url %}
+                    <a href="{{ item.wa_url }}" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-1.5 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-bold py-2 px-4 rounded-xl text-xs transition">
+                        <i class='bx bxl-whatsapp text-sm'></i> WhatsApp
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endwith %}
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-16 text-center shadow-sm">
+        <div class="text-5xl mb-4 text-slate-300 dark:text-slate-600">🎉</div>
+        <p class="font-bold text-slate-700 dark:text-slate-300">No festivals in the next 30 days.</p>
+    </div>
+    {% endif %}
+    {% endwith %}
+</div>
+
+{# ===== SEND CARD MODAL (shared for birthdays & festivals) ===== #}
+<div id="send-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+        <div class="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-700">
+            <h3 class="font-bold text-lg text-slate-900 dark:text-white">Send <span id="modal_occasion_title" class="text-blue-600 dark:text-blue-400"></span> Card</h3>
+            <button onclick="document.getElementById('send-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class='bx bx-x text-2xl'></i></button>
+        </div>
+        <form action="{% url 'upcoming_events' %}" method="post" class="p-6">
+            {% csrf_token %}
+            <input type="hidden" name="subscriber_id" id="modal_sub_id">
+            <input type="hidden" name="template_id" id="modal_temp_id">
+            <input type="hidden" name="occasion_type" id="modal_occasion_type">
+            <input type="hidden" name="event_date" id="modal_event_date">
+            <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-4">Sending to: <strong id="modal_client_name" class="text-slate-900 dark:text-white"></strong></p>
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Personalise Message</label>
+                <textarea name="custom_message" id="modal_message" rows="4"
+                          class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl text-sm hover:bg-blue-700 transition">Send Card Now</button>
+        </form>
+    </div>
+</div>
+
+{# ===== BATCH SEND MODAL (birthdays/festivals) ===== #}
+<div id="batch-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+        <div class="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-700 bg-amber-50 dark:bg-amber-900/20">
+            <h3 class="font-bold text-lg text-amber-800 dark:text-amber-400"><i class='bx bxs-paper-plane'></i> Mass Send Confirmation</h3>
+            <button onclick="document.getElementById('batch-modal').classList.add('hidden')" class="text-amber-400 hover:text-amber-600"><i class='bx bx-x text-2xl'></i></button>
+        </div>
+        <form id="batch-form" action="{% url 'upcoming_events' %}" method="post" class="p-6">
+            {% csrf_token %}
+            <input type="hidden" name="batch_send" value="1">
+            <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Sending personalised cards to <strong id="batch-modal-count" class="text-slate-900 dark:text-white"></strong> clients.</p>
+            <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700 mb-5">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Auto-Assigned Templates</p>
+                <ul id="batch-template-summary" class="space-y-1.5 text-xs font-medium text-slate-700 dark:text-slate-300"></ul>
+            </div>
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Custom Master Message (Optional)</label>
+                <textarea name="batch_custom_message" rows="3"
+                          placeholder="Override the default message for everyone in this batch…"
+                          class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-amber-600 text-white font-bold py-3 rounded-xl text-sm hover:bg-amber-700 transition shadow-lg shadow-amber-200 dark:shadow-amber-900/30">
+                Confirm & Mass Send
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+// ─── TAB SWITCHING ────────────────────────────────────────────────────────────
+const TABS = ['reviews', 'birthdays', 'festivals'];
+const ACTIVE = 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm';
+const INACTIVE = 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300';
+
+function switchTab(name) {
+    TABS.forEach(t => {
+        document.getElementById('panel-' + t).classList.add('hidden');
+        const btn = document.getElementById('tab-' + t);
+        btn.className = btn.className.replace(ACTIVE, '').trim() + ' ' + INACTIVE;
+    });
+    document.getElementById('panel-' + name).classList.remove('hidden');
+    const active = document.getElementById('tab-' + name);
+    active.className = active.className.replace(INACTIVE, '').trim() + ' ' + ACTIVE;
+    localStorage.setItem('upcoming_tab', name);
+}
+
+// Restore last-used tab on load
+document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('upcoming_tab') || 'reviews';
+    switchTab(saved);
+});
+
+// ─── BULK REVIEW SEND ─────────────────────────────────────────────────────────
+function updateBulkReviewBtn() {
+    const checked = document.querySelectorAll('.review-cb:checked').length;
+    const btn = document.getElementById('bulk-review-btn');
+    const lbl = document.getElementById('bulk-count');
+    const countEl = document.getElementById('review-selected-count');
+    if (checked > 0) {
+        btn.classList.remove('hidden');
+        countEl.classList.remove('hidden');
+        lbl.textContent = checked;
+        countEl.textContent = checked + ' selected';
+    } else {
+        btn.classList.add('hidden');
+        countEl.classList.add('hidden');
+    }
+}
+
+// ─── BIRTHDAY/FESTIVAL CARD SEND ─────────────────────────────────────────────
+function openSendModal(subId, subName, tempId, defaultMsg, occasion, eventDate) {
+    document.getElementById('modal_sub_id').value = subId;
+    document.getElementById('modal_temp_id').value = tempId;
+    document.getElementById('modal_occasion_type').value = occasion;
+    document.getElementById('modal_event_date').value = eventDate;
+    document.getElementById('modal_occasion_title').textContent = occasion;
+    document.getElementById('modal_client_name').textContent = subName;
+    document.getElementById('modal_message').value = defaultMsg;
+    document.getElementById('send-modal').classList.remove('hidden');
+}
+
+function updateBatchCount() {
+    const checked = document.querySelectorAll('.client-checkbox:checked');
+    const count = checked.length;
+    const btn = document.getElementById('batch-action-btn');
+    document.getElementById('batch-count').textContent = count;
+    if (count > 0) {
+        btn.classList.remove('hidden');
+    } else {
+        btn.classList.add('hidden');
+    }
+}
+
+function openBatchModal() {
+    const checked = document.querySelectorAll('.client-checkbox:checked');
+    document.getElementById('batch-modal-count').textContent = checked.length;
+    const templateCounts = {};
+    checked.forEach(cb => {
+        const n = cb.getAttribute('data-template-name');
+        templateCounts[n] = (templateCounts[n] || 0) + 1;
+    });
+    const ul = document.getElementById('batch-template-summary');
+    ul.innerHTML = '';
+    for (const [name, count] of Object.entries(templateCounts)) {
+        ul.innerHTML += `<li><i class='bx bx-check text-amber-500 mr-1'></i> <strong>${count} clients</strong> — ${name}</li>`;
+    }
+    document.getElementById('batch-modal').classList.remove('hidden');
+}
+</script>
+{% endblock %}

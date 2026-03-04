@@ -6,6 +6,8 @@ import hashlib
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.utils import timezone
+from datetime import datetime
+
 fernet = Fernet(settings.ENCRYPTION_KEY.encode() if isinstance(settings.ENCRYPTION_KEY, str) else settings.ENCRYPTION_KEY)
 class Agent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -231,113 +233,204 @@ def hash_email(email):
 
 class Subscriber(models.Model):
     agent = models.ForeignKey('Agent', on_delete=models.CASCADE, related_name='subscribers')
-    name = models.CharField(max_length=255)
     
-    # --- THE RESTORED DATABASE FIELD ---
+    # --- ANONYMIZED DATABASE INDEXES (For SQL Queries) ---
     is_active = models.BooleanField(default=True)
-    
-    # --- DEMOGRAPHIC FIELDS FOR CARD ENGINE ---
-    RACE_CHOICES = [
-        ('C', 'Chinese'), 
-        ('M', 'Malay'), 
-        ('I', 'Indian'), 
-        ('O', 'Others')
-    ]
-    GENDER_CHOICES = [
-        ('M', 'Male'), 
-        ('F', 'Female'), 
-        ('U', 'Unspecified')
-    ]
-    
-    date_of_birth = models.DateField(null=True, blank=True)
-    race = models.CharField(max_length=1, choices=RACE_CHOICES, default='O')
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, default='U')
-    
-    # --- PDPA SECURE ENCRYPTED FIELDS ---
+    birth_month = models.IntegerField(null=True, blank=True, help_text="Used for safe SQL birthday querying")
+    birth_day = models.IntegerField(null=True, blank=True, help_text="Used for safe SQL birthday querying")
     email_hash = models.CharField(max_length=64)
+    name_hash = models.CharField(max_length=64, blank=True) # For exact duplicate hunting
+    
+    # --- ZERO-KNOWLEDGE ENCRYPTED PAYLOADS ---
+    pipeline_status = models.CharField(max_length=20, choices=[('prospect', 'Prospect'), ('client', 'Client')], default='client')
+    lead_source = models.CharField(max_length=20, choices=[('referred', 'Referred'), ('cold', 'Cold'), ('others', 'Others')], default='others')
+    next_review_date = models.DateField(null=True, blank=True, help_text="Calculated date for the next policy review")
+    review_freq_months = models.PositiveIntegerField(null=True, blank=True, help_text="Review interval in months (e.g. 6 or 12)")
+    last_review_date = models.DateField(null=True, blank=True, help_text="Date of the most recent review — used to recalculate next review date")
+
+    # --- ZERO-KNOWLEDGE ENCRYPTED PAYLOADS ---
+    encrypted_name = models.BinaryField()
     encrypted_email = models.BinaryField()
+    encrypted_dob = models.BinaryField(null=True, blank=True)
+    encrypted_race = models.BinaryField()
+    encrypted_gender = models.BinaryField()
+    encrypted_tags = models.BinaryField(null=True, blank=True)
+    
+    # --- NEW: ENCRYPTED HQ FIELDS ---
+    # Using default=b'' ensures your database migration won't crash!
+    encrypted_phone = models.BinaryField(default=b'')
+    encrypted_address = models.BinaryField(default=b'')
+    encrypted_notes = models.BinaryField(default=b'')
+    
     source = models.CharField(max_length=100, default='manual')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # This is the constraint that was crashing earlier. 
-        # The uuid logic below prevents it from crashing on empty emails.
         unique_together = ('agent', 'email_hash')
 
+    # ==========================================
+    # SECURE PROPERTIES (Transparent Decryption)
+    # ==========================================
+    def _decrypt_field(self, field_data):
+        if not field_data: return ""
+        try: return fernet.decrypt(field_data).decode()
+        except Exception: return ""
+
+    def _encrypt_field(self, string_val):
+        if not string_val: return b''
+        return fernet.encrypt(str(string_val).encode())
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remember the original race when the object is loaded from the database
+        self._original_race = self.race if self.pk else None
+    # --- NAME ---
+    @property
+    def name(self):
+        return self._decrypt_field(self.encrypted_name)
+
+    @name.setter
+    def name(self, value):
+        val = value.strip() if value else ""
+        self.encrypted_name = self._encrypt_field(val)
+        self.name_hash = hashlib.sha256(val.lower().encode()).hexdigest() if val else ""
+
+    # --- EMAIL ---
     @property
     def email(self):
-        if not self.encrypted_email:
-            return ""
-        try:
-            token = self.encrypted_email
-            # Django BinaryField returns memoryview — convert to bytes
-            if isinstance(token, memoryview):
-                token = token.tobytes()
-            elif isinstance(token, str):
-                token = token.encode('utf-8')
-            if not token:
-                return ""
-            decrypted = fernet.decrypt(token).decode('utf-8')
-            # Hide placeholder emails from display
-            if decrypted.endswith('@placeholder.internal'):
-                return ""
-            return decrypted
-        except Exception:
-            return ""
+        return self._decrypt_field(self.encrypted_email)
+    @property
+    def phone(self): return self._decrypt_field(self.encrypted_phone)
+    @phone.setter
+    def phone(self, value): self.encrypted_phone = self._encrypt_field(value)
 
+    @property
+    def address(self): return self._decrypt_field(self.encrypted_address)
+    @address.setter
+    def address(self, value): self.encrypted_address = self._encrypt_field(value)
+
+    @property
+    def notes(self): return self._decrypt_field(self.encrypted_notes)
+    @notes.setter
+    def notes(self, value): self.encrypted_notes = self._encrypt_field(value)
+    
     @email.setter
     def email(self, value):
         if value:
-            self._email_decrypted = value.strip().lower()
-            self.email_hash = hash_email(self._email_decrypted)
-            self.encrypted_email = fernet.encrypt(self._email_decrypted.encode())
+            clean_email = value.strip().lower()
+            self.email_hash = hash_email(clean_email)
+            self.encrypted_email = self._encrypt_field(clean_email)
         else:
-            self._email_decrypted = ""
-            # Generate a unique placeholder so empty emails don't collide
             self.email_hash = f"empty_{uuid.uuid4().hex}"
             self.encrypted_email = b''
 
-    def save(self, *args, **kwargs):
-        # Final safety check before database commit to prevent IntegrityErrors
-        current_email = getattr(self, '_email_decrypted', '')
-        
-        if not current_email:
-            if not self.email_hash or not self.email_hash.startswith('empty_'):
-                self.email_hash = f"empty_{uuid.uuid4().hex}"
-            self.encrypted_email = b''
-        else:
-            self.email_hash = hash_email(current_email)
-            self.encrypted_email = fernet.encrypt(current_email.encode())
+    # --- DATE OF BIRTH ---
+    @property
+    def date_of_birth(self):
+        raw_date = self._decrypt_field(self.encrypted_dob)
+        if raw_date:
+            try: return datetime.strptime(raw_date, '%Y-%m-%d').date()
+            except ValueError: return None
+        return None
 
-        super().save(*args, **kwargs)
+    @date_of_birth.setter
+    def date_of_birth(self, value):
+        if value:
+            # Store full date encrypted
+            self.encrypted_dob = self._encrypt_field(value.strftime('%Y-%m-%d'))
+            # Store harmless metadata for the SQL cron job
+            self.birth_month = value.month
+            self.birth_day = value.day
+        else:
+            self.encrypted_dob = b''
+            self.birth_month = None
+            self.birth_day = None
+
+    # --- RACE, GENDER, TAGS ---
+    @property
+    def race(self): return self._decrypt_field(self.encrypted_race) or 'O'
+    @race.setter
+    def race(self, value): self.encrypted_race = self._encrypt_field(value)
+
+    @property
+    def gender(self): return self._decrypt_field(self.encrypted_gender) or 'U'
+    @gender.setter
+    def gender(self, value): self.encrypted_gender = self._encrypt_field(value)
+
+    @property
+    def tags(self): return self._decrypt_field(self.encrypted_tags)
+    @tags.setter
+    def tags(self, value): self.encrypted_tags = self._encrypt_field(value)
+
+    @property
+    def tag_list(self):
+        tags_str = self.tags
+        if not tags_str: return []
+        return [t.strip() for t in tags_str.split(',') if t.strip()]
+
+    # --- DISPLAY HELPERS ---
+    def get_race_display(self):
+        mapping = {'C': 'Chinese', 'M': 'Malay', 'I': 'Indian', 'O': 'Others'}
+        return mapping.get(self.race, 'Others')
+
+    def get_gender_display(self):
+        mapping = {'M': 'Male', 'F': 'Female', 'U': 'Unspecified'}
+        return mapping.get(self.gender, 'Unspecified')
 
     @property
     def age(self):
-        """Calculate age from date_of_birth. Returns None if DOB not set."""
-        if not self.date_of_birth:
-            return None
-        from datetime import date
-        today = date.today()
-        return today.year - self.date_of_birth.year - (
-            (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day)
-        )
+        dob = self.date_of_birth
+        if not dob: return None
+        today = datetime.today().date()
+        return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
 
-    @property
-    def auto_tags(self):
-        """Auto-generate festival tags based on race (CMIO)."""
-        tags = []
-        race_tags = {
+    def save(self, *args, **kwargs):
+        current_tags = self.tag_list
+        race_tags_map = {
             'C': ['Lunar New Year', 'Mid-Autumn Festival'],
             'M': ['Hari Raya Aidilfitri', 'Hari Raya Haji'],
-            'I': ['Deepavali', 'Pongal', 'Thaipusam'],
+            'I': ['Deepavali', 'Pongal']
         }
-        if self.race in race_tags:
-            tags.extend(race_tags[self.race])
-        tags.extend(['Christmas', 'New Year'])
-        return tags
+
+        # --- SCENARIO A: BRAND NEW CLIENT ---
+        if not self.pk:
+            # 1. Add Universal Tags
+            for fest in ['Christmas', 'New Year']:
+                if fest not in current_tags:
+                    current_tags.append(fest)
+            
+            # 2. Add Initial Race Tags
+            if self.race in race_tags_map:
+                for fest in race_tags_map[self.race]:
+                    if fest not in current_tags:
+                        current_tags.append(fest)
+
+        # --- SCENARIO B: EXISTING CLIENT (RACE CHANGED) ---
+        elif hasattr(self, '_original_race') and self._original_race != self.race:
+            # 1. Strip out the specific tags from their old race
+            old_tags = race_tags_map.get(self._original_race, [])
+            current_tags = [t for t in current_tags if t not in old_tags]
+            
+            # 2. Inject the specific tags for their new race
+            new_tags = race_tags_map.get(self.race, [])
+            for fest in new_tags:
+                if fest not in current_tags:
+                    current_tags.append(fest)
+
+        # Repackage the tags into the encrypted string
+        self.tags = ", ".join(current_tags)
+        
+        # Update the original race tracker so subsequent saves in the same session work
+        self._original_race = self.race
+
+        # --- ENCRYPTION SAFETY FALLBACK ---
+        if not getattr(self, 'email_hash', ''):
+            self.email_hash = f"empty_{uuid.uuid4().hex}"
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return self.name or "Unknown Encrypted Client"
+    
 
 class CardTemplate(models.Model):
     """
@@ -439,7 +532,8 @@ class CardLog(models.Model):
 
     class Meta:
         unique_together = ('subscriber', 'occasion', 'scheduled_date')
-        ordering = ['-scheduled_date', 'subscriber__name']
+        # REMOVED 'subscriber__name' because the name is now fully encrypted
+        ordering = ['-scheduled_date']
 
     def __str__(self):
         return f"{self.occasion} for {self.subscriber.name} ({self.status})"

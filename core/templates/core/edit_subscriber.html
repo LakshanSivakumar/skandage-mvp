@@ -1,0 +1,144 @@
+{% extends 'core/dashboard_base.html' %}
+{% block dashboard_content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6 flex items-center gap-4">
+        <a href="{% url 'manage_subscribers' %}" class="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 hover:text-blue-600 transition shadow-sm">
+            <i class='bx bx-arrow-back text-xl'></i>
+        </a>
+        <div>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Edit Client Profile</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Update details for <strong>{{ sub.name }}</strong></p>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <form method="POST" class="p-6 md:p-8 space-y-8">
+            {% csrf_token %}
+
+            {# ---- Section 1: Basic Info ---- #}
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700 pb-2">Basic Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5">Full Name *</label>
+                        <input type="text" name="name" value="{{ sub.name }}" required
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5">Email Address</label>
+                        <input type="email" name="email" value="{{ sub.email|default:'' }}"
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5">Phone Number</label>
+                        <input type="text" name="phone" value="{{ sub.phone|default:'' }}" placeholder="e.g. 91234567"
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5">Address</label>
+                        <input type="text" name="address" value="{{ sub.address|default:'' }}" placeholder="e.g. 123 Main St"
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
+                </div>
+            </div>
+
+            {# ---- Section 2: Demographics ---- #}
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700 pb-2">Demographics</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5">Date of Birth</label>
+                        <input type="date" name="date_of_birth" value="{{ sub.date_of_birth|date:'Y-m-d' }}"
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5">Gender</label>
+                        <select name="gender" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                            <option value="U" {% if sub.gender == 'U' %}selected{% endif %}>Unspecified</option>
+                            <option value="M" {% if sub.gender == 'M' %}selected{% endif %}>Male</option>
+                            <option value="F" {% if sub.gender == 'F' %}selected{% endif %}>Female</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5">Race</label>
+                        <select name="race" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                            <option value="O" {% if sub.race == 'O' %}selected{% endif %}>Others</option>
+                            <option value="C" {% if sub.race == 'C' %}selected{% endif %}>Chinese</option>
+                            <option value="M" {% if sub.race == 'M' %}selected{% endif %}>Malay</option>
+                            <option value="I" {% if sub.race == 'I' %}selected{% endif %}>Indian</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {# ---- Section 3: Review Schedule ---- #}
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700 pb-2 flex items-center gap-2">
+                    <i class='bx bx-calendar-check text-blue-500'></i> Review Schedule
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5">Last Review Date</label>
+                        <input type="date" name="last_review_date" value="{{ sub.last_review_date|date:'Y-m-d' }}"
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                        <p class="text-[10px] text-slate-400 mt-1">Used to recalculate next review date</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5">Review Frequency</label>
+                        <div class="relative">
+                            <input type="number" name="review_freq_months" value="{{ sub.review_freq_months|default:'' }}" min="1" max="120" placeholder="12"
+                                class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 pr-16 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                            <span class="absolute inset-y-0 right-3 flex items-center text-xs font-bold text-slate-400">months</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1">Interval between reviews (e.g. 6 or 12)</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5">Next Review Date</label>
+                        <input type="date" name="next_review_date" value="{{ sub.next_review_date|date:'Y-m-d' }}"
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                        <p class="text-[10px] text-slate-400 mt-1">
+                            <button type="button" onclick="recalcReviewDate()" class="text-blue-500 hover:underline font-bold">Auto-calculate from last date + freq</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {# ---- Section 4: Segmentation ---- #}
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700 pb-2">Segmentation</h3>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1.5">Tags (Comma Separated)</label>
+                    <input type="text" name="tags" value="{{ sub.tags }}" placeholder="e.g. HNW, Retirement, Lunar New Year"
+                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    <p class="text-[10px] text-slate-400 mt-1.5">Tags are used for filtering and proactive planner grouping.</p>
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
+                <a href="{% url 'manage_subscribers' %}" class="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-blue-600 text-white font-bold py-2.5 px-8 rounded-xl text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
+                    <i class='bx bxs-save mr-1'></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function recalcReviewDate() {
+    const lastDate = document.querySelector('[name="last_review_date"]').value;
+    const freq = parseInt(document.querySelector('[name="review_freq_months"]').value) || 0;
+    if (!lastDate || !freq) {
+        alert('Please enter both a Last Review Date and a frequency first.');
+        return;
+    }
+    const d = new Date(lastDate);
+    d.setMonth(d.getMonth() + freq);
+    // Adjust for month overflow (e.g. Jan 31 + 1 month → Feb 28)
+    const result = d.toISOString().split('T')[0];
+    document.querySelector('[name="next_review_date"]').value = result;
+}
+</script>
+{% endblock %}

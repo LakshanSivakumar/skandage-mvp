@@ -30,6 +30,29 @@ from datetime import date
 from django.db.models import Q
 from .models import CardLog
 from django.conf import settings
+import hashlib
+
+import calendar
+from datetime import datetime, date
+
+def add_months_to_date(source_date_str, months):
+    """Calculates future review dates based on frequency."""
+    if not source_date_str or not months: return None
+    try:
+        # Standardize Excel/CSV date formats (e.g., 2026-03-04 or 04/03/2026)
+        for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y'):
+            try:
+                sourcedate = datetime.strptime(str(source_date_str).strip(), fmt).date()
+                break
+            except ValueError: continue
+        else: return None
+
+        month = sourcedate.month - 1 + int(float(months))
+        year = sourcedate.year + month // 12
+        month = month % 12 + 1
+        day = min(sourcedate.day, calendar.monthrange(year, month)[1])
+        return date(year, month, day).strftime('%Y-%m-%d')
+    except Exception: return None
 # ==========================
 # VCARD DOWNLOAD VIEW
 # ==========================
@@ -698,17 +721,19 @@ def manage_subscribers(request):
             name = request.POST.get('name', '').strip()
             email_raw = request.POST.get('email', '').strip().lower()
 
-            if not name or not email_raw:
-                messages.error(request, "Name and email are required.")
+            if not name:
+                messages.error(request, "Name is required.")
                 return redirect('manage_subscribers')
 
-            hashed = hash_email(email_raw)
-            if Subscriber.objects.filter(agent=agent, email_hash=hashed).exists():
-                messages.warning(request, f"A client with that email already exists in your vault.")
-                return redirect('manage_subscribers')
+            # Only check for duplicates if an email is provided
+            if email_raw:
+                hashed = hash_email(email_raw)
+                if Subscriber.objects.filter(agent=agent, email_hash=hashed).exists():
+                    messages.warning(request, f"A client with that email already exists in your vault.")
+                    return redirect('manage_subscribers')
 
             sub = Subscriber(agent=agent, name=name, source='manual')
-            sub.email = email_raw
+            sub.email = email_raw  # Encrypted via model setter
             sub.save()
             messages.success(request, f"{name} has been added to your vault.")
             return redirect('manage_subscribers')
@@ -727,25 +752,27 @@ def manage_subscribers(request):
                     messages.error(request, "Could not find any valid names or emails in this file.")
                     return redirect('manage_subscribers')
 
-                # Human-readable display maps
                 race_display = {'C': 'Chinese', 'M': 'Malay', 'I': 'Indian', 'O': 'Others'}
                 gender_display = {'M': 'Male', 'F': 'Female', 'U': 'Unspecified'}
+                
+                # Flag to check if we need to ask Wendy for default follow-up duration
+                needs_freq_prompt = False
 
-                # --- THE WATERFALL DUPLICATE HUNTER ---
                 for client in parsed_data:
                     existing_sub = None
                     email_raw = client.get('email', '')
-
-                    # Add display-friendly values for the preview table
                     client['race_display'] = race_display.get(client.get('race', 'O'), 'Others')
                     client['gender_display'] = gender_display.get(client.get('gender', 'U'), 'Unspecified')
 
+                    # 1. DUPLICATE CHECKING (Secure Hash Lookups)
                     if email_raw:
                         hashed = hash_email(email_raw)
                         existing_sub = Subscriber.objects.filter(agent=agent, email_hash=hashed).first()
                     else:
-                        # No email — try matching by exact name in the vault
-                        existing_sub = Subscriber.objects.filter(agent=agent, name__iexact=client.get('name', '')).first()
+                        imported_name = client.get('name', '').strip()
+                        if imported_name:
+                            name_hashed = hashlib.sha256(imported_name.lower().encode()).hexdigest()
+                            existing_sub = Subscriber.objects.filter(agent=agent, name_hash=name_hashed).first()
 
                     if existing_sub:
                         client['status'] = 'duplicate'
@@ -758,15 +785,84 @@ def manage_subscribers(request):
                         client['status'] = 'new'
                         client['action'] = 'add'
 
+                    # 2. HQ PARITY & SMART DATE PARSER INTEGRATION
+                    # utils_import returns lowercase keys; fall back to raw capitalised
+                    # names so this works for any future custom parser too.
+                    client['phone'] = str(
+                        client.get('phone') or client.get('Phone') or client.get('Mobile') or ''
+                    )
+                    client['address'] = str(
+                        client.get('address') or client.get('Address') or client.get('Address 1') or ''
+                    )
+                    client['notes'] = str(
+                        client.get('notes') or client.get('Notes') or client.get('Contact Notes') or ''
+                    )
+
+                    # Map Pipeline Status
+                    raw_status = str(
+                        client.get('status') or client.get('Status') or ''
+                    ).lower()
+                    client['pipeline_status'] = 'prospect' if 'prospect' in raw_status else 'client'
+
+                    # --- SMART REVIEW DATE PARSER ---
+                    # Priority 1: Direct "Next Review Date" column → use as-is
+                    next_review = (
+                        client.get('next_review_date') or
+                        client.get('Next Review Date')
+                    )
+                    # Priority 2: "Last Updated/Review" + "Review Freq" → calculate
+                    last_updated = (
+                        client.get('last_review') or
+                        client.get('Last Updated') or
+                        client.get('Last Review Date')
+                    )
+                    review_freq = (
+                        client.get('review_freq') or
+                        client.get('Review Freq (months)')
+                    )
+
+                    if next_review:
+                        client['next_review_date_calc'] = next_review
+                    elif last_updated and review_freq:
+                        # Now this will work because we added the helper above!
+                        client['next_review_date_calc'] = add_months_to_date(last_updated, review_freq)
+                    elif last_updated:
+                        needs_freq_prompt = True
+                        client['last_updated_for_calc'] = last_updated
+
+                # Pass data and flags to the preview session
                 request.session['pending_import'] = parsed_data
+                request.session['needs_freq_prompt'] = needs_freq_prompt
                 return redirect('preview_import')
 
             except Exception as e:
                 messages.error(request, f"Could not read the file. Error: {str(e)}")
                 return redirect('manage_subscribers')
 
-    subscribers = agent.subscribers.all().order_by('-created_at')
-    return render(request, 'core/manage_subscribers.html', {'agent': agent, 'subscribers': subscribers, 'section': 'audience'})
+    # --- GET: SEARCH & RENDER ---
+    query = request.GET.get('q', '').strip().lower()
+    # Fetch active subscribers and order by most recent add
+    all_subscribers = agent.subscribers.filter(is_active=True).order_by('-created_at')
+    
+    if query:
+        # SECURE: In-Memory Filtering (Database columns are encrypted/blind)
+        subscribers = []
+        for sub in all_subscribers:
+            safe_tags = sub.tags.lower() if sub.tags else ""
+            safe_name = sub.name.lower() if sub.name else ""
+            
+            if query in safe_name or query in safe_tags:
+                subscribers.append(sub)
+    else:
+        subscribers = list(all_subscribers)
+
+    return render(request, 'core/manage_subscribers.html', {
+        'agent': agent,
+        'subscribers': subscribers,
+        'section': 'audience',
+        'query': query,
+        'today': date.today().strftime('%Y-%m-%d'),
+    })
 @login_required
 def preview_import(request):
     try:
@@ -774,8 +870,9 @@ def preview_import(request):
     except Agent.DoesNotExist:
         return redirect('dashboard')
 
-    # Fetch the parsed data from the session
+    # Fetch the parsed data and the frequency prompt flag from the session
     pending_import = request.session.get('pending_import')
+    needs_freq_prompt = request.session.get('needs_freq_prompt', False)
 
     if not pending_import:
         messages.warning(request, "No pending import found. Please upload your file again.")
@@ -783,6 +880,12 @@ def preview_import(request):
 
     if request.method == 'POST':
         import uuid
+        import hashlib
+        from datetime import datetime
+        
+        # Get the fallback duration from the form prompt (Default to 12 if missing)
+        default_freq = request.POST.get('default_freq', 12)
+        
         added_count = 0
         updated_count = 0
         skipped_count = 0
@@ -790,33 +893,79 @@ def preview_import(request):
         for i, client_data in enumerate(pending_import):
             action = request.POST.get(f'action_{i}', 'skip')
             email_raw = client_data.get('email', '')
-            dob_value = client_data.get('dob_db') or None  # Convert '' to None
+            dob_raw = client_data.get('dob_db') or None
+            
+            # --- DATE CONVERSION: DOB ---
+            dob_value = None
+            if dob_raw:
+                try:
+                    dob_value = datetime.strptime(str(dob_raw), '%Y-%m-%d').date()
+                except ValueError:
+                    dob_value = None
+
+            # --- SMART PARSER: NEXT REVIEW DATE ---
+            next_review_val = None
+            last_review_val = None
+            freq_months_val = None
+            calc_date_str = client_data.get('next_review_date_calc')
+            last_updated_str = client_data.get('last_updated_for_calc') or client_data.get('last_review')
+
+            # Parse last_review_date for storage
+            if last_updated_str:
+                try:
+                    last_review_val = datetime.strptime(str(last_updated_str).strip(), '%Y-%m-%d').date()
+                except ValueError:
+                    pass
+
+            # Parse review_freq_months for storage
+            raw_freq = client_data.get('review_freq') or default_freq
+            try:
+                freq_months_val = int(float(str(raw_freq)))
+            except (ValueError, TypeError):
+                freq_months_val = None
+
+            if calc_date_str:
+                try:
+                    next_review_val = datetime.strptime(str(calc_date_str), '%Y-%m-%d').date()
+                except ValueError:
+                    pass
+            elif last_updated_str:
+                # Calculate using file frequency or user-provided default
+                calc_fallback = add_months_to_date(last_updated_str, raw_freq)
+                if calc_fallback:
+                    try:
+                        next_review_val = datetime.strptime(calc_fallback, '%Y-%m-%d').date()
+                    except ValueError:
+                        pass
 
             if action == 'skip':
                 skipped_count += 1
                 continue
 
             elif action == 'add':
-                # For no-email clients, generate a unique placeholder so
-                # the unique_together constraint doesn't collide
                 if email_raw:
                     hashed = hash_email(email_raw)
                     if Subscriber.objects.filter(agent=agent, email_hash=hashed).exists():
                         skipped_count += 1
                         continue
-                    email_to_store = email_raw
-                else:
-                    email_to_store = f"noemail-{uuid.uuid4().hex[:12]}@placeholder.internal"
 
+                # Create with encrypted payloads and anonymized indexes
                 sub = Subscriber(
                     agent=agent,
                     name=client_data.get('name', ''),
                     source='csv_import',
                     date_of_birth=dob_value,
                     race=client_data.get('race', 'O'),
-                    gender=client_data.get('gender', 'U')
+                    gender=client_data.get('gender', 'U'),
+                    pipeline_status=client_data.get('pipeline_status', 'client'),
+                    next_review_date=next_review_val,
+                    last_review_date=last_review_val,
+                    review_freq_months=freq_months_val,
                 )
-                sub.email = email_to_store
+                sub.email = email_raw
+                sub.phone = client_data.get('phone', '')   # Encrypted
+                sub.address = client_data.get('address', '') # Encrypted
+                sub.notes = client_data.get('notes', '')   # Encrypted
                 sub.save()
                 added_count += 1
 
@@ -826,21 +975,37 @@ def preview_import(request):
                     hashed = hash_email(email_raw)
                     existing_sub = Subscriber.objects.filter(agent=agent, email_hash=hashed).first()
                 else:
-                    existing_sub = Subscriber.objects.filter(agent=agent, name__iexact=client_data.get('name', '')).first()
+                    imported_name = client_data.get('name', '').strip()
+                    if imported_name:
+                        name_hashed = hashlib.sha256(imported_name.lower().encode()).hexdigest()
+                        existing_sub = Subscriber.objects.filter(agent=agent, name_hash=name_hashed).first()
 
                 if existing_sub:
                     if client_data.get('name'): existing_sub.name = client_data.get('name')
-                    if dob_value: existing_sub.date_of_birth = dob_value
+                    if dob_value is not None: existing_sub.date_of_birth = dob_value
                     if client_data.get('race'): existing_sub.race = client_data.get('race')
                     if client_data.get('gender'): existing_sub.gender = client_data.get('gender')
+
+                    # Update HQ & Review Fields
+                    existing_sub.pipeline_status = client_data.get('pipeline_status', 'client')
+                    if next_review_val: existing_sub.next_review_date = next_review_val
+                    if last_review_val: existing_sub.last_review_date = last_review_val
+                    if freq_months_val: existing_sub.review_freq_months = freq_months_val
+                    if client_data.get('phone'): existing_sub.phone = client_data.get('phone')
+                    if client_data.get('address'): existing_sub.address = client_data.get('address')
+                    if client_data.get('notes'): existing_sub.notes = client_data.get('notes')
+
                     existing_sub.save()
                     updated_count += 1
 
-        del request.session['pending_import']
+        # Clear session data after successful import
+        if 'pending_import' in request.session: del request.session['pending_import']
+        if 'needs_freq_prompt' in request.session: del request.session['needs_freq_prompt']
+        
         messages.success(request, f"Vault updated: {added_count} added, {updated_count} updated, {skipped_count} skipped.")
         return redirect('manage_subscribers')
 
-    # Build summary stats for the preview page
+    # GET: Build summary stats for the UI
     new_count = sum(1 for c in pending_import if c.get('status') == 'new')
     duplicate_count = sum(1 for c in pending_import if c.get('status') == 'duplicate')
     race_chinese = sum(1 for c in pending_import if c.get('race') == 'C')
@@ -857,6 +1022,7 @@ def preview_import(request):
         'race_malay': race_malay,
         'race_indian': race_indian,
         'race_others': race_others,
+        'needs_freq_prompt': needs_freq_prompt,
     })
 @login_required
 def newsletter_dashboard(request):
@@ -1012,7 +1178,6 @@ def send_newsletter(request, pk):
 # ===========================================================================
 # SUBSCRIBER EDIT & DELETE
 # ===========================================================================
-
 @login_required
 def edit_subscriber(request, pk):
     agent = request.user.agent
@@ -1032,10 +1197,14 @@ def edit_subscriber(request, pk):
         subscriber.name = name
         subscriber.race = race
         subscriber.gender = gender
+        subscriber.tags = request.POST.get('tags', '').strip()
+        subscriber.phone = request.POST.get('phone', '').strip()
+        subscriber.address = request.POST.get('address', '').strip()
 
         # Handle DOB
         if dob_raw:
             try:
+                from datetime import datetime
                 subscriber.date_of_birth = datetime.strptime(dob_raw, '%Y-%m-%d').date()
             except ValueError:
                 subscriber.date_of_birth = None
@@ -1051,14 +1220,167 @@ def edit_subscriber(request, pk):
                 return redirect('manage_subscribers')
             subscriber.email = email_raw
         elif not email_raw and current_email:
-            # Clearing the email — store a unique placeholder
-            subscriber.email = f"noemail-{uuid.uuid4().hex[:12]}@placeholder.internal"
+            # Setting it to blank allows the setter to handle it securely
+            subscriber.email = ""
+
+        # Handle next_review_date
+        nrd_raw = request.POST.get('next_review_date', '').strip()
+        if nrd_raw:
+            try:
+                subscriber.next_review_date = datetime.strptime(nrd_raw, '%Y-%m-%d').date()
+            except ValueError:
+                subscriber.next_review_date = None
+        else:
+            subscriber.next_review_date = None
+
+        # Handle last_review_date
+        lrd_raw = request.POST.get('last_review_date', '').strip()
+        if lrd_raw:
+            try:
+                subscriber.last_review_date = datetime.strptime(lrd_raw, '%Y-%m-%d').date()
+            except ValueError:
+                subscriber.last_review_date = None
+        else:
+            subscriber.last_review_date = None
+
+        # Handle review_freq_months
+        freq_raw = request.POST.get('review_freq_months', '').strip()
+        try:
+            subscriber.review_freq_months = int(freq_raw) if freq_raw else None
+        except ValueError:
+            subscriber.review_freq_months = None
 
         subscriber.save()
         messages.success(request, f"✓ {subscriber.name} has been updated.")
         return redirect('manage_subscribers')
 
+    return render(request, 'core/edit_subscriber.html', {
+        'sub': subscriber,
+        'section': 'audience'
+    })
+
+
+@login_required
+@require_POST
+def mass_update_review_freq(request):
+    """
+    Bulk-update review_freq_months for all subscribers of this agent.
+    Recalculates next_review_date = last_review_date + new_freq for each subscriber
+    that has a stored last_review_date. For those without one, it uses today's date.
+    """
+    agent = request.user.agent
+    try:
+        new_freq = int(request.POST.get('new_freq', 0))
+    except (ValueError, TypeError):
+        messages.error(request, "Invalid frequency entered.")
+        return redirect('manage_subscribers')
+
+    if new_freq < 1:
+        messages.error(request, "Frequency must be at least 1 month.")
+        return redirect('manage_subscribers')
+
+    updated = 0
+    for sub in agent.subscribers.filter(is_active=True):
+        sub.review_freq_months = new_freq
+        base_date = sub.last_review_date or date.today()
+        new_review_date_str = add_months_to_date(base_date.strftime('%Y-%m-%d'), new_freq)
+        if new_review_date_str:
+            try:
+                sub.next_review_date = datetime.strptime(new_review_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+        sub.save()
+        updated += 1
+
+    messages.success(request, f"Updated review frequency to {new_freq} months for {updated} clients.")
     return redirect('manage_subscribers')
+
+
+@login_required
+@require_POST
+def send_review_reminder(request, pk):
+    """Send a review reminder email to a single subscriber."""
+    agent = request.user.agent
+    subscriber = get_object_or_404(Subscriber, pk=pk, agent=agent)
+
+    if not subscriber.email:
+        messages.error(request, f"{subscriber.name} has no email address on file.")
+        return redirect('upcoming_events')
+
+    site_url = getattr(settings, 'SITE_URL', request.build_absolute_uri('/')[:-1])
+    agent_headshot_url = f"{site_url}{agent.headshot.url}" if agent.headshot else ""
+
+    context = {
+        'client_name': subscriber.name,
+        'agent': agent,
+        'next_review_date': subscriber.next_review_date,
+        'agent_headshot_url': agent_headshot_url,
+        'site_url': site_url,
+    }
+    html_content = render_to_string('core/emails/review_reminder_email.html', context)
+    text_content = strip_tags(html_content)
+    subject = f"Your Annual Review is Coming Up — {subscriber.name}"
+
+    from_email = getattr(
+        settings, 'DEFAULT_FROM_EMAIL',
+        f"{agent.name} <updates@skandage.com>"
+    )
+    msg = EmailMultiAlternatives(subject=subject, body=text_content, from_email=from_email, to=[subscriber.email])
+    msg.attach_alternative(html_content, "text/html")
+    try:
+        msg.send(fail_silently=False)
+        messages.success(request, f"Review reminder sent to {subscriber.name}.")
+    except Exception as e:
+        messages.error(request, f"Failed to send email: {str(e)}")
+
+    return redirect('upcoming_events')
+
+
+@login_required
+@require_POST
+def send_bulk_review_reminders(request):
+    """Send review reminder emails to multiple subscribers at once."""
+    agent = request.user.agent
+    sub_ids = request.POST.getlist('subscriber_ids')
+
+    if not sub_ids:
+        messages.error(request, "No clients selected.")
+        return redirect('upcoming_events')
+
+    site_url = getattr(settings, 'SITE_URL', request.build_absolute_uri('/')[:-1])
+    agent_headshot_url = f"{site_url}{agent.headshot.url}" if agent.headshot else ""
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', f"{agent.name} <updates@skandage.com>")
+
+    sent = 0
+    failed = 0
+    for sub in Subscriber.objects.filter(pk__in=sub_ids, agent=agent, is_active=True):
+        if not sub.email:
+            failed += 1
+            continue
+        context = {
+            'client_name': sub.name,
+            'agent': agent,
+            'next_review_date': sub.next_review_date,
+            'agent_headshot_url': agent_headshot_url,
+            'site_url': site_url,
+        }
+        html_content = render_to_string('core/emails/review_reminder_email.html', context)
+        text_content = strip_tags(html_content)
+        subject = f"Your Annual Review is Coming Up — {sub.name}"
+        msg = EmailMultiAlternatives(subject=subject, body=text_content, from_email=from_email, to=[sub.email])
+        msg.attach_alternative(html_content, "text/html")
+        try:
+            msg.send(fail_silently=False)
+            sent += 1
+        except Exception:
+            failed += 1
+
+    if sent:
+        messages.success(request, f"Review reminders sent to {sent} client(s).")
+    if failed:
+        messages.warning(request, f"{failed} client(s) could not be emailed (missing address or send error).")
+
+    return redirect('upcoming_events')
 
 
 @login_required
@@ -1206,100 +1528,247 @@ def delete_card(request, pk):
 
 
 @login_required
-def pending_cards(request):
+def upcoming_events(request):
     agent = request.user.agent
     today = date.today()
 
-    # 1. SELF-HEALING QUEUE: Auto-queue today's birthdays if the cron job hasn't run yet
-    birthdays = Subscriber.objects.filter(
-        agent=agent, is_active=True,
-        date_of_birth__month=today.month, date_of_birth__day=today.day
-    )
-    
-    for sub in birthdays:
-        if not CardLog.objects.filter(agent=agent, subscriber=sub, occasion='Birthday', scheduled_date=today).exists():
-            age = today.year - sub.date_of_birth.year
-            template = CardTemplate.objects.filter(
-                agent=agent, occasion='Birthday', is_active=True
-            ).filter(Q(target_gender='A') | Q(target_gender=sub.gender)
-            ).filter(target_age_min__lte=age, target_age_max__gte=age).first()
-            
-            if template:
-                CardLog.objects.create(
-                    agent=agent, subscriber=sub, card_template=template, 
-                    occasion='Birthday', status='pending', scheduled_date=today
-                )
+    FESTIVAL_DATES = {
+        'New Year': date(today.year, 1, 1),
+        'Pongal': date(today.year, 1, 14),
+        'Lunar New Year': date(2026, 2, 17),
+        'Hari Raya Aidilfitri': date(2026, 3, 20),
+        'Hari Raya Haji': date(2026, 5, 27),
+        'Mid-Autumn Festival': date(2026, 9, 25),
+        'Deepavali': date(2026, 11, 8),
+        'Christmas': date(today.year, 12, 25),
+    }
 
-    # 2. FETCH QUEUE: Grab everything waiting for manual approval
-    pending_logs = CardLog.objects.filter(
-        agent=agent, status='pending', scheduled_date__lte=today
-    ).select_related('subscriber', 'card_template')
-
-    # 3. MANUAL BATCH SEND EXECUTION
     if request.method == 'POST':
-        sent_count = 0
-        for log in pending_logs:
-            sub = log.subscriber
-            template = log.card_template
+        # ==========================================
+        # BATCH SEND LOGIC
+        # ==========================================
+        if 'batch_send' in request.POST:
+            batch_data_list = request.POST.getlist('batch_data')
+            custom_message = request.POST.get('batch_custom_message', '').strip()
+            sent_count = 0
             
-            if template and sub.email:
-                subject = f"Happy Birthday, {sub.name}!"
+            for data_string in batch_data_list:
+                try:
+                    # Parse the payload from the checkbox
+                    sub_id, temp_id, occasion_type, event_date_str = data_string.split('|')
+                    sub = Subscriber.objects.get(pk=sub_id, agent=agent)
+                    template = CardTemplate.objects.get(pk=temp_id, agent=agent)
+                    
+                    if sub.email:
+                        if occasion_type == 'Birthday':
+                            subject = f"Happy Birthday, {sub.name}!"
+                            emoji = '🎂'
+                        else:
+                            subject = f"Happy {occasion_type}, {sub.name}!"
+                            # Safe dictionary lookup without requiring settings import
+                            from core.views import OCCASION_DEMOGRAPHIC_MAP
+                            emoji = OCCASION_DEMOGRAPHIC_MAP.get(occasion_type, {}).get('emoji', '🎉')
+
+                        site_url = getattr(settings, 'SITE_URL', request.build_absolute_uri('/')[:-1])
+                        image_url = f"{site_url}{template.image.url}" if template.image else ""
+                        agent_headshot_url = f"{site_url}{agent.headshot.url}" if agent.headshot else ""
+                        
+                        context = {
+                            'client_name': sub.name,
+                            'agent': agent,
+                            'occasion': occasion_type,
+                            'message': custom_message or template.default_message, 
+                            'card_image_url': image_url,
+                            'agent_headshot_url': agent_headshot_url,
+                            'occasion_emoji': emoji
+                        }
+                        
+                        html_content = render_to_string('core/emails/card_email.html', context)
+                        text_content = strip_tags(html_content)
+                        
+                        msg = EmailMultiAlternatives(
+                            subject=subject, body=text_content,
+                            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', f"{agent.name} <updates@skandage.com>"),
+                            to=[sub.email]
+                        )
+                        msg.attach_alternative(html_content, "text/html")
+                        
+                        msg.send(fail_silently=False)
+                        
+                        scheduled_date = datetime.strptime(event_date_str, '%Y-%m-%d').date() if event_date_str else today
+                        CardLog.objects.create(
+                            agent=agent, subscriber=sub, card_template=template,
+                            occasion=occasion_type, status='sent', scheduled_date=scheduled_date,
+                            sent_at=timezone.now()
+                        )
+                        sent_count += 1
+                except Exception as e:
+                    print(f"Batch Send Error: {e}")
+                    
+            messages.success(request, f"Batch processed successfully! Sent {sent_count} personalized cards.")
+            return redirect('upcoming_events')
+
+        # ==========================================
+        # SINGLE SEND LOGIC
+        # ==========================================
+        else:
+            sub_id = request.POST.get('subscriber_id')
+            template_id = request.POST.get('template_id')
+            custom_message = request.POST.get('custom_message', '').strip()
+            occasion_type = request.POST.get('occasion_type', 'Birthday')
+            event_date_str = request.POST.get('event_date')
+            
+            sub = get_object_or_404(Subscriber, pk=sub_id, agent=agent)
+            template = get_object_or_404(CardTemplate, pk=template_id, agent=agent)
+            
+            if sub.email:
+                if occasion_type == 'Birthday':
+                    subject = f"Happy Birthday, {sub.name}!"
+                    emoji = '🎂'
+                else:
+                    subject = f"Happy {occasion_type}, {sub.name}!"
+                    from core.views import OCCASION_DEMOGRAPHIC_MAP
+                    emoji = OCCASION_DEMOGRAPHIC_MAP.get(occasion_type, {}).get('emoji', '🎉')
+
+                site_url = getattr(settings, 'SITE_URL', request.build_absolute_uri('/')[:-1])
+                image_url = f"{site_url}{template.image.url}" if template.image else ""
+                agent_headshot_url = f"{site_url}{agent.headshot.url}" if agent.headshot else ""
                 
-                                # 1. Get the base site URL (Make sure SITE_URL is set in your production settings.py!)
-                site_url = getattr(settings, 'SITE_URL', 'https://skandage.com').rstrip('/')
-
-                # 2. Smart URL Builder for the Card Image
-                card_image_url = ""
-                if template and template.image:
-                    card_image_url = template.image.url
-                    # If using local storage, prepend the domain. If using S3, it already has 'http'
-                    if not card_image_url.startswith('http'):
-                        card_image_url = f"{site_url}{card_image_url}"
-
-                # 3. Smart URL Builder for the Agent Headshot
-                agent_headshot_url = ""
-                if agent.headshot:
-                    agent_headshot_url = agent.headshot.url
-                    if not agent_headshot_url.startswith('http'):
-                        agent_headshot_url = f"{site_url}{agent_headshot_url}"
-
-                # 4. Pass them to the template
                 context = {
-                    'client_name': sub.name,
-                    'agent': agent,
-                    'occasion': getattr(log, 'occasion', 'Birthday'), # Handles both view and cron job
-                    'message': template.default_message,
-                    'card_image_url': card_image_url,
-                    'agent_headshot_url': agent_headshot_url,
-                    'occasion_emoji': '🎂'
+                    'client_name': sub.name, 'agent': agent, 'occasion': occasion_type,
+                    'message': custom_message or template.default_message, 
+                    'card_image_url': image_url, 'agent_headshot_url': agent_headshot_url, 'occasion_emoji': emoji
                 }
                 
                 html_content = render_to_string('core/emails/card_email.html', context)
                 text_content = strip_tags(html_content)
                 
                 msg = EmailMultiAlternatives(
-                    subject=subject,
-                    body=text_content,
-                    from_email=f"{agent.name} <updates@skandage.com>",
+                    subject=subject, body=text_content,
+                    from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', f"{agent.name} <updates@skandage.com>"),
                     to=[sub.email]
                 )
                 msg.attach_alternative(html_content, "text/html")
                 
                 try:
                     msg.send(fail_silently=False)
-                    log.status = 'sent'
-                    log.sent_at = timezone.now()
-                    log.save()
-                    sent_count += 1
+                    scheduled_date = datetime.strptime(event_date_str, '%Y-%m-%d').date() if event_date_str else today
+                    CardLog.objects.create(
+                        agent=agent, subscriber=sub, card_template=template,
+                        occasion=occasion_type, status='sent', scheduled_date=scheduled_date,
+                        sent_at=timezone.now()
+                    )
+                    messages.success(request, f"Personalized {occasion_type} card sent to {sub.name}!")
                 except Exception as e:
-                    log.status = 'failed'
-                    log.error_message = str(e)
-                    log.save()
+                    messages.error(request, f"Failed to send: {str(e)}")
+            else:
+                messages.error(request, f"{sub.name} has no valid email address.")
                 
-        messages.success(request, f"Successfully processed and sent {sent_count} cards!")
-        return redirect('pending_cards')
+            return redirect('upcoming_events')
 
-    return render(request, 'core/pending_cards.html', {
-        'pending_logs': pending_logs,
-        'section': 'crm'
+    # --- GET: CALCULATE UPCOMING EVENTS ---
+    REVIEW_WINDOW_DAYS = 90   # show reviews due in the next 90 days
+    CARD_WINDOW_DAYS = 30     # show birthdays/festivals in the next 30 days
+
+    upcoming_list = []    # birthdays + festivals
+    reviews_list = []     # upcoming policy reviews
+    unique_occasions = set()
+
+    for sub in agent.subscribers.filter(is_active=True):
+        
+        # 0. CHECK UPCOMING REVIEWS
+        if sub.next_review_date:
+            days_until_review = (sub.next_review_date - today).days
+            if 0 <= days_until_review <= REVIEW_WINDOW_DAYS:
+                # Build WhatsApp link using client's phone
+                wa_url = ''
+                if sub.phone:
+                    phone_digits = ''.join(filter(str.isdigit, sub.phone))
+                    if phone_digits:
+                        wa_url = f"https://wa.me/{phone_digits}"
+                reviews_list.append({
+                    'subscriber': sub,
+                    'days_until': days_until_review,
+                    'event_date': sub.next_review_date,
+                    'last_review_date': sub.last_review_date,
+                    'review_freq_months': sub.review_freq_months,
+                    'wa_url': wa_url,
+                })
+
+        # 1. CHECK BIRTHDAYS
+        if sub.birth_month and sub.birth_day:
+            try: bday_this_year = date(today.year, sub.birth_month, sub.birth_day)
+            except ValueError: bday_this_year = date(today.year, 3, 1)
+                
+            if bday_this_year < today:
+                try: next_bday = date(today.year + 1, sub.birth_month, sub.birth_day)
+                except ValueError: next_bday = date(today.year + 1, 3, 1)
+            else:
+                next_bday = bday_this_year
+            
+            days_until = (next_bday - today).days
+            
+            if 0 <= days_until <= CARD_WINDOW_DAYS:
+                age_turning = next_bday.year - sub.date_of_birth.year if sub.date_of_birth else 0
+
+                if not CardLog.objects.filter(agent=agent, subscriber=sub, occasion='Birthday', scheduled_date=next_bday, status='sent').exists():
+                    template = CardTemplate.objects.filter(
+                        agent=agent, occasion='Birthday', is_active=True
+                    ).filter(Q(target_gender='A') | Q(target_gender=sub.gender)
+                    ).filter(target_age_min__lte=age_turning, target_age_max__gte=age_turning).first()
+
+                    wa_url = ''
+                    if sub.phone:
+                        phone_digits = ''.join(filter(str.isdigit, sub.phone))
+                        if phone_digits:
+                            wa_url = f"https://wa.me/{phone_digits}"
+
+                    upcoming_list.append({
+                        'subscriber': sub, 'occasion': 'Birthday', 'days_until': days_until,
+                        'event_date': next_bday, 'details': f"Turning {age_turning}" if age_turning > 0 else "Birthday",
+                        'template': template, 'wa_url': wa_url,
+                    })
+                    unique_occasions.add('Birthday')
+
+        # 2. CHECK FESTIVALS
+        for tag in sub.tag_list:
+            if tag in FESTIVAL_DATES:
+                fest_date = FESTIVAL_DATES[tag]
+
+                if fest_date < today and tag in ['New Year', 'Christmas', 'Pongal']:
+                    fest_date = date(today.year + 1, fest_date.month, fest_date.day)
+
+                days_until_fest = (fest_date - today).days
+
+                if 0 <= days_until_fest <= CARD_WINDOW_DAYS:
+                    if not CardLog.objects.filter(agent=agent, subscriber=sub, occasion=tag, scheduled_date=fest_date, status='sent').exists():
+                        current_age = sub.age if sub.age else 0
+                        template = CardTemplate.objects.filter(
+                            agent=agent, occasion=tag, is_active=True
+                        ).filter(Q(target_gender='A') | Q(target_gender=sub.gender)
+                        ).filter(target_age_min__lte=current_age, target_age_max__gte=current_age).first()
+
+                        wa_url = ''
+                        if sub.phone:
+                            phone_digits = ''.join(filter(str.isdigit, sub.phone))
+                            if phone_digits:
+                                wa_url = f"https://wa.me/{phone_digits}"
+
+                        upcoming_list.append({
+                            'subscriber': sub, 'occasion': tag, 'days_until': days_until_fest,
+                            'event_date': fest_date, 'details': "Festive Greeting",
+                            'template': template, 'wa_url': wa_url,
+                        })
+                        unique_occasions.add(tag)
+            
+    upcoming_list.sort(key=lambda x: x['days_until'])
+    reviews_list.sort(key=lambda x: x['days_until'])
+
+    return render(request, 'core/upcoming_events.html', {
+        'upcoming': upcoming_list,
+        'reviews': reviews_list,
+        'unique_occasions': sorted(list(unique_occasions)),
+        'section': 'crm',
+        'review_window_days': 90,
+        'card_window_days': 30,
     })
