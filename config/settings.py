@@ -76,6 +76,7 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+SITE_URL = 'https://skandage-app.onrender.com' if not DEBUG else 'http://127.0.0.1:8000'
 
 # DATABASE CONFIG (Switch to Postgres on Server)
 if 'DATABASE_URL' in os.environ:

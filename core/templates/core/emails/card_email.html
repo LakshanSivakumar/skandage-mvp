@@ -18,38 +18,17 @@
                style="max-width:600px;width:100%;border-radius:24px;overflow:hidden;
                       box-shadow:0 20px 60px rgba(0,0,0,0.14);">
 
-
           <tr>
             <td>
               {% if card_image_url %}
               <img src="{{ card_image_url }}" width="600" alt="{{ occasion }}"
                    style="width:100%;max-width:600px;height:auto;display:block;max-height:320px;object-fit:cover;">
-
               {% else %}
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td align="center"
-                      style="background:{{ gradient_color|default:'#3b82f6' }};background-color:#3b82f6;
-                             padding:64px 40px 60px;">
-
-                    <p style="margin:0 0 18px;font-size:72px;line-height:1;
-                               text-align:center;">{{ occasion_emoji }}</p>
-
-                    <p style="margin:0;font-size:34px;font-weight:800;color:#ffffff;
-                               letter-spacing:-0.5px;text-align:center;
-                               text-shadow:0 2px 12px rgba(0,0,0,0.2);">{{ occasion }}</p>
-
-                    {% if is_test %}
-                    <p style="margin:16px 0 0;text-align:center;">
-                      <span style="display:inline-block;background:rgba(0,0,0,0.25);
-                                   color:rgba(255,255,255,0.9);font-size:10px;font-weight:700;
-                                   text-transform:uppercase;letter-spacing:2px;
-                                   padding:5px 14px;border-radius:20px;">
-                        Test Email
-                      </span>
-                    </p>
-                    {% endif %}
-
+                  <td align="center" style="background-color:#3b82f6; padding:64px 40px 60px;">
+                    <p style="margin:0 0 18px;font-size:72px;line-height:1;text-align:center;">{{ occasion_emoji }}</p>
+                    <p style="margin:0;font-size:34px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;text-align:center;">{{ occasion }}</p>
                   </td>
                 </tr>
               </table>
@@ -57,15 +36,11 @@
             </td>
           </tr>
 
-
           <tr>
             <td bgcolor="#ffffff" style="background-color:#ffffff;padding:52px 52px 44px;">
-
-              <p style="margin:0 0 22px;font-size:22px;font-weight:700;
-                         color:#0f172a;letter-spacing:-0.3px;">
+              <p style="margin:0 0 22px;font-size:22px;font-weight:700;color:#0f172a;letter-spacing:-0.3px;">
                 Dear {{ client_name }},
               </p>
-
               <p style="margin:0 0 40px;font-size:16px;line-height:1.85;color:#475569;">
                 {{ message|linebreaksbr }}
               </p>
@@ -79,90 +54,70 @@
               <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td valign="middle" style="padding-right:16px;">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td align="center" valign="middle"
-                            style="width:52px;height:52px;border-radius:50%;
-                                   background:linear-gradient(135deg,#3b82f6 0%,#6366f1 100%);
-                                   font-size:22px;font-weight:800;color:#ffffff;
-                                   text-align:center;line-height:52px;">
-                          {{ agent.name|slice:":1"|upper }}
-                        </td>
-                      </tr>
-                    </table>
+                    {% if agent_headshot_url %}
+                      <img src="{{ agent_headshot_url }}" alt="{{ agent.name }}" width="52" height="52" 
+                           style="width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;border:1px solid #e2e8f0;">
+                    {% else %}
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                          <td align="center" valign="middle"
+                              style="width:52px;height:52px;border-radius:50%;
+                                     background:linear-gradient(135deg,#3b82f6 0%,#6366f1 100%);
+                                     font-size:22px;font-weight:800;color:#ffffff;
+                                     text-align:center;line-height:52px;">
+                            {{ agent.name|slice:":1"|upper }}
+                          </td>
+                        </tr>
+                      </table>
+                    {% endif %}
                   </td>
                   <td valign="middle">
-                    <p style="margin:0 0 3px;font-size:11px;color:#94a3b8;font-weight:600;
-                               text-transform:uppercase;letter-spacing:1.2px;">With warm regards,</p>
-                    <p style="margin:0 0 3px;font-size:18px;font-weight:700;color:#0f172a;">
-                      {{ agent.name }}
-                    </p>
+                    <p style="margin:0 0 3px;font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;">With warm regards,</p>
+                    <p style="margin:0 0 3px;font-size:18px;font-weight:700;color:#0f172a;">{{ agent.name }}</p>
                     <p style="margin:0;font-size:13px;color:#64748b;">
                       {{ agent.title }}{% if agent.title and agent.company %}&nbsp;·&nbsp;{% endif %}{{ agent.company }}
                     </p>
                   </td>
                 </tr>
               </table>
-
             </td>
           </tr>
 
-
           {% if agent.phone_number %}
           <tr>
-            <td bgcolor="#f8fafc"
-                style="background-color:#f8fafc;border-top:1px solid #e2e8f0;
-                       padding:30px 52px;text-align:center;">
-
-              <p style="margin:0 0 18px;font-size:13px;color:#94a3b8;text-align:center;">
-                Have a financial question? I'm just a message away.
-              </p>
-
+            <td bgcolor="#f8fafc" style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:30px 52px;text-align:center;">
+              <p style="margin:0 0 18px;font-size:13px;color:#94a3b8;text-align:center;">Have a financial question? I'm just a message away.</p>
               <a href="https://wa.me/{{ agent.phone_number }}"
-                 style="display:inline-block;background-color:#25d366;color:#ffffff;
-                        font-size:14px;font-weight:700;text-decoration:none;
-                        padding:14px 32px;border-radius:14px;
-                        box-shadow:0 4px 14px rgba(37,211,102,0.3);">
+                 style="display:inline-block;background-color:#25d366;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:14px;">
                 💬 &nbsp;WhatsApp Me
               </a>
-
             </td>
           </tr>
           {% endif %}
 
-
           <tr>
-            <td bgcolor="#0f172a"
-                style="background-color:#0f172a;padding:32px 52px;text-align:center;">
-
+            <td bgcolor="#0f172a" style="background-color:#0f172a;padding:32px 52px;text-align:center;">
               <p style="margin:0 0 16px;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5;">
-                This communication is securely intended for clients of <strong>{{ agent.company }}</strong>.<br>
+                This communication is securely intended for clients of <strong>{{ agent.name }}</strong>.<br>
                 If you no longer wish to receive these updates, please reply directly to this email to update your preferences.
               </p>
-
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td style="border-top:1px solid rgba(255,255,255,0.1);padding-bottom:16px;"></td>
-                </tr>
+                <tr><td style="border-top:1px solid rgba(255,255,255,0.1);padding-bottom:16px;"></td></tr>
               </table>
-
               <p style="margin:0 0 8px;font-size:11px;color:rgba(255,255,255,0.4);">
                 Sent by <strong>{{ agent.name }}</strong> via <strong>Skandage CRM</strong>
               </p>
-
               {% if agent.disclaimer %}
               <p style="margin:0;font-size:10px;color:rgba(255,255,255,0.25);line-height:1.4;">
                 {{ agent.disclaimer }}
               </p>
               {% endif %}
-
             </td>
           </tr>
 
         </table>
-        </td>
+      </td>
     </tr>
   </table>
-
 </body>
 </html>

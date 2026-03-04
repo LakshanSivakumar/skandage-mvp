@@ -46,13 +46,34 @@ class Command(BaseCommand):
                 if agent.automation_mode == 'auto':
                     if sub.email:
                         subject = f"Happy Birthday, {sub.name}!"
-                        site_url = getattr(settings, 'SITE_URL', 'https://app.skandage.com')
-                        image_url = f"{site_url}{template.image.url}" if template.image else ""
-                        
+                        # 1. Get the base site URL (Make sure SITE_URL is set in your production settings.py!)
+                        site_url = getattr(settings, 'SITE_URL', 'https://skandage.com').rstrip('/')
+
+                        # 2. Smart URL Builder for the Card Image
+                        card_image_url = ""
+                        if template and template.image:
+                            card_image_url = template.image.url
+                            # If using local storage, prepend the domain. If using S3, it already has 'http'
+                            if not card_image_url.startswith('http'):
+                                card_image_url = f"{site_url}{card_image_url}"
+
+                        # 3. Smart URL Builder for the Agent Headshot
+                        agent_headshot_url = ""
+                        if agent.headshot:
+                            agent_headshot_url = agent.headshot.url
+                            if not agent_headshot_url.startswith('http'):
+                                agent_headshot_url = f"{site_url}{agent_headshot_url}"
+
+                        # 4. Pass them to the template
                         context = {
-                            'client_name': sub.name, 'agent': agent, 'occasion': 'Birthday',
-                            'message': template.default_message, 'card_image_url': image_url, 'occasion_emoji': '🎂'
-                        }
+                            'client_name': sub.name,
+                            'agent': agent,
+                            'occasion': getattr(log, 'occasion', 'Birthday'), # Handles both view and cron job
+                            'message': template.default_message,
+                            'card_image_url': card_image_url,
+                            'agent_headshot_url': agent_headshot_url,
+                            'occasion_emoji': '🎂'
+}
                         
                         html_content = render_to_string('core/emails/card_email.html', context)
                         text_content = strip_tags(html_content)
