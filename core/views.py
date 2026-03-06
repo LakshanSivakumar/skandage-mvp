@@ -241,7 +241,7 @@ def agent_profile(request, slug):
             
             # Hardcode for testing, but later you can add 'telegram_chat_id' to your Agent model!
             BOT_TOKEN = "8761812137:AAE8fcj89fFeP2HJatxX9KBVfiZNXUohB3A"
-            CHAT_ID = "1894504369" 
+            CHAT_ID = Agent.telegram_chat_id
             
             send_telegram_notification(BOT_TOKEN, CHAT_ID, telegram_msg)
             # --- SEND NEW LEAD EMAIL NOTIFICATION TO AGENT ---
@@ -2082,7 +2082,7 @@ def telegram_webhook(request):
                     agent.save()
 
                     # Send a success confirmation back to the agent's phone
-                    BOT_TOKEN = "YOUR_BOT_TOKEN_HERE" # Replace with your token
+                    BOT_TOKEN = "8761812137:AAE8fcj89fFeP2HJatxX9KBVfiZNXUohB3A" # Replace with your token
                     success_msg = f"✅ <b>Success!</b>\n\nYour Skandage account (<b>{agent.name}</b>) is now connected.\n\nYou will receive instant notifications here whenever a new lead submits your form."
                     send_telegram_notification(BOT_TOKEN, chat_id, success_msg)
 
