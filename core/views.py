@@ -241,7 +241,7 @@ def agent_profile(request, slug):
             
             # Hardcode for testing, but later you can add 'telegram_chat_id' to your Agent model!
             BOT_TOKEN = "8761812137:AAE8fcj89fFeP2HJatxX9KBVfiZNXUohB3A"
-            CHAT_ID = Agent.telegram_chat_id
+            CHAT_ID = agent.telegram_chat_id
             
             send_telegram_notification(BOT_TOKEN, CHAT_ID, telegram_msg)
             # --- SEND NEW LEAD EMAIL NOTIFICATION TO AGENT ---
