@@ -723,23 +723,44 @@ def logout_view(request):
 
 # Subpage Views
 def agent_testimonials(request, slug):
-    agent = get_object_or_404(Agent, slug=slug, is_public=True) # Check Public
+    agent = get_object_or_404(Agent, slug=slug, is_public=True)
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
     testimonials = agent.testimonials.filter(is_published=True).order_by('-is_featured', '-id')
-    return render(request, 'core/public_testimonials.html', {
+    
+    context = {
         'agent': agent,
         'testimonials': testimonials,
         'theme': theme_config
-    })
+    }
+    
+    # VIP ARCHITECTURE INTERCEPT
+    if getattr(agent, 'is_bespoke', False) and getattr(agent, 'bespoke_template_name', ''):
+        context['custom_fields'] = agent.bespoke_data or {}
+        # Automatically routes core/karna_custom.html -> core/karna_letters.html
+        template_name = agent.bespoke_template_name.replace('_custom', '_letters')
+        return render(request, template_name, context)
+        
+    return render(request, 'core/public_testimonials.html', context)
 
 def agent_bio(request, slug):
-    agent = get_object_or_404(Agent, slug=slug, is_public=True) # Check Public
+    agent = get_object_or_404(Agent, slug=slug, is_public=True)
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
-    return render(request, 'core/public_bio.html', {
+    
+    context = {
         'agent': agent,
         'credentials': agent.credentials.all().order_by('order'),
+        'services': agent.services.all(), # Ensure services are passed to the view
         'theme': theme_config
-    })
+    }
+    
+    # VIP ARCHITECTURE INTERCEPT
+    if getattr(agent, 'is_bespoke', False) and getattr(agent, 'bespoke_template_name', ''):
+        context['custom_fields'] = agent.bespoke_data or {}
+        # Automatically routes core/karna_custom.html -> core/karna_expertise.html
+        template_name = agent.bespoke_template_name.replace('_custom', '_expertise')
+        return render(request, template_name, context)
+        
+    return render(request, 'core/public_bio.html', context)
 
 def single_testimonial(request, slug, pk):
     agent = get_object_or_404(Agent, slug=slug, is_public=True) # Check Public
@@ -1996,3 +2017,13 @@ def manage_bespoke_profile(request, agent):
     
     # You will create this specific HTML file for her dashboard edits
     return render(request, 'core/manage_bespoke_profile.html', context)
+
+def domain_expertise(request):
+    host = request.get_host().split(':')[0].lower()
+    subdomain = host.split('.')[0]
+    return agent_bio(request, slug=subdomain)
+
+def domain_letters(request):
+    host = request.get_host().split(':')[0].lower()
+    subdomain = host.split('.')[0]
+    return agent_testimonials(request, slug=subdomain)

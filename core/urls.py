@@ -10,6 +10,8 @@ sitemaps = {
 urlpatterns = [
     # --- PUBLIC DOMAIN ROUTER ---
     path('', views.domain_router, name='home'),
+    path('expertise/', views.domain_expertise, name='domain_expertise'), # NEW
+    path('letters/', views.domain_letters, name='domain_letters'),
     path('accounts/', include('django.contrib.auth.urls')),
     
     # --- PUBLIC AGENT PAGES ---

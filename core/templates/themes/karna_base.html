@@ -1,0 +1,86 @@
+{% load markdown_extras %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth bg-[#0a0a0a]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ custom_fields.hero_headline|default:agent.name|striptags }} | Private Wealth</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #262626; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #fbbf24; }
+        
+        .content-toggle { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out; opacity: 0; }
+        .content-toggle.expanded { max-height: 5000px; opacity: 1; }
+        .rotate-icon { transition: transform 0.3s ease; }
+        .expanded .rotate-icon { transform: rotate(180deg); }
+    </style>
+</head>
+
+<body class="text-white selection:bg-[#fbbf24] selection:text-black antialiased">
+    <nav class="fixed top-0 w-full z-50 bg-[#0a0a0a]/70 backdrop-blur-xl border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-[#fbbf24] flex items-center justify-center text-black font-bold text-lg rounded-sm">{{ agent.name|slice:":1" }}</div>
+                <div class="hidden md:block text-xs uppercase tracking-[0.2em] text-white/80 font-bold">{{ agent.company }} <span class="text-[#fbbf24] mx-1">|</span> Private Client</div>
+            </a>
+
+            <div class="flex gap-6 md:gap-8">
+                {% if '/agent/' in request.path %}
+                    <a href="{% url 'agent_profile' agent.slug %}" class="text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all {% if request.resolver_match.url_name == 'agent_profile' %}text-[#fbbf24] border-b-2 border-[#fbbf24]{% else %}text-white/50 border-b-2 border-transparent hover:text-white{% endif %}">Overview</a>
+                    
+                    <a href="{% url 'agent_bio' agent.slug %}" class="text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all {% if request.resolver_match.url_name == 'agent_bio' %}text-[#fbbf24] border-b-2 border-[#fbbf24]{% else %}text-white/50 border-b-2 border-transparent hover:text-white{% endif %}">Expertise</a>
+                    
+                    <a href="{% url 'agent_testimonials' agent.slug %}" class="text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all {% if request.resolver_match.url_name == 'agent_testimonials' %}text-[#fbbf24] border-b-2 border-[#fbbf24]{% else %}text-white/50 border-b-2 border-transparent hover:text-white{% endif %}">Client Letters</a>
+                {% else %}
+                    <a href="/" class="text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all {% if request.path == '/' %}text-[#fbbf24] border-b-2 border-[#fbbf24]{% else %}text-white/50 border-b-2 border-transparent hover:text-white{% endif %}">Overview</a>
+                    
+                    <a href="/expertise/" class="text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all {% if '/expertise/' in request.path %}text-[#fbbf24] border-b-2 border-[#fbbf24]{% else %}text-white/50 border-b-2 border-transparent hover:text-white{% endif %}">Expertise</a>
+                    
+                    <a href="/letters/" class="text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all {% if '/letters/' in request.path %}text-[#fbbf24] border-b-2 border-[#fbbf24]{% else %}text-white/50 border-b-2 border-transparent hover:text-white{% endif %}">Client Letters</a>
+                {% endif %}
+            </div>
+
+            <div>
+                {% if agent.calendly_link %}
+                <button onclick="Calendly.initPopupWidget({url: '{{ agent.calendly_link }}'});return false;" class="text-[10px] md:text-xs font-bold uppercase tracking-widest border border-[#fbbf24] text-[#fbbf24] px-4 md:px-6 py-2.5 hover:bg-[#fbbf24] hover:text-black transition">Inquire</button>
+                {% else %}
+                <a href="{% url 'download_vcard' agent.slug %}" class="text-[10px] md:text-xs font-bold uppercase tracking-widest border border-[#fbbf24] text-[#fbbf24] px-4 md:px-6 py-2.5 hover:bg-[#fbbf24] hover:text-black transition">vCard</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-20 min-h-[85vh]">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t border-white/5 bg-[#0a0a0a] py-12 text-center">
+        <p class="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] mb-4">&copy; {% now "Y" %} {{ agent.name }}. All Rights Reserved.</p>
+        <p class="text-[10px] text-gray-700 max-w-2xl mx-auto px-6 leading-relaxed font-light">{{ agent.disclaimer }}</p>
+    </footer>
+
+    {% if agent.calendly_link %}
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+    {% endif %}
+
+    <script>
+        function toggleContent(id, btn) {
+            const el = document.getElementById(id);
+            el.classList.toggle('expanded');
+            btn.classList.toggle('expanded');
+            const span = btn.querySelector('span');
+            if (el.classList.contains('expanded')) { span.innerText = 'Hide Review Text'; } 
+            else { span.innerText = 'Read Review Text'; }
+        }
+    </script>
+</body>
+</html>
