@@ -227,6 +227,26 @@ def agent_profile(request, slug):
                 sub = Subscriber(agent=agent, name=lead.name, source='website_lead')
                 sub.email = lead.email # Triggers the encryption setter!
                 sub.save()
+
+            # --- SEND NEW LEAD EMAIL NOTIFICATION TO AGENT ---
+            try:
+                email_context = {
+                    'lead': lead,
+                    'domain': request.get_host(),
+                }
+                html_body = render_to_string('core/emails/new_lead.html', email_context)
+                text_body = strip_tags(html_body)
+
+                notification = EmailMultiAlternatives(
+                    subject=f"New Lead: {lead.name} just inquired on your profile!",
+                    body=text_body,
+                    from_email=f"Skandage <updates@skandage.com>",
+                    to=[agent.user.email],
+                )
+                notification.attach_alternative(html_body, "text/html")
+                notification.send()
+            except Exception as e:
+                print(f"Failed to send new lead notification: {e}")
             # ---------------------------
         is_calculator = request.POST.get('is_calculator')
         if is_calculator == 'true':
@@ -383,6 +403,25 @@ def dashboard_stats(request):
     if agent.profile_views > 0:
         conversion_rate = round((leads.count() / agent.profile_views) * 100, 1)
 
+    # Calculate CRM events due today
+    from core.festivals import FESTIVALS_2026
+    today = date.today()
+    today_str = today.strftime('%Y-%m-%d')
+    today_festivals = [name for name, d in FESTIVALS_2026.items() if d == today_str]
+    
+    today_events_count = 0
+    for sub in agent.subscribers.filter(is_active=True):
+        is_event_today = False
+        if sub.birth_month == today.month and sub.birth_day == today.day:
+            is_event_today = True
+        elif sub.next_review_date == today:
+            is_event_today = True
+        elif today_festivals and any(f in sub.tag_list for f in today_festivals):
+            is_event_today = True
+            
+        if is_event_today:
+            today_events_count += 1
+
     context = {
         'agent': agent,
         'agency': agency, 
@@ -392,6 +431,7 @@ def dashboard_stats(request):
         'audience_size': audience_size,
         'broadcasts_sent': broadcasts_sent,
         'conversion_rate': conversion_rate,
+        'today_events_count': today_events_count,
     }
     return render(request, 'core/dashboard_stats.html', context)
 
@@ -575,6 +615,84 @@ def delete_lead(request, pk):
     if request.method == 'POST':
         lead.delete()
     return redirect('dashboard')
+
+from urllib.parse import quote
+
+@login_required
+def email_article_to_all(request, pk):
+    agent = request.user.agent
+    article = get_object_or_404(Article, pk=pk, agent=agent)
+    
+    if request.method == 'POST':
+        subscribers = agent.subscribers.filter(is_active=True)
+        valid_subs = [sub for sub in subscribers if sub.email]
+        
+        if not valid_subs:
+            messages.error(request, "You have no active clients with valid email addresses.")
+            return redirect('manage_articles')
+            
+        site_url = getattr(settings, 'SITE_URL', request.build_absolute_uri('/')[:-1])
+        article_url = f"{site_url}{reverse('article_detail', args=[article.slug])}"
+        sent_count = 0
+        
+        for sub in valid_subs:
+            client_name = sub.name or "there"
+            subject = f"New Article: {article.title}"
+            
+            # Create a simple, clean HTML email template dynamically
+            html_content = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+                <p>Hi {client_name},</p>
+                <p>I just published a new article that I thought you might find valuable:</p>
+                <h2 style="color: #2563eb;">{article.title}</h2>
+                <p style="color: #666; font-style: italic;">{strip_tags(article.content)[:200]}...</p>
+                <div style="margin-top: 30px; text-align: center;">
+                    <a href="{article_url}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Read Full Article</a>
+                </div>
+                <hr style="margin-top: 40px; border: 0; border-top: 1px solid #eee;">
+                <p style="font-size: 12px; color: #999;">Sent by {agent.name} via Skandage</p>
+            </div>
+            """
+            text_content = strip_tags(html_content)
+            
+            msg = EmailMultiAlternatives(
+                subject=subject, 
+                body=text_content,
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', f"{agent.name} <updates@skandage.com>"),
+                to=[sub.email]
+            )
+            msg.attach_alternative(html_content, "text/html")
+            
+            try:
+                msg.send(fail_silently=False)
+                sent_count += 1
+            except Exception as e:
+                print(f"Error sending article email to {sub.email}: {e}")
+                
+        messages.success(request, f"Article successfully emailed to {sent_count} clients!")
+        return redirect('manage_articles')
+        
+    return redirect('manage_articles')
+
+@login_required
+def whatsapp_article_to_all(request, pk):
+    """
+    Since WhatsApp doesn't allow automatic background broadcasting without the paid API,
+    this generates a pre-filled forwardable message and opens the agent's WhatsApp app.
+    """
+    agent = request.user.agent
+    article = get_object_or_404(Article, pk=pk, agent=agent)
+    
+    site_url = getattr(settings, 'SITE_URL', request.build_absolute_uri('/')[:-1])
+    article_url = f"{site_url}{reverse('article_detail', args=[article.slug])}"
+    
+    message = f"Hi! I just published a new article that I thought you might find valuable:\n\n*{article.title}*\n\nRead it here: {article_url}"
+    encoded_message = quote(message)
+    
+    # We use https://wa.me/ to trigger the app's contact selector (and bypass Django's DisallowedRedirect)
+    whatsapp_url = f"https://wa.me/?text={encoded_message}"
+    
+    return redirect(whatsapp_url)
 
 @login_required
 def account_settings(request):

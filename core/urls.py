@@ -25,6 +25,8 @@ urlpatterns = [
     # --- ACTIONS: Articles ---
     path('dashboard/article/new/', views.create_article, name='create_article'),
     path('dashboard/article/edit/<int:pk>/', views.edit_article, name='edit_article'),
+    path('dashboard/article/<int:pk>/email-all/', views.email_article_to_all, name='email_article_to_all'),
+    path('dashboard/article/<int:pk>/whatsapp-all/', views.whatsapp_article_to_all, name='whatsapp_article_to_all'),
     
     # --- ACTIONS: Credentials ---
     path('dashboard/credential/add/', views.add_credential, name='add_credential'),

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Daily CRM Summary</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f9fafb;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: #1e293b;
+            color: #ffffff;
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .content {
+            padding: 32px 24px;
+        }
+
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 24px;
+            color: #374151;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+
+        .list-item {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .name {
+            font-weight: 600;
+            color: #0f172a;
+            margin: 0 0 4px 0;
+            font-size: 16px;
+        }
+
+        .detail {
+            color: #64748b;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            background-color: #dbeafe;
+            color: #1d4ed8;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #2563eb;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 500;
+            margin-top: 24px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 24px;
+            background-color: #f1f5f9;
+            color: #64748b;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Daily Skandage CRM Summary</h1>
+        </div>
+        <div class="content">
+            <p class="greeting">Hi {{ agent.name }},</p>
+            <p>Here is your daily overview of CRM events for <strong>{{ date|date:"F j, Y" }}</strong>. Don't forget to
+                reach out to your clients!</p>
+
+            {% if birthdays %}
+            <div class="section">
+                <h2 class="section-title">🎂 Birthdays Today</h2>
+                {% for bday_sub in birthdays %}
+                <div class="list-item">
+                    <p class="name">{{ bday_sub.name }}</p>
+                    <p class="detail">Email: {{ bday_sub.email|default:"N/A" }} | Phone: {{ bday_sub.phone|default:"N/A"
+                        }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if reviews %}
+            <div class="section">
+                <h2 class="section-title">📅 Upcoming Reviews</h2>
+                {% for review_sub in reviews %}
+                <div class="list-item">
+                    <p class="name">{{ review_sub.name }}</p>
+                    <p class="detail">Last Reviewed: {{ review_sub.last_review_date|date:"M d, Y"|default:"Never" }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if festivals %}
+            <div class="section">
+                <h2 class="section-title">🎉 Festive Greetings</h2>
+                {% for fest_dict in festivals %}
+                <div class="list-item">
+                    <p class="name">
+                        {{ fest_dict.subscriber.name }}
+                        {% for f in fest_dict.festivals %}<span class="tag">{{ f }}</span>{% endfor %}
+                    </p>
+                    <p class="detail">Send them your best wishes!</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div style="text-align: center;">
+                <a href="https://{{ domain }}/dashboard" class="btn">Go to Dashboard</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; {{ date|date:"Y" }} Skandage. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+
+</html>

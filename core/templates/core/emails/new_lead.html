@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>New Lead Notification</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f9fafb;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: #7e22ce;
+            color: #ffffff;
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .content {
+            padding: 32px 24px;
+        }
+
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 24px;
+            color: #374151;
+        }
+
+        .lead-card {
+            background-color: #fdf4ff;
+            border: 1px solid #f0abfc;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .lead-header {
+            margin-bottom: 16px;
+            border-bottom: 1px solid #f5d0fe;
+            padding-bottom: 12px;
+        }
+
+        .lead-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #86198f;
+            margin: 0;
+        }
+
+        .field {
+            margin-bottom: 12px;
+        }
+
+        .field-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: #a21caf;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .field-value {
+            font-size: 16px;
+            color: #4a044e;
+            margin: 0;
+        }
+
+        .message-box {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 16px;
+            font-style: italic;
+            color: #4b5563;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-block;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: #9333ea;
+            color: #ffffff !important;
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            color: #9333ea !important;
+            border: 1px solid #9333ea;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 24px;
+            background-color: #f1f5f9;
+            color: #64748b;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>New Lead Captured! 🚀</h1>
+        </div>
+        <div class="content">
+            <p class="greeting">Hi {{ lead.agent.name }},</p>
+            <p>You have just received a new inquiry through your Skandage profile.</p>
+
+            <div class="lead-card">
+                <div class="lead-header">
+                    <h2 class="lead-name">{{ lead.name }}</h2>
+                </div>
+
+                <div class="field">
+                    <span class="field-label">Email Address</span>
+                    <p class="field-value"><a href="mailto:{{ lead.email }}">{{ lead.email }}</a></p>
+                </div>
+
+                <div class="field">
+                    <span class="field-label">Phone Number</span>
+                    <p class="field-value">{{ lead.phone|default:"Not Provided" }}</p>
+                </div>
+
+                <div class="field">
+                    <span class="field-label">Message</span>
+                    <div class="message-box">
+                        "{{ lead.message|linebreaksbr }}"
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <a href="mailto:{{ lead.email }}?subject=Replying to your inquiry" class="btn btn-primary">Reply Now</a>
+                <a href="https://{{ domain }}/dashboard" class="btn btn-secondary">View in Dashboard</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; {% now "Y" %} Skandage. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+
+</html>
