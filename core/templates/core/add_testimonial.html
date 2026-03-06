@@ -35,16 +35,28 @@
                     {{ form.review_text }}
                 </div>
 
-                <div class="space-y-3">
-                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Proof / Screenshot <span class="text-slate-300 font-normal normal-case">(Optional)</span></label>
-                    <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:bg-slate-50 transition cursor-pointer group" onclick="document.getElementById('id_screenshot').click()">
-                        <div class="text-slate-300 group-hover:text-blue-500 transition mb-2">
-                            <i class='bx bxs-cloud-upload text-3xl'></i>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Screenshot <span class="text-slate-300 font-normal normal-case">(Optional)</span></label>
+                        <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:bg-slate-50 transition cursor-pointer group h-32 flex flex-col justify-center" onclick="document.getElementById('id_screenshot').click()">
+                            <div class="text-slate-300 group-hover:text-blue-500 transition mb-2">
+                                <i class='bx bxs-image-add text-3xl'></i>
+                            </div>
+                            <p class="text-sm font-bold text-slate-600">Upload Image</p>
                         </div>
-                        <p class="text-sm font-bold text-slate-600">Click to upload image</p>
-                        <p class="text-xs text-slate-400 mt-1">Supports JPG, PNG (Max 2MB)</p>
+                        {{ form.screenshot }}
                     </div>
-                    {{ form.screenshot }}
+
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Video <span class="text-slate-300 font-normal normal-case">(Optional)</span></label>
+                        <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:bg-slate-50 transition cursor-pointer group h-32 flex flex-col justify-center" onclick="document.getElementById('id_video').click()">
+                            <div class="text-slate-300 group-hover:text-blue-500 transition mb-2">
+                                <i class='bx bxs-video-plus text-3xl'></i>
+                            </div>
+                            <p class="text-sm font-bold text-slate-600">Upload Video</p>
+                        </div>
+                        {{ form.video }}
+                    </div>
                 </div>
 
                 <div class="pt-4 flex gap-4">

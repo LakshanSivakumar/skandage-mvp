@@ -326,7 +326,7 @@ def client_review_submission(request, token):
     agent = review_link.agent
     
     if request.method == 'POST':
-        form = ClientSubmissionForm(request.POST)
+        form = ClientSubmissionForm(request.POST, request.FILES)
         if form.is_valid():
             testimonial = form.save(commit=False)
             testimonial.agent = agent

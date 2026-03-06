@@ -112,6 +112,7 @@ class Testimonial(models.Model):
     client_name = models.CharField(max_length=100)
     review_text = models.TextField()
     screenshot = models.ImageField(upload_to='reviews/', blank=True, null=True)
+    video = models.FileField(upload_to='reviews/videos/', blank=True, null=True, help_text="Upload MP4 or MOV files")
     is_featured = models.BooleanField(default=False)
     is_published = models.BooleanField(default=True)
     submission_date = models.DateTimeField(auto_now_add=True, null=True)

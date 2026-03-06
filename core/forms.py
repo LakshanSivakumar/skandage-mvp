@@ -27,23 +27,31 @@ class AgentProfileForm(forms.ModelForm):
 class TestimonialForm(forms.ModelForm):
     class Meta:
         model = Testimonial
-        fields = ['title', 'client_name', 'review_text', 'screenshot', 'is_published']
+        fields = ['title', 'client_name', 'review_text', 'screenshot', 'video', 'is_published']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition placeholder-slate-400 dark:placeholder-slate-500', 'placeholder': 'Headline (e.g. Best Advisor!)'}),
             'client_name': forms.TextInput(attrs={'class': 'w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition placeholder-slate-400 dark:placeholder-slate-500', 'placeholder': 'e.g. Sarah Tan'}),
             'review_text': forms.Textarea(attrs={'class': 'w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition placeholder-slate-400 dark:placeholder-slate-500', 'rows': 6, 'placeholder': 'Paste the full review here...'}),
-            # CRITICAL FIX: Ensure ID matches the one used in the template's onClick
-            'screenshot': forms.FileInput(attrs={'class': 'hidden', 'id': 'id_screenshot'}),
+            
+            # THE FIX: Explicitly set the accept attributes and unique IDs
+            'screenshot': forms.FileInput(attrs={'class': 'hidden', 'id': 'id_screenshot', 'accept': 'image/*'}),
+            'video': forms.FileInput(attrs={'class': 'hidden', 'id': 'id_video', 'accept': 'video/mp4,video/quicktime,video/*'}),
+            
             'is_published': forms.CheckboxInput(attrs={'class': 'w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-slate-600 dark:bg-slate-700'}),
         }
 
 class ClientSubmissionForm(forms.ModelForm):
     class Meta:
         model = Testimonial
-        fields = ['title', 'review_text']
+        # THE FIX: Add screenshot and video back to the fields list!
+        fields = ['title', 'review_text', 'screenshot', 'video']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition placeholder-slate-400 dark:placeholder-slate-500 font-bold', 'placeholder': 'Headline (e.g. "Great Service")'}),
             'review_text': forms.Textarea(attrs={'class': 'w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition placeholder-slate-400 dark:placeholder-slate-500', 'rows': 6, 'placeholder': 'Share your experience...'}),
+            
+            # Ensure the client-facing form also filters properly
+            'screenshot': forms.FileInput(attrs={'accept': 'image/*', 'class': 'w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-slate-700 dark:file:text-slate-300'}),
+            'video': forms.FileInput(attrs={'accept': 'video/mp4,video/quicktime,video/*', 'class': 'w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-slate-700 dark:file:text-slate-300'}),
         }
 
 class LeadForm(forms.ModelForm):

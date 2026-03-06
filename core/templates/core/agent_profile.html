@@ -335,11 +335,18 @@
                 <div class="grid md:grid-cols-2 gap-12">
                     {% for review in testimonials %}
                     <div class="group">
-                        {% if review.screenshot %}
-                        <div class="mb-8 border border-white/10 shadow-sm overflow-hidden">
-                            <img src="{{ review.screenshot.url }}" class="w-full h-auto object-cover block hover:scale-105 transition duration-700" alt="Client Proof">
-                        </div>
-                        {% endif %}
+                        {% if review.video %}
+    <div class="mb-6 rounded-2xl overflow-hidden border border-white/10 shadow-sm relative z-10 bg-black">
+        <video controls playsinline preload="metadata" class="w-full object-cover max-h-[400px]">
+            <source src="{{ review.video.url }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+{% elif review.screenshot %}
+    <div class="mb-6 rounded-2xl overflow-hidden border border-white/10 shadow-sm relative z-10">
+        <img src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Verified Proof">
+    </div>
+{% endif %}
 
                         <div class="border-l-2 border-white/10 pl-8 py-2 hover:border-[#fbbf24] transition duration-500">
                             <div class="mb-4">
