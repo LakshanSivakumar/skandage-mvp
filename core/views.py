@@ -277,7 +277,15 @@ def agent_profile(request, slug):
         'total_testimonials': agent.testimonials.filter(is_published=True).count(),
         'theme': theme_config
     }
-    return render(request, 'core/agent_profile.html', context)
+
+    # --- VIP ARCHITECTURE ROUTING ---
+    if getattr(agent, 'is_bespoke', False) and getattr(agent, 'bespoke_template_name', ''):
+        # Inject her custom JSON dictionary directly into the template context
+        context['custom_fields'] = agent.bespoke_data or {}
+        return render(request, agent.bespoke_template_name, context)
+    else:
+        # Load the standard Skandage template for everyone else
+        return render(request, 'core/agent_profile.html', context)
 
 def article_detail(request, slug):
     article = get_object_or_404(Article, slug=slug, agent__is_public=True)
@@ -390,6 +398,8 @@ def dashboard_stats(request):
 @login_required
 def manage_profile(request):
     agent = request.user.agent
+    if getattr(agent, 'is_bespoke', False):
+        return manage_bespoke_profile(request, agent)
     if request.method == 'POST':
         form = AgentProfileForm(request.POST, request.FILES, instance=agent)
         if form.is_valid():
@@ -1809,3 +1819,62 @@ def onboarding_form_view(request):
             return redirect('onboarding_form_view')
 
     return render(request, 'core/onboarding_form.html')
+
+@login_required
+def manage_profile(request):
+    agent = request.user.agent
+    
+    # 1. Intercept VIP clients and send them to their custom control panel
+    if getattr(agent, 'is_bespoke', False):
+        return manage_bespoke_profile(request, agent)
+
+    # 2. Standard Logic for normal users...
+    if request.method == 'POST':
+        form = AgentProfileForm(request.POST, request.FILES, instance=agent)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_profile')
+    else:
+        form = AgentProfileForm(instance=agent)
+        
+    context = {
+        'agent': agent,
+        'form': form,
+        'credentials': agent.credentials.all().order_by('order'),
+        'section': 'profile'
+    }
+    return render(request, 'core/manage_profile.html', context)
+
+
+@login_required
+def manage_bespoke_profile(request, agent):
+    """
+    VIP Dashboard logic. Automatically absorbs any HTML form inputs 
+    and saves them directly into the agent's bespoke JSON field.
+    """
+    if request.method == 'POST':
+        # Grab the existing JSON data so we don't accidentally wipe it
+        custom_data = agent.bespoke_data or {}
+
+        # Loop through every input field submitted in the HTML form
+        for key, value in request.POST.items():
+            # Ignore standard Django hidden security fields
+            if key not in ['csrfmiddlewaretoken']:
+                custom_data[key] = value.strip()
+
+        # Save the updated JSON dictionary back to the database
+        agent.bespoke_data = custom_data
+        agent.save()
+        
+        messages.success(request, "Your VIP profile has been updated.")
+        return redirect('manage_profile')
+
+    # Send her existing JSON data to her custom dashboard template
+    context = {
+        'agent': agent,
+        'custom_fields': agent.bespoke_data or {},
+        'section': 'profile' # Keeps the sidebar highlighted correctly
+    }
+    
+    # You will create this specific HTML file for her dashboard edits
+    return render(request, 'core/manage_bespoke_profile.html', context)

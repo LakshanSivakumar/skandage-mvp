@@ -33,6 +33,10 @@ class Agent(models.Model):
         default="The content on this website is strictly for information and educational purposes only and does not constitute financial advice. Investments are subject to market risks. Please consult a qualified financial consultant before making any decisions. Views expressed here are my own and do not necessarily reflect the official policy or position of my company.\n\nThis advertisement has not been reviewed by the Monetary Authority of Singapore.",
         help_text="This text appears in the footer of every page."
     )
+    # Add this to your Agent model
+    is_bespoke = models.BooleanField(default=False, help_text="True if client paid for a 1-of-1 custom design")
+    bespoke_template_name = models.CharField(max_length=50, blank=True, help_text="e.g., 'themes/karna_custom.html'")
+    bespoke_data = models.JSONField(default=dict, blank=True, help_text="Stores unique editable fields just for this agent")
     automation_mode = models.CharField(max_length=10, choices=[('manual', 'Manual Approval'), ('auto', 'Fully Automated')], default='manual')
     notification_email = models.EmailField(blank=True, null=True, help_text="Optional: Receive daily summaries here instead of your login email.")
     # Profile Details

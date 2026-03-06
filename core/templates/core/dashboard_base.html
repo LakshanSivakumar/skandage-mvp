@@ -170,6 +170,9 @@
             <i class='bx bx-hive text-blue-600 dark:text-blue-400'></i> Skandage
         </span>
         <div class="flex items-center gap-3">
+            <a href="{% if request.user.agent.custom_domain %}http://{{ request.user.agent.custom_domain }}{% else %}http://{{ request.user.agent.slug }}.localhost:8000{% endif %}" target="_blank" class="p-1.5 rounded-xl text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 transition">
+                <i class='bx bx-link-external text-2xl'></i>
+            </a>
             <button id="theme-toggle" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                 <i class='bx bx-moon text-2xl dark:hidden'></i>
                 <i class='bx bx-sun text-2xl hidden dark:block'></i>
@@ -184,14 +187,18 @@
     {# MAIN CONTENT AREA                                                      #}
     {# pb-16 md:pb-0 keeps content above the mobile bottom nav               #}
     {# ===================================================================== #}
-    <main class="flex-1 md:ml-64 pt-16 md:pt-0 pb-16 md:pb-0">
-        <div class="hidden md:flex justify-end p-4 absolute top-0 right-0 z-10">
+    <main class="flex-1 md:ml-64 pt-16 md:pt-0 pb-16 md:pb-0 relative">
+        <div class="hidden md:flex justify-end items-center gap-3 p-4 absolute top-0 right-0 z-10">
+            <a href="{% if request.user.agent.custom_domain %}http://{{ request.user.agent.custom_domain }}{% else %}http://{{ request.user.agent.slug }}.localhost:8000{% endif %}" target="_blank" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded-xl shadow-sm transition active:scale-95">
+                <i class='bx bx-link-external'></i> View Live Site
+            </a>
+            
             <button id="theme-toggle-desktop" class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white shadow-sm transition">
                 <i class='bx bx-moon text-xl dark:hidden'></i>
                 <i class='bx bx-sun text-xl hidden dark:block'></i>
             </button>
         </div>
-        <div class="p-4 sm:p-8 max-w-7xl mx-auto">
+        <div class="p-4 sm:p-8 max-w-7xl mx-auto pt-16 md:pt-16">
             {% if messages %}
             <div class="mb-6 space-y-3">
                 {% for message in messages %}
