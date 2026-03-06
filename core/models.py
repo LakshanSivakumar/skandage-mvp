@@ -339,16 +339,14 @@ class Subscriber(models.Model):
 
     @date_of_birth.setter
     def date_of_birth(self, value):
-        if value:
-            # Store full date encrypted
-            self.encrypted_dob = self._encrypt_field(value.strftime('%Y-%m-%d'))
-            # Store harmless metadata for the SQL cron job
-            self.birth_month = value.month
-            self.birth_day = value.day
-        else:
-            self.encrypted_dob = b''
-            self.birth_month = None
-            self.birth_day = None
+        if not value:
+            # Default to 1 Jan 2000 when no DOB is provided
+            value = datetime(2000, 1, 1).date()
+        # Store full date encrypted
+        self.encrypted_dob = self._encrypt_field(value.strftime('%Y-%m-%d'))
+        # Store harmless metadata for the SQL cron job
+        self.birth_month = value.month
+        self.birth_day = value.day
 
     # --- RACE, GENDER, TAGS ---
     @property

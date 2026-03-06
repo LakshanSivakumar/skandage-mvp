@@ -41,7 +41,7 @@ THEMES = {
         'bg_page': '#0a0a0a',       # True Black
         'bg_card': '#171717',       # Neutral-900
         'bg_secondary': '#262626',  # Neutral-800
-        'text_main': '#ffffff',     # Pure White Name/Text
+        'text_main': '#ffffff',     # Pure White Name/Text1
         'text_muted': '#a3a3a3',    # Neutral-400
         'accent': '#fbbf24',        # Amber-400 (Bright Gold)
         'hero_start': '#000000',    # Black
