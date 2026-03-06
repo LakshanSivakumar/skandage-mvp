@@ -31,9 +31,11 @@ from django.db.models import Q
 from .models import CardLog
 from django.conf import settings
 import hashlib
-
+import requests
 import calendar
 from datetime import datetime, date
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
 
 def add_months_to_date(source_date_str, months):
     """Calculates future review dates based on frequency."""
@@ -228,6 +230,20 @@ def agent_profile(request, slug):
                 sub.email = lead.email # Triggers the encryption setter!
                 sub.save()
 
+            telegram_msg = (
+                f"🚨 <b>New Lead Alert!</b>\n\n"
+                f"<b>Profile:</b> {agent.name}\n"
+                f"<b>Name:</b> {lead.name}\n"
+                f"<b>Email:</b> {lead.email}\n"
+                f"<b>Phone:</b> {request.POST.get('phone', 'N/A')}\n\n"
+                f"<i>Log in to Skandage to view details.</i>"
+            )
+            
+            # Hardcode for testing, but later you can add 'telegram_chat_id' to your Agent model!
+            BOT_TOKEN = "8761812137:AAE8fcj89fFeP2HJatxX9KBVfiZNXUohB3A"
+            CHAT_ID = "1894504369" 
+            
+            send_telegram_notification(BOT_TOKEN, CHAT_ID, telegram_msg)
             # --- SEND NEW LEAD EMAIL NOTIFICATION TO AGENT ---
             try:
                 email_context = {
@@ -2027,3 +2043,51 @@ def domain_letters(request):
     host = request.get_host().split(':')[0].lower()
     subdomain = host.split('.')[0]
     return agent_testimonials(request, slug=subdomain)
+
+def send_telegram_notification(bot_token, chat_id, message):
+    """Hits the Telegram API to send an instant push notification."""
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "HTML" # Allows us to use bolding and clean formatting
+    }
+    try:
+        # We use a timeout so if Telegram's API is slow, it doesn't freeze your website
+        requests.post(url, json=payload, timeout=5)
+    except Exception as e:
+        print(f"Telegram notification failed: {e}")
+
+@csrf_exempt  # Telegram's servers don't have our CSRF token, so we must exempt this route
+def telegram_webhook(request):
+    if request.method == 'POST':
+        try:
+            payload = json.loads(request.body)
+            message = payload.get('message', {})
+            chat_id = message.get('chat', {}).get('id')
+            text = message.get('text', '')
+
+            # Check if this is a deep-link start command from the dashboard
+            if text.startswith('/start agent_'):
+                # Extract the username from the command (e.g., "lakshan" from "/start agent_lakshan")
+                username = text.split('agent_')[1].strip()
+                
+                # Find the agent in the database
+                user = User.objects.filter(username=username).first()
+                if user and hasattr(user, 'agent'):
+                    agent = user.agent
+                    
+                    # Save the ID!
+                    agent.telegram_chat_id = str(chat_id)
+                    agent.save()
+
+                    # Send a success confirmation back to the agent's phone
+                    BOT_TOKEN = "YOUR_BOT_TOKEN_HERE" # Replace with your token
+                    success_msg = f"✅ <b>Success!</b>\n\nYour Skandage account (<b>{agent.name}</b>) is now connected.\n\nYou will receive instant notifications here whenever a new lead submits your form."
+                    send_telegram_notification(BOT_TOKEN, chat_id, success_msg)
+
+        except Exception as e:
+            print(f"Webhook processing error: {e}")
+
+    # You must always return a 200 OK so Telegram knows you received it
+    return HttpResponse('OK')

@@ -23,6 +23,7 @@ urlpatterns = [
     path('dashboard/profile/', views.manage_profile, name='manage_profile'),
     path('dashboard/articles/', views.manage_articles, name='manage_articles'),
     path('dashboard/testimonials/', views.manage_testimonials, name='manage_testimonials'),
+    path('webhook/telegram/', views.telegram_webhook, name='telegram_webhook'),
 
     # --- ACTIONS: Articles ---
     path('dashboard/article/new/', views.create_article, name='create_article'),

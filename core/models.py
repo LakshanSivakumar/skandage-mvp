@@ -23,6 +23,8 @@ class Agent(models.Model):
     vcard_downloads = models.PositiveIntegerField(default=0) # <--- NEW FIELD
     profile_views = models.PositiveIntegerField(default=0)
     calendly_link = models.URLField(max_length=255, blank=True, null=True, help_text="e.g., https://calendly.com/your-username")
+
+    telegram_chat_id = models.CharField(max_length=50, blank=True, null=True, help_text="Used for instant lead notifications")
     # WhatsApp Feature
     phone_number = models.CharField(max_length=20, help_text="Format: 6591234567 (No + sign)")
     whatsapp_message = models.CharField(max_length=200, default="Hi, I saw your profile and would like to know more.")

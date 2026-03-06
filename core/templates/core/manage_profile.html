@@ -164,7 +164,34 @@
             </div>
         </div>
     </div>
-
+    <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="flex items-start gap-5">
+                <div class="w-12 h-12 rounded-full bg-[#0088cc]/10 text-[#0088cc] flex items-center justify-center text-2xl shrink-0">
+                    <i class='bx bxl-telegram'></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white tracking-tight mb-1">Telegram Notifications</h3>
+                    <p class="text-xs text-slate-500 dark:text-gray-400 font-light leading-relaxed max-w-sm">
+                        Receive instant push notifications directly to your phone the second a lead completes your coverage calculator.
+                    </p>
+                </div>
+            </div>
+    
+            <div class="shrink-0">
+                {% if agent.telegram_chat_id %}
+                    <div class="flex items-center gap-3 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-5 py-3 rounded-xl border border-emerald-200 dark:border-emerald-500/20">
+                        <i class='bx bxs-check-circle text-lg'></i>
+                        <span class="text-sm font-bold tracking-wide">Connected</span>
+                    </div>
+                {% else %}
+                    <a href="https://t.me/YOUR_BOT_USERNAME?start=agent_{{ agent.user.username }}" target="_blank" class="w-full md:w-auto bg-[#0088cc] hover:bg-[#0077b5] text-white px-6 py-3.5 rounded-xl text-sm font-bold tracking-wide transition shadow-lg shadow-[#0088cc]/20 flex items-center justify-center gap-2">
+                        <i class='bx bx-link'></i> Connect Account
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div class="xl:col-span-2 space-y-8">
             <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
