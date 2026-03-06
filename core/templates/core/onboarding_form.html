@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skandage | Client Onboarding</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body class="bg-slate-900 min-h-screen font-sans text-slate-300 antialiased py-12 px-4 sm:px-6 lg:px-8 selection:bg-blue-500 selection:text-white">
+
+    <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-extrabold text-white tracking-tight mb-2">Skandage Onboarding</h1>
+            <p class="text-slate-400">Welcome! Please complete your profile to deploy your premium digital storefront.</p>
+        </div>
+
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl shadow-2xl p-8 sm:p-12">
+            
+            {% if messages %}
+                <div class="mb-8 p-4 bg-red-900/30 border border-red-800 rounded-xl text-red-400 text-sm">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" class="space-y-10">
+                {% csrf_token %}
+                
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-700 pb-2 flex items-center gap-2">
+                        <i class='bx bxs-user-detail text-blue-500'></i> Personal Details
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Full Name *</label>
+                            <input type="text" name="full_name" required placeholder="e.g. Sarah Lee" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Email Address *</label>
+                            <input type="email" name="email" required placeholder="hello@example.com" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">WhatsApp Number *</label>
+                            <input type="text" name="phone_number" required placeholder="6591234567" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Job Title *</label>
+                            <input type="text" name="job_title" value="Financial Consultant" required class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Agency Name *</label>
+                            <input type="text" name="agency_name" required placeholder="e.g. AIA, Great Eastern, Prudential" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-700 pb-2 flex items-center gap-2">
+                        <i class='bx bxs-paint text-blue-500'></i> Digital Branding
+                    </h3>
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Requested Subdomain *</label>
+                            <div class="flex">
+                                <input type="text" name="requested_subdomain" required placeholder="e.g. sarah" class="w-full bg-slate-900 border border-slate-700 border-r-0 text-white rounded-l-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                                <span class="bg-slate-800 border border-slate-700 border-l-0 text-slate-500 px-4 py-3 rounded-r-xl flex items-center font-mono text-sm">.skandage.com</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-2">If your agency has custom domain mapping, it will be applied after setup.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Professional Bio</label>
+                            <textarea name="bio" rows="4" placeholder="Tell your clients a bit about your background and philosophy..." class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-700 pb-2 flex items-center gap-2">
+                        <i class='bx bxs-cloud-upload text-blue-500'></i> Assets & Links <span class="text-xs font-normal text-slate-500 ml-2">(Optional)</span>
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Profile Headshot</label>
+                            <input type="file" name="headshot" accept="image/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition file:cursor-pointer cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Credentials (PDF/Image)</label>
+                            <input type="file" name="credentials_upload" class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-700 file:text-white hover:file:bg-slate-600 transition file:cursor-pointer cursor-pointer">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Existing Website (To port reviews)</label>
+                            <input type="url" name="existing_website" placeholder="https://" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"><i class='bx bxl-linkedin-square text-blue-400'></i> LinkedIn Profile</label>
+                            <input type="url" name="linkedin" placeholder="https://linkedin.com/in/..." class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"><i class='bx bxl-instagram text-pink-500'></i> Instagram Profile</label>
+                            <input type="url" name="instagram" placeholder="https://instagram.com/..." class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6">
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-900/50 hover:bg-blue-500 transition active:scale-95 text-lg">
+                        Submit Profile for Build <i class='bx bx-right-arrow-alt align-middle ml-1'></i>
+                    </button>
+                    <p class="text-center text-xs text-slate-500 mt-4"><i class='bx bxs-lock-alt'></i> Your data is securely encrypted in the Skandage Vault.</p>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

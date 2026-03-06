@@ -5,7 +5,7 @@ from django.utils import timezone
 from .models import Agent, GlobalNewsletter, Subscriber # Adjust Subscriber if named differently
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
-
+from .models import PendingAgentOnboarding
 # --- INLINE EDITING (Keeps your current workflow) ---
 class TestimonialInline(admin.TabularInline):
     model = Testimonial
@@ -106,3 +106,33 @@ class GlobalNewsletterAdmin(admin.ModelAdmin):
     list_display = ('title', 'subject', 'is_sent', 'sent_at')
     readonly_fields = ('is_sent', 'sent_at')
     actions = [broadcast_to_all_clients]
+
+@admin.register(PendingAgentOnboarding)
+class PendingAgentOnboardingAdmin(admin.ModelAdmin):
+    # What columns show up in the list view
+    list_display = ('full_name', 'agency_name', 'requested_subdomain', 'status', 'created_at')
+    
+    # Adds a filter sidebar to sort by Pending/Approved or by Agency
+    list_filter = ('status', 'agency_name', 'created_at')
+    
+    # Adds a search bar to easily find a specific agent
+    search_fields = ('full_name', 'email', 'phone_number', 'requested_subdomain')
+    
+    # Protects the timestamp from being accidentally edited
+    readonly_fields = ('created_at',)
+    
+    # Organizes the detail view when you click into an agent
+    fieldsets = (
+        ('Status', {
+            'fields': ('status', 'created_at')
+        }),
+        ('Personal Details', {
+            'fields': ('full_name', 'email', 'phone_number')
+        }),
+        ('Professional Info', {
+            'fields': ('agency_name', 'job_title', 'requested_subdomain', 'bio')
+        }),
+        ('Assets & Links', {
+            'fields': ('headshot', 'credentials_upload', 'existing_website', 'linkedin', 'instagram', 'facebook')
+        }),
+    )

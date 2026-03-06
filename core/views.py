@@ -7,7 +7,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash, logout
 from django.contrib import messages
 from django.urls import reverse
-from .models import Agent, Testimonial, Lead, Article, Credential, Service, ReviewLink, Agency, AgencyImage, AgencyReview
+from .models import Agent, Testimonial, Lead, Article, Credential, Service, ReviewLink, Agency, AgencyImage, AgencyReview, PendingAgentOnboarding
 from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm, ServiceForm, ClientSubmissionForm, AgencySiteForm, AgencyReviewForm, AgencyImageForm
 from .themes import THEMES
 from django.http import HttpResponse, JsonResponse
@@ -90,7 +90,8 @@ def domain_router(request):
 
     if host.startswith('app.') or subdomain == 'app':
         return redirect('login') 
-
+    if subdomain == 'onboarding':
+        return onboarding_form_view(request)
     if host in ['skandage.com', 'www.skandage.com', 'localhost', '127.0.0.1']:
         return render(request, 'core/index.html', {'brand': 'skandage'})
 
@@ -1780,3 +1781,31 @@ def upcoming_events(request):
         'review_window_days': 90,
         'card_window_days': 30,
     })
+
+def onboarding_form_view(request):
+    if request.method == 'POST':
+        try:
+            # Create the pending profile from form data
+            PendingAgentOnboarding.objects.create(
+                full_name=request.POST.get('full_name'),
+                email=request.POST.get('email'),
+                phone_number=request.POST.get('phone_number'),
+                agency_name=request.POST.get('agency_name', 'AIAFA'),
+                job_title=request.POST.get('job_title', 'Financial Consultant'),
+                requested_subdomain=request.POST.get('requested_subdomain'),
+                bio=request.POST.get('bio', ''),
+                existing_website=request.POST.get('existing_website', ''),
+                linkedin=request.POST.get('linkedin', ''),
+                instagram=request.POST.get('instagram', ''),
+                facebook=request.POST.get('facebook', ''),
+                headshot=request.FILES.get('headshot'),
+                credentials_upload=request.FILES.get('credentials_upload')
+            )
+            # You can add a quick email notification to yourself here later!
+            return render(request, 'core/onboarding_success.html')
+            
+        except Exception as e:
+            messages.error(request, f"There was an error submitting your profile: {str(e)}")
+            return redirect('onboarding_form_view')
+
+    return render(request, 'core/onboarding_form.html')

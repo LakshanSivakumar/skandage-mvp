@@ -7,7 +7,11 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 from django.utils import timezone
 from datetime import datetime
-
+import string
+import random
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils.text import slugify
 fernet = Fernet(settings.ENCRYPTION_KEY.encode() if isinstance(settings.ENCRYPTION_KEY, str) else settings.ENCRYPTION_KEY)
 class Agent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -540,3 +544,103 @@ class CardLog(models.Model):
 
     def __str__(self):
         return f"{self.occasion} for {self.subscriber.name} ({self.status})"
+    
+class PendingAgentOnboarding(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending Approval'),
+        ('approved', 'Approved & Account Created'),
+        ('rejected', 'Rejected')
+    ]
+    
+    # 1. Basic Info
+    full_name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=20, help_text="Mobile / WhatsApp Number")
+    
+    # 2. Professional Details
+    agency_name = models.CharField(max_length=100, default="AIAFA", help_text="Which agency are they joining under?")
+    job_title = models.CharField(max_length=100, default="Financial Consultant")
+    requested_subdomain = models.CharField(max_length=100, help_text="e.g. 'benedict' for benedict.skandage.com")
+    bio = models.TextField(blank=True, help_text="Agent's background story")
+    headshot = models.ImageField(upload_to='onboarding/headshots/', blank=True, null=True)
+    credentials_upload = models.FileField(upload_to='onboarding/credentials/', blank=True, null=True, help_text="PDF or Image of certifications")
+    
+    # 3. Migration & Socials
+    existing_website = models.URLField(blank=True, null=True, help_text="Link to scrape existing testimonials from")
+    linkedin = models.URLField(blank=True, null=True)
+    instagram = models.URLField(blank=True, null=True)
+    facebook = models.URLField(blank=True, null=True)
+    
+    # 4. System Tracking
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.full_name} - {self.agency_name} ({self.get_status_display()})"
+
+    def save(self, *args, **kwargs):
+        # Check if this is an existing record being updated to 'approved'
+        if self.pk:
+            old_instance = PendingAgentOnboarding.objects.get(pk=self.pk)
+            if old_instance.status != 'approved' and self.status == 'approved':
+                self._automate_account_creation()
+        
+        super().save(*args, **kwargs)
+
+    def _automate_account_creation(self):
+        # 1. Create a clean username from the requested subdomain
+        base_username = slugify(self.requested_subdomain)
+        username = base_username
+        counter = 1
+        
+        # Ensure the username doesn't already exist
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+
+        # 2. Generate a secure random 10-character password
+        temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+
+        # 3. Create the underlying Django User
+        # We use get_or_create just in case they already exist by email
+        user, created = User.objects.get_or_create(
+            email=self.email,
+            defaults={
+                'username': username,
+                'first_name': self.full_name.split()[0] if self.full_name else '',
+                'last_name': ' '.join(self.full_name.split()[1:]) if self.full_name else ''
+            }
+        )
+        
+        if created:
+            user.set_password(temp_password)
+            user.save()
+            print(f"CRITICAL: Account created for {self.email}. Temporary Password: {temp_password}")
+
+        # 4. Create the Skandage Agent Profile
+        from .models import Agent # Local import to prevent circular dependency issues
+        
+        # Check if agent already exists to prevent duplicate crashes
+        if not Agent.objects.filter(user=user).exists():
+            agent = Agent(
+                user=user,
+                name=self.full_name,
+                slug=username, 
+                title=self.job_title,
+                company=self.agency_name,
+                phone_number=self.phone_number,
+                
+                # THE FIX: Add 'or ""' to ensure we never pass a NULL value
+                bio=self.bio or "",
+                linkedin=self.linkedin or "",
+                instagram=self.instagram or "",
+                facebook=self.facebook or "",
+                
+                is_public=True
+            )
+            
+            # Transfer the uploaded headshot safely
+            if self.headshot:
+                agent.headshot = self.headshot
+                
+            agent.save()
