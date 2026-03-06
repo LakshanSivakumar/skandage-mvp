@@ -2046,7 +2046,7 @@ def domain_letters(request):
 
 def send_telegram_notification(bot_token, chat_id, message):
     """Hits the Telegram API to send an instant push notification."""
-    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    url = f"https://api.telegram.org/bot8761812137:AAE8fcj89fFeP2HJatxX9KBVfiZNXUohB3A/sendMessage"
     payload = {
         "chat_id": chat_id,
         "text": message,
