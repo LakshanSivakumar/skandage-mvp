@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Agent Hub - Skandage</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -10,74 +11,134 @@
         }
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        main { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        body, div, nav, aside, main, h1, h2, h3, p, span, a, button, input {
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        main {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        body,
+        div,
+        nav,
+        aside,
+        main,
+        h1,
+        h2,
+        h3,
+        p,
+        span,
+        a,
+        button,
+        input {
             transition: background-color 0.2s ease, border-color 0.2s ease;
         }
+
         /* Drawer needs transform + colour transitions */
         #mobile-drawer {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, border-color 0.2s ease;
+            transition: txransform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, border-color 0.2s ease;
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen flex selection:bg-blue-200 dark:selection:bg-blue-900 selection:text-blue-900 dark:selection:text-blue-100">
+
+<body
+    class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen flex selection:bg-blue-200 dark:selection:bg-blue-900 selection:text-blue-900 dark:selection:text-blue-100">
 
     {# ===================================================================== #}
-    {# DESKTOP SIDEBAR (≥ 768px)                                             #}
+    {# DESKTOP SIDEBAR (≥ 768px) #}
     {# ===================================================================== #}
-    <aside class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 fixed h-full z-20 hidden md:flex flex-col shadow-sm">
+    <aside
+        class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 fixed h-full z-20 hidden md:flex flex-col shadow-sm">
         <div class="h-16 flex items-center px-6 border-b border-slate-100 dark:border-slate-700/50">
             <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                 <i class='bx bx-hive text-blue-600 dark:text-blue-400'></i> Skandage
             </span>
         </div>
         <div class="flex-1 overflow-y-auto p-4 space-y-1">
-            <p class="px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-4">Growth</p>
-            <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'stats' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+            <p class="px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-4">
+                Growth</p>
+            <a href="{% url 'dashboard' %}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'stats' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-pie-chart-alt-2 text-lg'></i> Analytics
             </a>
 
-            <p class="px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-6">CRM & Audience</p>
-            <a href="{% url 'manage_subscribers' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'audience' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+            <p class="px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-6">CRM
+                & Audience</p>
+            <a href="{% url 'manage_subscribers' %}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'audience' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-group text-lg'></i> Client Database
             </a>
-            <a href="{% url 'upcoming_events' %}" class="flex items-center justify-between px-3 py-2.5 rounded-xl font-medium {% if section == 'crm' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+            <a href="{% url 'upcoming_events' %}"
+                class="flex items-center justify-between px-3 py-2.5 rounded-xl font-medium {% if section == 'crm' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <div class="flex items-center gap-3"><i class='bx bx-calendar-star text-lg'></i> Upcoming</div>
             </a>
-            <a href="{% url 'newsletter_dashboard' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'broadcasts' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+            <a href="{% url 'newsletter_dashboard' %}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'broadcasts' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-broadcast text-lg'></i> Broadcasts
             </a>
 
-            <p class="px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-6">Brand Suite</p>
-            <a href="{% url 'manage_profile' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'profile' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+            <p class="px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-6">
+                Brand Suite</p>
+            <a href="{% url 'manage_profile' %}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'profile' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-user-circle text-lg'></i> Profile Details
             </a>
-            <a href="{% url 'manage_testimonials' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'testimonials' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+            <a href="{% url 'manage_testimonials' %}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'testimonials' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-star text-lg'></i> Reviews
             </a>
-            <a href="{% url 'manage_services' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'services' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+            <a href="{% url 'manage_services' %}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'services' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-briefcase-alt text-lg'></i> Services
             </a>
-            <a href="{% url 'manage_articles' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'articles' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+            <a href="{% url 'manage_articles' %}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'articles' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-news text-lg'></i> Articles
             </a>
         </div>
         <div class="p-4 border-t border-slate-100 dark:border-slate-700/50">
-            <a href="{% url 'account_settings' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'settings' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+            <a href="{% url 'account_settings' %}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium {% if section == 'settings' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-cog text-lg'></i> Settings
             </a>
             <form action="{% url 'logout' %}" method="post" class="mt-1">
                 {% csrf_token %}
-                <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition">
+                <button type="submit"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition">
                     <i class='bx bx-log-out text-lg'></i> Sign Out
                 </button>
             </form>
@@ -85,77 +146,81 @@
     </aside>
 
     {# ===================================================================== #}
-    {# MOBILE OVERLAY (tap to close drawer)                                  #}
+    {# MOBILE OVERLAY (tap to close drawer) #}
     {# ===================================================================== #}
-    <div id="mobile-overlay"
-         onclick="closeMobileMenu()"
-         class="md:hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden">
+    <div id="mobile-overlay" onclick="closeMobileMenu()"
+        class="md:hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden">
     </div>
 
     {# ===================================================================== #}
-    {# MOBILE SLIDE-IN DRAWER                                                #}
+    {# MOBILE SLIDE-IN DRAWER #}
     {# ===================================================================== #}
     <aside id="mobile-drawer"
-           class="md:hidden fixed top-0 left-0 h-full w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 z-50 -translate-x-full flex flex-col shadow-2xl">
+        class="md:hidden fixed top-0 left-0 h-full w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 z-50 -translate-x-full flex flex-col shadow-2xl">
 
-        <div class="h-16 flex items-center justify-between px-5 border-b border-slate-100 dark:border-slate-700/50 flex-shrink-0">
+        <div
+            class="h-16 flex items-center justify-between px-5 border-b border-slate-100 dark:border-slate-700/50 flex-shrink-0">
             <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                 <i class='bx bx-hive text-blue-600 dark:text-blue-400'></i> Skandage
             </span>
             <button onclick="closeMobileMenu()"
-                    class="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 dark:hover:text-slate-300">
+                class="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 dark:hover:text-slate-300">
                 <i class='bx bx-x text-2xl'></i>
             </button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 space-y-1">
-            <p class="px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-4">Growth</p>
+            <p class="px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-4">
+                Growth</p>
             <a href="{% url 'dashboard' %}" onclick="closeMobileMenu()"
-               class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'stats' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+                class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'stats' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-pie-chart-alt-2 text-lg'></i> Analytics
             </a>
 
-            <p class="px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-6">CRM & Audience</p>
+            <p class="px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-6">CRM
+                & Audience</p>
             <a href="{% url 'manage_subscribers' %}" onclick="closeMobileMenu()"
-               class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'audience' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+                class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'audience' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-group text-lg'></i> Client Database
             </a>
             <a href="{% url 'upcoming_events' %}" onclick="closeMobileMenu()"
-               class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'crm' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+                class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'crm' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-calendar-star text-lg'></i> Upcoming
             </a>
             <a href="{% url 'newsletter_dashboard' %}" onclick="closeMobileMenu()"
-               class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'broadcasts' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+                class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'broadcasts' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-broadcast text-lg'></i> Broadcasts
             </a>
 
-            <p class="px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-6">Brand Suite</p>
+            <p class="px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-6">
+                Brand Suite</p>
             <a href="{% url 'manage_profile' %}" onclick="closeMobileMenu()"
-               class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'profile' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+                class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'profile' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-user-circle text-lg'></i> Profile Details
             </a>
             <a href="{% url 'manage_testimonials' %}" onclick="closeMobileMenu()"
-               class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'testimonials' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+                class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'testimonials' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-star text-lg'></i> Reviews
             </a>
             <a href="{% url 'manage_services' %}" onclick="closeMobileMenu()"
-               class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'services' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+                class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'services' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-briefcase-alt text-lg'></i> Services
             </a>
             <a href="{% url 'manage_articles' %}" onclick="closeMobileMenu()"
-               class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'articles' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+                class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'articles' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-news text-lg'></i> Articles
             </a>
         </div>
 
         <div class="p-4 border-t border-slate-100 dark:border-slate-700/50 flex-shrink-0">
             <a href="{% url 'account_settings' %}" onclick="closeMobileMenu()"
-               class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'settings' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
+                class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium {% if section == 'settings' %}bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400{% else %}text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200{% endif %} transition">
                 <i class='bx bx-cog text-lg'></i> Settings
             </a>
             <form action="{% url 'logout' %}" method="post" class="mt-1">
                 {% csrf_token %}
-                <button type="submit" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition">
+                <button type="submit"
+                    class="w-full flex items-center gap-3 px-3 py-3 rounded-xl font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition">
                     <i class='bx bx-log-out text-lg'></i> Sign Out
                 </button>
             </form>
@@ -163,17 +228,21 @@
     </aside>
 
     {# ===================================================================== #}
-    {# MOBILE TOP HEADER BAR                                                 #}
+    {# MOBILE TOP HEADER BAR #}
     {# ===================================================================== #}
-    <div class="md:hidden fixed top-0 w-full bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 z-30 flex items-center justify-between px-4">
+    <div
+        class="md:hidden fixed top-0 w-full bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 z-30 flex items-center justify-between px-4">
         <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <i class='bx bx-hive text-blue-600 dark:text-blue-400'></i> Skandage
         </span>
         <div class="flex items-center gap-3">
-            <a href="{% if request.user.agent.custom_domain %}http://{{ request.user.agent.custom_domain }}{% else %}http://{{ request.user.agent.slug }}.localhost:8000{% endif %}" target="_blank" class="p-1.5 rounded-xl text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 transition">
+            <a href="{% if request.user.agent.custom_domain %}http://{{ request.user.agent.custom_domain }}{% else %}http://{{ request.user.agent.slug }}.localhost:8000{% endif %}"
+                target="_blank"
+                class="p-1.5 rounded-xl text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 transition">
                 <i class='bx bx-link-external text-2xl'></i>
             </a>
-            <button id="theme-toggle" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+            <button id="theme-toggle"
+                class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                 <i class='bx bx-moon text-2xl dark:hidden'></i>
                 <i class='bx bx-sun text-2xl hidden dark:block'></i>
             </button>
@@ -184,16 +253,19 @@
     </div>
 
     {# ===================================================================== #}
-    {# MAIN CONTENT AREA                                                      #}
-    {# pb-16 md:pb-0 keeps content above the mobile bottom nav               #}
+    {# MAIN CONTENT AREA #}
+    {# pb-16 md:pb-0 keeps content above the mobile bottom nav #}
     {# ===================================================================== #}
     <main class="flex-1 md:ml-64 pt-16 md:pt-0 pb-16 md:pb-0 relative">
         <div class="hidden md:flex justify-end items-center gap-3 p-4 absolute top-0 right-0 z-10">
-            <a href="{% if request.user.agent.custom_domain %}http://{{ request.user.agent.custom_domain }}{% else %}http://{{ request.user.agent.slug }}.localhost:8000{% endif %}" target="_blank" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded-xl shadow-sm transition active:scale-95">
+            <a href="{% if request.user.agent.custom_domain %}http://{{ request.user.agent.custom_domain }}{% else %}http://{{ request.user.agent.slug }}.skandage.com{% endif %}"
+                target="_blank"
+                class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded-xl shadow-sm transition active:scale-95">
                 <i class='bx bx-link-external'></i> View Live Site
             </a>
-            
-            <button id="theme-toggle-desktop" class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white shadow-sm transition">
+
+            <button id="theme-toggle-desktop"
+                class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white shadow-sm transition">
                 <i class='bx bx-moon text-xl dark:hidden'></i>
                 <i class='bx bx-sun text-xl hidden dark:block'></i>
             </button>
@@ -202,9 +274,11 @@
             {% if messages %}
             <div class="mb-6 space-y-3">
                 {% for message in messages %}
-                <div class="p-4 rounded-xl flex items-center gap-3 font-medium shadow-sm border
+                <div
+                    class="p-4 rounded-xl flex items-center gap-3 font-medium shadow-sm border
                     {% if message.tags == 'success' %}bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800{% elif message.tags == 'error' %}bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800{% else %}bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800{% endif %}">
-                    <i class='bx {% if message.tags == "success" %}bxs-check-circle{% elif message.tags == "error" %}bxs-error-circle{% elif message.tags == "warning" %}bxs-error{% else %}bxs-info-circle{% endif %} text-lg flex-shrink-0'></i>
+                    <i
+                        class='bx {% if message.tags == "success" %}bxs-check-circle{% elif message.tags == "error" %}bxs-error-circle{% elif message.tags == "warning" %}bxs-error{% else %}bxs-info-circle{% endif %} text-lg flex-shrink-0'></i>
                     {{ message }}
                 </div>
                 {% endfor %}
@@ -215,38 +289,38 @@
     </main>
 
     {# ===================================================================== #}
-    {# MOBILE BOTTOM NAVIGATION BAR                                           #}
-    {# 4 primary links + "More" button that opens the full drawer             #}
+    {# MOBILE BOTTOM NAVIGATION BAR #}
+    {# 4 primary links + "More" button that opens the full drawer #}
     {# ===================================================================== #}
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 z-30 flex items-stretch"
-         style="height: 60px; padding-bottom: env(safe-area-inset-bottom, 0px);">
+        style="height: 60px; padding-bottom: env(safe-area-inset-bottom, 0px);">
 
         <a href="{% url 'dashboard' %}"
-           class="flex-1 flex flex-col items-center justify-center gap-0.5 {% if section == 'stats' %}text-blue-600 dark:text-blue-400{% else %}text-slate-500 dark:text-slate-400{% endif %}">
+            class="flex-1 flex flex-col items-center justify-center gap-0.5 {% if section == 'stats' %}text-blue-600 dark:text-blue-400{% else %}text-slate-500 dark:text-slate-400{% endif %}">
             <i class='bx bx-pie-chart-alt-2 text-[22px]'></i>
             <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Analytics</span>
         </a>
 
         <a href="{% url 'manage_subscribers' %}"
-           class="flex-1 flex flex-col items-center justify-center gap-0.5 {% if section == 'audience' %}text-blue-600 dark:text-blue-400{% else %}text-slate-500 dark:text-slate-400{% endif %}">
+            class="flex-1 flex flex-col items-center justify-center gap-0.5 {% if section == 'audience' %}text-blue-600 dark:text-blue-400{% else %}text-slate-500 dark:text-slate-400{% endif %}">
             <i class='bx bx-group text-[22px]'></i>
             <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Clients</span>
         </a>
 
         <a href="{% url 'upcoming_events' %}"
-           class="flex-1 flex flex-col items-center justify-center gap-0.5 {% if section == 'crm' %}text-blue-600 dark:text-blue-400{% else %}text-slate-500 dark:text-slate-400{% endif %}">
+            class="flex-1 flex flex-col items-center justify-center gap-0.5 {% if section == 'crm' %}text-blue-600 dark:text-blue-400{% else %}text-slate-500 dark:text-slate-400{% endif %}">
             <i class='bx bx-calendar-star text-[22px]'></i>
             <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Upcoming</span>
         </a>
 
         <a href="{% url 'newsletter_dashboard' %}"
-           class="flex-1 flex flex-col items-center justify-center gap-0.5 {% if section == 'broadcasts' %}text-blue-600 dark:text-blue-400{% else %}text-slate-500 dark:text-slate-400{% endif %}">
+            class="flex-1 flex flex-col items-center justify-center gap-0.5 {% if section == 'broadcasts' %}text-blue-600 dark:text-blue-400{% else %}text-slate-500 dark:text-slate-400{% endif %}">
             <i class='bx bx-broadcast text-[22px]'></i>
             <span class="text-[9px] font-bold uppercase tracking-wide leading-none">Broadcasts</span>
         </a>
 
         <button onclick="openMobileMenu()"
-                class="flex-1 flex flex-col items-center justify-center gap-0.5 text-slate-500 dark:text-slate-400">
+            class="flex-1 flex flex-col items-center justify-center gap-0.5 text-slate-500 dark:text-slate-400">
             <i class='bx bx-grid-alt text-[22px]'></i>
             <span class="text-[9px] font-bold uppercase tracking-wide leading-none">More</span>
         </button>
@@ -283,9 +357,10 @@
         }
 
         // Close drawer on ESC key
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') closeMobileMenu();
         });
     </script>
 </body>
+
 </html>
