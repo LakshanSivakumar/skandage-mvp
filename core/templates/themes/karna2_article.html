@@ -1,0 +1,40 @@
+{% extends "themes/karna2_base.html" %}
+
+{% block content %}
+
+<article class="relative">
+    <section class="pt-32 pb-16 bg-white border-b border-black/5 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-[#B8941F]/5 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="max-w-3xl mx-auto px-6 relative z-10">
+            <a href="{% url 'agent_profile' agent.slug %}" class="inline-flex items-center gap-2 text-[#B8941F] text-xs font-medium uppercase tracking-wider mb-8 hover:text-[#1a1a1a] transition duration-300"><i class='bx bx-arrow-back text-sm'></i> Back to Home</a>
+            <div class="flex items-center gap-3 mb-6"><div class="w-8 h-[1px] bg-[#B8941F]/40"></div><span class="text-xs text-[#B8941F] uppercase tracking-[0.25em] font-medium">Insights</span></div>
+            <h1 class="text-4xl md:text-6xl font-serif text-[#1a1a1a] mb-8 leading-tight tracking-tight">{{ article.title }}</h1>
+            <div class="flex items-center gap-4">
+                {% if agent.headshot %}<img src="{{ agent.headshot.url }}" alt="{{ agent.name }}" class="w-10 h-10 rounded-full object-cover border border-black/10">{% else %}<div class="w-10 h-10 rounded-full bg-[#B8941F]/10 flex items-center justify-center text-[#B8941F] font-serif">{{ agent.name|slice:":1" }}</div>{% endif %}
+                <div><div class="text-[#1a1a1a] text-sm font-medium">{{ agent.name }}</div><div class="text-[#888] text-xs">{{ article.created_at|date:"F j, Y" }}</div></div>
+            </div>
+        </div>
+    </section>
+
+    {% if article.cover_image %}
+    <section class="bg-[#FAFAF7] py-12"><div class="max-w-4xl mx-auto px-6"><div class="rounded-2xl overflow-hidden border border-black/5 shadow-xl"><img src="{{ article.cover_image.url }}" class="w-full object-cover max-h-[500px]" alt="{{ article.title }}"></div></div></section>
+    {% endif %}
+
+    <section class="py-20 bg-[#FAFAF7]">
+        <div class="max-w-3xl mx-auto px-6">
+            <div class="bg-white border border-black/5 rounded-3xl p-10 md:p-16 relative overflow-hidden shadow-lg">
+                <div class="absolute top-0 left-0 w-[300px] h-[300px] bg-[#B8941F]/3 rounded-full blur-[100px] pointer-events-none"></div>
+                <div class="relative z-10 prose prose-lg md:prose-xl font-light text-[#555] leading-[2] prose-p:mb-8 prose-headings:font-serif prose-headings:text-[#1a1a1a] prose-headings:font-normal prose-a:text-[#B8941F] prose-strong:text-[#1a1a1a] prose-strong:font-medium prose-li:text-[#555]">{{ article.content|linebreaks }}</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 bg-white border-t border-black/5">
+        <div class="max-w-3xl mx-auto px-6 text-center">
+            <div class="flex items-center justify-center gap-3 mb-8"><div class="w-12 h-[1px] bg-[#B8941F]/40"></div><span class="text-xs text-[#B8941F] uppercase tracking-[0.3em] font-medium">Continue</span><div class="w-12 h-[1px] bg-[#B8941F]/40"></div></div>
+            <a href="{% url 'agent_profile' agent.slug %}" class="inline-flex items-center gap-2 bg-[#B8941F] text-white px-8 py-4 font-medium rounded-sm hover:bg-[#1a1a1a] transition duration-500 text-sm"><i class='bx bx-arrow-back text-lg'></i> Back to Profile</a>
+        </div>
+    </section>
+</article>
+
+{% endblock %}

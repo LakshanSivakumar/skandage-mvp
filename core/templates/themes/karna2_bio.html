@@ -1,0 +1,89 @@
+{% extends "themes/karna2_base.html" %}
+{% load markdown_extras %}
+
+{% block content %}
+
+<section class="pt-32 pb-16 bg-white border-b border-black/5 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-[#B8941F]/5 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#B8941F]/30 text-[#B8941F] text-xs font-medium mb-6">Meet {{ agent.name }}</div>
+        <h1 class="text-5xl md:text-7xl font-serif text-[#1a1a1a] mb-6 leading-tight tracking-tight">The Philosophy</h1>
+        <p class="text-xl text-[#888] font-light max-w-2xl mx-auto">A closer look at the principles, experience, and dedication behind the advisory practice.</p>
+    </div>
+</section>
+
+<section class="py-20 bg-[#FAFAF7]">
+    <div class="max-w-5xl mx-auto px-6">
+        {% if agent.headshot %}
+        <div class="flex justify-center mb-20">
+            <div class="relative">
+                <div class="w-72 h-72 md:w-96 md:h-96 rounded-full overflow-hidden border-4 border-black/5 shadow-[0_0_80px_rgba(184,148,31,0.08)]"><img src="{{ agent.headshot.url }}" class="w-full h-full object-cover" alt="{{ agent.name }}"></div>
+                <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white border border-[#B8941F]/30 px-8 py-2 rounded-full"><span class="text-sm text-[#B8941F] font-serif tracking-wide">{{ agent.name }}</span></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="max-w-3xl mx-auto">
+            <div class="bg-white border border-black/5 rounded-3xl p-10 md:p-16 relative overflow-hidden shadow-lg">
+                <div class="absolute top-0 left-0 w-[300px] h-[300px] bg-[#B8941F]/3 rounded-full blur-[100px] pointer-events-none"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-10"><div class="w-12 h-[1px] bg-[#B8941F]/40"></div><span class="text-xs text-[#B8941F] uppercase tracking-[0.3em] font-medium">About</span><div class="w-12 h-[1px] bg-[#B8941F]/40"></div></div>
+                    <div class="prose prose-lg md:prose-xl font-light text-[#555] leading-[2] prose-p:mb-8 prose-headings:font-serif prose-headings:text-[#1a1a1a] prose-headings:font-normal prose-a:text-[#B8941F] prose-strong:text-[#1a1a1a] prose-strong:font-medium first-letter:text-5xl first-letter:font-serif first-letter:text-[#B8941F] first-letter:float-left first-letter:mr-3 first-letter:mt-1">{{ agent.bio|markdown|safe }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if custom_fields.aia_metrics %}
+<section class="py-24 bg-white border-t border-black/5 relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-[#B8941F]/5 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="max-w-6xl mx-auto px-6 relative z-10">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-serif text-[#1a1a1a] mb-4">Advisory Impact</h2>
+            <div class="w-12 h-1 bg-[#B8941F] rounded-full mx-auto"></div>
+            <p class="text-[#888] font-light mt-6 max-w-2xl mx-auto text-lg">Delivering measurable security and peace of mind across all phases of wealth planning.</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="bg-[#FAFAF7] p-8 rounded-2xl border border-black/5 relative overflow-hidden group hover:border-[#B8941F]/40 hover:shadow-lg transition duration-500 flex flex-col items-center sm:items-start text-center sm:text-left">
+                <div class="text-3xl lg:text-4xl text-[#1a1a1a] font-serif mb-3">{{ custom_fields.aia_metrics.sum_assured_death }}</div>
+                <div class="text-xs text-[#888] uppercase tracking-widest font-semibold">Sum Assured<br /><span class="text-[#B8941F]/80 font-normal lowercase tracking-normal">(Death)</span></div>
+            </div>
+            <div class="bg-[#FAFAF7] p-8 rounded-2xl border border-black/5 relative overflow-hidden group hover:border-[#B8941F]/40 hover:shadow-lg transition duration-500 flex flex-col items-center sm:items-start text-center sm:text-left">
+                <div class="text-3xl lg:text-4xl text-[#1a1a1a] font-serif mb-3">{{ custom_fields.aia_metrics.sum_assured_tpd }}</div>
+                <div class="text-xs text-[#888] uppercase tracking-widest font-semibold">Sum Assured<br /><span class="text-[#B8941F]/80 font-normal lowercase tracking-normal">(Total Permanent Disability)</span></div>
+            </div>
+            <div class="bg-[#FAFAF7] p-8 rounded-2xl border border-black/5 relative overflow-hidden group hover:border-[#B8941F]/40 hover:shadow-lg transition duration-500 flex flex-col items-center sm:items-start text-center sm:text-left">
+                <div class="text-3xl lg:text-4xl text-[#1a1a1a] font-serif mb-3">{{ custom_fields.aia_metrics.sum_assured_ci }}</div>
+                <div class="text-xs text-[#888] uppercase tracking-widest font-semibold">Sum Assured<br /><span class="text-[#B8941F]/80 font-normal lowercase tracking-normal">(Critical Illness)</span></div>
+            </div>
+            <div class="bg-[#FAFAF7] p-8 rounded-2xl border border-black/5 relative overflow-hidden group hover:border-[#B8941F]/40 hover:shadow-lg transition duration-500 flex flex-col items-center sm:items-start text-center sm:text-left">
+                <div class="text-3xl lg:text-4xl text-[#B8941F] font-serif mb-3">{{ custom_fields.aia_metrics.claims_approved }}</div>
+                <div class="text-xs text-[#888] uppercase tracking-widest font-semibold mt-auto">Claims Approved</div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if credentials %}
+<section class="py-24 bg-[#FAFAF7] border-t border-black/5">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-serif text-[#1a1a1a] mb-4">Professional Accolades</h2>
+            <div class="w-12 h-1 bg-[#B8941F] rounded-full mx-auto"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for cred in credentials %}
+            <div class="bg-white p-8 rounded-2xl border border-black/5 hover:border-[#B8941F]/30 hover:shadow-lg transition duration-500 text-center flex flex-col items-center justify-center">
+                <i class='bx bxs-award text-3xl text-[#B8941F] mb-4'></i>
+                <div class="text-[#1a1a1a] font-medium text-lg mb-2">{{ cred.title }}</div>
+                <div class="text-xs text-[#888] tracking-wider">{{ cred.issuer }} &bull; {{ cred.year }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}

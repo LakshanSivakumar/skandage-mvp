@@ -1,0 +1,44 @@
+{% extends "themes/karna2_base.html" %}
+
+{% block content %}
+
+<section class="pt-32 pb-16 bg-white border-b border-black/5 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-[#B8941F]/5 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#B8941F]/30 text-[#B8941F] text-xs font-medium mb-6">What I Do</div>
+        <h1 class="text-5xl md:text-7xl font-serif text-[#1a1a1a] mb-6 leading-tight tracking-tight">Areas of Expertise</h1>
+        <p class="text-xl text-[#888] font-light max-w-2xl mx-auto">Comprehensive wealth advisory services tailored to every stage of your financial journey.</p>
+    </div>
+</section>
+
+<section class="py-20 bg-[#FAFAF7]">
+    <div class="max-w-6xl mx-auto px-6">
+        {% if services %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for service in services %}
+            <div class="bg-white rounded-2xl p-8 border border-black/5 hover:border-[#B8941F]/30 hover:shadow-lg transition duration-500 group">
+                <div class="w-14 h-14 rounded-xl bg-[#B8941F]/10 flex items-center justify-center text-[#B8941F] text-2xl mb-6 group-hover:bg-[#B8941F]/20 transition duration-300"><i class='bx {{ service.icon }}'></i></div>
+                <h3 class="text-xl font-serif text-[#1a1a1a] mb-3 group-hover:text-[#B8941F] transition duration-300">{{ service.title }}</h3>
+                <p class="text-[#888] font-light leading-relaxed text-sm">{{ service.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-20">
+            <div class="w-20 h-20 rounded-full bg-[#B8941F]/10 flex items-center justify-center text-[#B8941F] text-4xl mx-auto mb-6"><i class='bx bx-briefcase'></i></div>
+            <h3 class="text-2xl font-serif text-[#1a1a1a] mb-3">Services Coming Soon</h3>
+            <p class="text-[#888] font-light">Stay tuned for details on our service offerings.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="py-20 bg-white border-t border-black/5">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+        <h2 class="text-3xl font-serif text-[#1a1a1a] mb-4">Ready to Get Started?</h2>
+        <p class="text-[#888] font-light mb-8 max-w-xl mx-auto">Let's discuss how I can help you navigate your financial future with confidence.</p>
+        <a href="{% url 'agent_profile' agent.slug %}#contact" class="inline-flex items-center gap-2 bg-[#B8941F] text-white px-8 py-4 font-medium rounded-sm hover:bg-[#1a1a1a] transition duration-500 text-sm">Get in Touch</a>
+    </div>
+</section>
+
+{% endblock %}

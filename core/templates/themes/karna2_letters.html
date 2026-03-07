@@ -1,0 +1,58 @@
+{% extends "themes/karna2_base.html" %}
+
+{% block content %}
+
+<section class="pt-32 pb-16 bg-white border-b border-black/5 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-[#B8941F]/5 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#B8941F]/30 text-[#B8941F] text-xs font-medium mb-6">Client Stories</div>
+        <h1 class="text-5xl md:text-7xl font-serif text-[#1a1a1a] mb-6 leading-tight tracking-tight">What Clients Say</h1>
+        <p class="text-xl text-[#888] font-light max-w-2xl mx-auto">Genuine experiences from individuals and families who trusted the process.</p>
+    </div>
+</section>
+
+<section class="py-20 bg-[#FAFAF7]">
+    <div class="max-w-6xl mx-auto px-6">
+        {% if testimonials %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {% for review in testimonials %}
+            <div class="bg-white rounded-3xl p-8 md:p-10 border border-black/5 hover:border-[#B8941F]/30 hover:shadow-lg transition duration-500">
+                {% if review.video %}
+                <div class="mb-8 rounded-2xl overflow-hidden bg-[#F5F3EE]"><video controls playsinline preload="metadata" class="w-full object-cover max-h-[300px]"><source src="{{ review.video.url }}" type="video/mp4"></video></div>
+                {% elif review.screenshot %}
+                <div class="mb-8 rounded-2xl overflow-hidden bg-[#F5F3EE]"><img src="{{ review.screenshot.url }}" class="w-full object-cover max-h-[300px]" alt="Review"></div>
+                {% endif %}
+
+                <i class='bx bxs-quote-alt-left text-3xl text-[#B8941F] mb-4 block'></i>
+
+                {% if review.screenshot or review.video %}
+                <p class="text-[#555] italic font-serif text-lg leading-relaxed mb-2">"{{ review.review_text|truncatewords:30 }}"</p>
+                {% if review.review_text|wordcount > 30 %}
+                <div class="content-toggle" id="review-full-{{ review.id }}"><p class="text-[#555] italic font-serif text-lg leading-relaxed">"{{ review.review_text }}"</p></div>
+                <button onclick="toggleContent('review-full-{{ review.id }}', this)" class="text-xs font-medium text-[#B8941F] hover:text-[#1a1a1a] transition mt-2 flex items-center gap-1"><span>Read Full Review</span><i class='bx bx-chevron-down rotate-icon'></i></button>
+                {% endif %}
+                {% else %}
+                <p class="text-[#555] italic font-serif text-lg leading-relaxed mb-2">"{{ review.review_text }}"</p>
+                {% endif %}
+
+                <div class="flex items-center gap-4 pt-6 mt-6 border-t border-black/5">
+                    <div class="w-12 h-12 rounded-full bg-[#B8941F]/10 flex items-center justify-center text-[#B8941F] font-serif text-xl">{{ review.client_name|slice:":1" }}</div>
+                    <div>
+                        <div class="font-medium text-[#1a1a1a]">{{ review.client_name }}</div>
+                        <div class="text-xs text-[#888]">Verified Client</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-20">
+            <div class="w-20 h-20 rounded-full bg-[#B8941F]/10 flex items-center justify-center text-[#B8941F] text-4xl mx-auto mb-6"><i class='bx bx-message-square-dots'></i></div>
+            <h3 class="text-2xl font-serif text-[#1a1a1a] mb-3">Testimonials Coming Soon</h3>
+            <p class="text-[#888] font-light">Check back soon for client stories.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}
