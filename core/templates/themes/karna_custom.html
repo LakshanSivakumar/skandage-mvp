@@ -206,7 +206,7 @@
                     class="bg-[#0a0a0a] rounded-2xl border border-white/5 overflow-hidden hover:border-[#D4AF37]/30 transition duration-500 h-full flex flex-col">
                     {% if article.cover_image %}
                     <div class="aspect-[16/9] overflow-hidden">
-                        <img src="{{ article.cover_image.url }}" alt="{{ article.title }}"
+                        <img loading="lazy" src="{{ article.cover_image.url }}" alt="{{ article.title }}"
                             class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
                     </div>
                     {% endif %}
@@ -257,12 +257,12 @@
                         <div class="bg-[#050505] p-6 rounded-2xl border border-white/5">
                             <label class="block text-sm text-gray-400 mb-2">What is your annual income?</label>
                             <input type="number" id="calc-income" placeholder="$120,000"
-                                class="w-full bg-transparent border-none py-2 text-3xl font-serif text-white focus:outline-none focus:ring-0 placeholder-gray-700">
+                                class="w-full bg-transparent border-none py-2 text-3xl font-serif text-white focus:outline-none focus:ring-0 placeholder-gray-700" aria-label="$120,000">
                         </div>
                         <div class="bg-[#050505] p-6 rounded-2xl border border-white/5">
                             <label class="block text-sm text-gray-400 mb-2">How many dependents do you have?</label>
                             <input type="number" id="calc-dependents" placeholder="e.g., 2"
-                                class="w-full bg-transparent border-none py-2 text-3xl font-serif text-white focus:outline-none focus:ring-0 placeholder-gray-700">
+                                class="w-full bg-transparent border-none py-2 text-3xl font-serif text-white focus:outline-none focus:ring-0 placeholder-gray-700" aria-label="e.g., 2">
                         </div>
                     </div>
                     <button onclick="nextStep(2)"
@@ -276,12 +276,12 @@
                             <label class="block text-sm text-gray-400 mb-2">Total liabilities (mortgages,
                                 loans)?</label>
                             <input type="number" id="calc-liabilities" placeholder="$500,000"
-                                class="w-full bg-transparent border-none py-2 text-3xl font-serif text-white focus:outline-none placeholder-gray-700">
+                                class="w-full bg-transparent border-none py-2 text-3xl font-serif text-white focus:outline-none placeholder-gray-700" aria-label="$500,000">
                         </div>
                         <div class="bg-[#050505] p-6 rounded-2xl border border-white/5">
                             <label class="block text-sm text-gray-400 mb-2">Current life insurance coverage?</label>
                             <input type="number" id="calc-existing" placeholder="$200,000"
-                                class="w-full bg-transparent border-none py-2 text-3xl font-serif text-white focus:outline-none placeholder-gray-700">
+                                class="w-full bg-transparent border-none py-2 text-3xl font-serif text-white focus:outline-none placeholder-gray-700" aria-label="$200,000">
                         </div>
                     </div>
                     <div class="flex gap-4 mt-8">
@@ -313,10 +313,10 @@
                         <input type="hidden" name="calc_gap" id="hidden_gap">
 
                         <input type="text" id="calc-name" placeholder="Your Name" required
-                            class="w-full bg-[#050505] border border-white/10 rounded-xl py-4 px-5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition duration-500">
+                            class="w-full bg-[#050505] border border-white/10 rounded-xl py-4 px-5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition duration-500" aria-label="Your Name">
 
                         <input type="email" name="email" id="calc-email" placeholder="Your Email Address" required
-                            class="w-full bg-[#050505] border border-white/10 rounded-xl py-4 px-5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition duration-500">
+                            class="w-full bg-[#050505] border border-white/10 rounded-xl py-4 px-5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition duration-500" aria-label="Your Email Address">
 
                         <button type="submit" onclick="return prepareSubmission()"
                             class="w-full bg-[#D4AF37] text-black font-medium text-sm py-4 rounded-xl hover:bg-white transition duration-500 mt-2">
@@ -360,7 +360,7 @@
                 </div>
                 {% elif review.screenshot %}
                 <div class="mb-8 rounded-2xl overflow-hidden shadow-sm bg-[#111]">
-                    <img src="{{ review.screenshot.url }}" class="w-full object-cover max-h-[250px]"
+                    <img loading="lazy" src="{{ review.screenshot.url }}" class="w-full object-cover max-h-[250px]"
                         alt="Verified Proof">
                 </div>
                 {% endif %}
@@ -381,12 +381,10 @@
                         <div class="font-medium text-white">{{ review.client_name }}</div>
                         <div class="text-xs text-gray-500">Verified Client</div>
                     </div>
-                    <a href="https://wa.me/?text=Check%20out%20this%20review%20for%20{{ agent.name|urlencode }}:%20{{ request.scheme }}://{{ request.get_host }}{% url 'single_testimonial' agent.slug review.id %}"
-                        target="_blank"
-                        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] transition duration-300"
-                        title="Share Review via WhatsApp">
-                        <i class='bx bxl-whatsapp text-xl'></i>
-                    </a>
+                    <a href="https://wa.me/?text=Check%20out%20this%20review%20for%20{{ agent.name|urlencode }}:%20{{ request.scheme }}://{{ request.get_host }}{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] transition duration-300"
+                        title="Share Review via WhatsApp" aria-label="Share on WhatsApp">
+<i class='bx bxl-whatsapp text-xl'></i>
+</a>
                 </div>
             </div>
             {% endfor %}

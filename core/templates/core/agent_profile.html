@@ -185,6 +185,9 @@
             scrollbar-width: none;
         }
     </style>
+{% if agent.headshot %}
+    <link rel="preload" as="image" href="{{ agent.headshot.url }}">
+    {% endif %}
 </head>
 
 <body class="antialiased transition-colors duration-500">
@@ -374,14 +377,14 @@
                                     class="block text-xs font-bold uppercase tracking-widest mb-3 text-gray-400">Annual
                                     Income (SGD)</label>
                                 <input type="number" id="calc-income" placeholder="e.g. 120000"
-                                    class="w-full bg-transparent border-b border-white/20 py-3 text-2xl text-white focus:outline-none focus:border-[#fbbf24] transition-colors">
+                                    class="w-full bg-transparent border-b border-white/20 py-3 text-2xl text-white focus:outline-none focus:border-[#fbbf24] transition-colors" aria-label="e.g. 120000">
                             </div>
                             <div>
                                 <label
                                     class="block text-xs font-bold uppercase tracking-widest mb-3 text-gray-400">Number
                                     of Dependents</label>
                                 <input type="number" id="calc-dependents" placeholder="e.g. 2"
-                                    class="w-full bg-transparent border-b border-white/20 py-3 text-2xl text-white focus:outline-none focus:border-[#fbbf24] transition-colors">
+                                    class="w-full bg-transparent border-b border-white/20 py-3 text-2xl text-white focus:outline-none focus:border-[#fbbf24] transition-colors" aria-label="e.g. 2">
                             </div>
                             <button onclick="nextStep(2)"
                                 class="w-full bg-[#fbbf24] text-black font-bold uppercase tracking-widest py-4 hover:bg-white transition mt-4">Continue</button>
@@ -397,14 +400,14 @@
                                 <p class="text-[10px] text-gray-600 mb-3 uppercase tracking-wider">Mortgages, Auto
                                     Loans, Debts</p>
                                 <input type="number" id="calc-liabilities" placeholder="e.g. 500000"
-                                    class="w-full bg-transparent border-b border-white/20 py-3 text-2xl text-white focus:outline-none focus:border-[#fbbf24] transition-colors">
+                                    class="w-full bg-transparent border-b border-white/20 py-3 text-2xl text-white focus:outline-none focus:border-[#fbbf24] transition-colors" aria-label="e.g. 500000">
                             </div>
                             <div>
                                 <label
                                     class="block text-xs font-bold uppercase tracking-widest mb-3 text-gray-400">Existing
                                     Life Coverage (SGD)</label>
                                 <input type="number" id="calc-existing" placeholder="e.g. 200000"
-                                    class="w-full bg-transparent border-b border-white/20 py-3 text-2xl text-white focus:outline-none focus:border-[#fbbf24] transition-colors">
+                                    class="w-full bg-transparent border-b border-white/20 py-3 text-2xl text-white focus:outline-none focus:border-[#fbbf24] transition-colors" aria-label="e.g. 200000">
                             </div>
                             <div class="flex gap-4 mt-6">
                                 <button onclick="nextStep(1)"
@@ -437,12 +440,12 @@
 
                             <div>
                                 <input type="text" id="calc-name" placeholder="Legal Name" required
-                                    class="w-full bg-black/50 border border-white/10 py-4 px-5 text-white placeholder-gray-600 focus:outline-none focus:border-[#fbbf24] transition">
+                                    class="w-full bg-black/50 border border-white/10 py-4 px-5 text-white placeholder-gray-600 focus:outline-none focus:border-[#fbbf24] transition" aria-label="Legal Name">
                             </div>
                             <div>
                                 <input type="email" name="email" id="calc-email" placeholder="Secure Email Address"
                                     required
-                                    class="w-full bg-black/50 border border-white/10 py-4 px-5 text-white placeholder-gray-600 focus:outline-none focus:border-[#fbbf24] transition">
+                                    class="w-full bg-black/50 border border-white/10 py-4 px-5 text-white placeholder-gray-600 focus:outline-none focus:border-[#fbbf24] transition" aria-label="Secure Email Address">
                             </div>
                             <button type="submit" onclick="return prepareSubmission()"
                                 class="w-full bg-[#fbbf24] text-black font-bold uppercase tracking-widest py-4 hover:bg-white transition mt-4">
@@ -484,7 +487,7 @@
                         </div>
                         {% elif review.screenshot %}
                         <div class="mb-6 rounded-2xl overflow-hidden border border-white/10 shadow-sm relative z-10">
-                            <img src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Verified Proof">
+                            <img loading="lazy" src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Verified Proof">
                         </div>
                         {% endif %}
 
@@ -673,13 +676,13 @@
                                     class="block text-xs font-bold uppercase tracking-widest mb-2 text-[#a8a29e]">Annual
                                     Income</label>
                                 <input type="number" id="calc-income" placeholder="120000"
-                                    class="w-full bg-transparent border-b border-[#1c1917] py-3 text-3xl font-serif italic focus:outline-none focus:border-[#a8a29e] transition-colors">
+                                    class="w-full bg-transparent border-b border-[#1c1917] py-3 text-3xl font-serif italic focus:outline-none focus:border-[#a8a29e] transition-colors" aria-label="120000">
                             </div>
                             <div>
                                 <label
                                     class="block text-xs font-bold uppercase tracking-widest mb-2 text-[#a8a29e]">Dependents</label>
                                 <input type="number" id="calc-dependents" placeholder="2"
-                                    class="w-full bg-transparent border-b border-[#1c1917] py-3 text-3xl font-serif italic focus:outline-none focus:border-[#a8a29e] transition-colors">
+                                    class="w-full bg-transparent border-b border-[#1c1917] py-3 text-3xl font-serif italic focus:outline-none focus:border-[#a8a29e] transition-colors" aria-label="2">
                             </div>
                             <button onclick="nextStep(2)"
                                 class="w-full bg-[#1c1917] text-white text-xs font-bold uppercase tracking-widest py-5 hover:bg-[#a8a29e] transition mt-8">Next
@@ -694,14 +697,14 @@
                                     class="block text-xs font-bold uppercase tracking-widest mb-2 text-[#a8a29e]">Total
                                     Liabilities</label>
                                 <input type="number" id="calc-liabilities" placeholder="500000"
-                                    class="w-full bg-transparent border-b border-[#1c1917] py-3 text-3xl font-serif italic focus:outline-none focus:border-[#a8a29e] transition-colors">
+                                    class="w-full bg-transparent border-b border-[#1c1917] py-3 text-3xl font-serif italic focus:outline-none focus:border-[#a8a29e] transition-colors" aria-label="500000">
                             </div>
                             <div>
                                 <label
                                     class="block text-xs font-bold uppercase tracking-widest mb-2 text-[#a8a29e]">Existing
                                     Coverage</label>
                                 <input type="number" id="calc-existing" placeholder="200000"
-                                    class="w-full bg-transparent border-b border-[#1c1917] py-3 text-3xl font-serif italic focus:outline-none focus:border-[#a8a29e] transition-colors">
+                                    class="w-full bg-transparent border-b border-[#1c1917] py-3 text-3xl font-serif italic focus:outline-none focus:border-[#a8a29e] transition-colors" aria-label="200000">
                             </div>
                             <div class="flex gap-4 mt-8">
                                 <button onclick="nextStep(1)"
@@ -733,11 +736,11 @@
 
                             <div>
                                 <input type="text" id="calc-name" placeholder="Full Name" required
-                                    class="w-full bg-transparent border-b border-[#1c1917] py-3 text-lg font-serif italic focus:outline-none placeholder-[#a8a29e]">
+                                    class="w-full bg-transparent border-b border-[#1c1917] py-3 text-lg font-serif italic focus:outline-none placeholder-[#a8a29e]" aria-label="Full Name">
                             </div>
                             <div>
                                 <input type="email" name="email" id="calc-email" placeholder="Email Address" required
-                                    class="w-full bg-transparent border-b border-[#1c1917] py-3 text-lg font-serif italic focus:outline-none placeholder-[#a8a29e]">
+                                    class="w-full bg-transparent border-b border-[#1c1917] py-3 text-lg font-serif italic focus:outline-none placeholder-[#a8a29e]" aria-label="Email Address">
                             </div>
                             <button type="submit" onclick="return prepareSubmission()"
                                 class="w-full bg-[#1c1917] text-white text-xs font-bold uppercase tracking-widest py-5 hover:bg-[#a8a29e] transition mt-8">
@@ -768,7 +771,7 @@
                 <div
                     class="snap-center shrink-0 w-[85vw] md:w-[400px] bg-[#292524] p-8 md:p-12 relative flex flex-col justify-between">
                     {% if review.screenshot %}
-                    <img src="{{ review.screenshot.url }}"
+                    <img loading="lazy" src="{{ review.screenshot.url }}"
                         class="w-full h-48 object-cover mb-6 opacity-80 transition duration-500">
                     {% endif %}
                     <p class="font-serif text-xl italic leading-relaxed mb-6 opacity-90">"{{ review.review_text|truncatewords:30 }}"</p>
@@ -802,7 +805,7 @@
                     <a href="{% url 'article_detail' article.slug %}" class="group block">
                         <div class="aspect-[4/5] overflow-hidden bg-[#f2f0e9] mb-4">
                             {% if article.cover_image %}
-                            <img src="{{ article.cover_image.url }}"
+                            <img loading="lazy" src="{{ article.cover_image.url }}"
                                 class="w-full h-full object-cover transition duration-700 group-hover:scale-105 grayscale group-hover:grayscale-0">
                             {% else %}
                             <div
@@ -832,11 +835,11 @@
             <form action="{% url 'agent_profile' agent.slug %}" method="post" class="max-w-md mx-auto space-y-6">
                 {% csrf_token %}
                 <input type="text" name="name" placeholder="Full Name" required
-                    class="w-full bg-transparent border-b border-[#1c1917] py-3 focus:outline-none placeholder-[#a8a29e]">
+                    class="w-full bg-transparent border-b border-[#1c1917] py-3 focus:outline-none placeholder-[#a8a29e]" aria-label="Full Name">
                 <input type="text" name="phone" placeholder="Phone Number" required
-                    class="w-full bg-transparent border-b border-[#1c1917] py-3 focus:outline-none placeholder-[#a8a29e]">
+                    class="w-full bg-transparent border-b border-[#1c1917] py-3 focus:outline-none placeholder-[#a8a29e]" aria-label="Phone Number">
                 <input type="email" name="email" placeholder="Email Address" required
-                    class="w-full bg-transparent border-b border-[#1c1917] py-3 focus:outline-none placeholder-[#a8a29e]">
+                    class="w-full bg-transparent border-b border-[#1c1917] py-3 focus:outline-none placeholder-[#a8a29e]" aria-label="Email Address">
                 <textarea name="message" rows="1" placeholder="Message" required
                     class="w-full bg-transparent border-b border-[#1c1917] py-3 focus:outline-none placeholder-[#a8a29e]"></textarea>
                 <button
@@ -989,14 +992,14 @@
                                         class="block text-xs font-mono text-[#38bdf8] uppercase tracking-widest mb-2">Input:
                                         Annual Yield ($)</label>
                                     <input type="number" id="calc-income" placeholder="120000"
-                                        class="w-full bg-[#0f172a] border border-white/10 rounded-lg py-4 px-5 text-xl text-white font-mono focus:outline-none focus:border-[#38bdf8] transition-colors">
+                                        class="w-full bg-[#0f172a] border border-white/10 rounded-lg py-4 px-5 text-xl text-white font-mono focus:outline-none focus:border-[#38bdf8] transition-colors" aria-label="120000">
                                 </div>
                                 <div>
                                     <label
                                         class="block text-xs font-mono text-[#38bdf8] uppercase tracking-widest mb-2">Input:
                                         Dependents</label>
                                     <input type="number" id="calc-dependents" placeholder="2"
-                                        class="w-full bg-[#0f172a] border border-white/10 rounded-lg py-4 px-5 text-xl text-white font-mono focus:outline-none focus:border-[#38bdf8] transition-colors">
+                                        class="w-full bg-[#0f172a] border border-white/10 rounded-lg py-4 px-5 text-xl text-white font-mono focus:outline-none focus:border-[#38bdf8] transition-colors" aria-label="2">
                                 </div>
                                 <button onclick="nextStep(2)"
                                     class="w-full bg-[#38bdf8] text-[#0f172a] font-mono font-bold uppercase py-4 rounded-lg shadow-lg hover:bg-white transition mt-4">Execute
@@ -1011,14 +1014,14 @@
                                         class="block text-xs font-mono text-[#38bdf8] uppercase tracking-widest mb-2">Input:
                                         Debt Load ($)</label>
                                     <input type="number" id="calc-liabilities" placeholder="500000"
-                                        class="w-full bg-[#0f172a] border border-white/10 rounded-lg py-4 px-5 text-xl text-white font-mono focus:outline-none focus:border-[#38bdf8] transition-colors">
+                                        class="w-full bg-[#0f172a] border border-white/10 rounded-lg py-4 px-5 text-xl text-white font-mono focus:outline-none focus:border-[#38bdf8] transition-colors" aria-label="500000">
                                 </div>
                                 <div>
                                     <label
                                         class="block text-xs font-mono text-[#38bdf8] uppercase tracking-widest mb-2">Input:
                                         Current Shield ($)</label>
                                     <input type="number" id="calc-existing" placeholder="200000"
-                                        class="w-full bg-[#0f172a] border border-white/10 rounded-lg py-4 px-5 text-xl text-white font-mono focus:outline-none focus:border-[#38bdf8] transition-colors">
+                                        class="w-full bg-[#0f172a] border border-white/10 rounded-lg py-4 px-5 text-xl text-white font-mono focus:outline-none focus:border-[#38bdf8] transition-colors" aria-label="200000">
                                 </div>
                                 <div class="flex gap-4 mt-6">
                                     <button onclick="nextStep(1)"
@@ -1051,12 +1054,12 @@
 
                                 <div>
                                     <input type="text" id="calc-name" placeholder="User Identifier" required
-                                        class="w-full bg-[#0f172a] border border-white/10 rounded-lg py-4 px-5 text-white font-mono focus:outline-none focus:border-[#38bdf8] transition">
+                                        class="w-full bg-[#0f172a] border border-white/10 rounded-lg py-4 px-5 text-white font-mono focus:outline-none focus:border-[#38bdf8] transition" aria-label="User Identifier">
                                 </div>
                                 <div>
                                     <input type="email" name="email" id="calc-email" placeholder="Terminal@Address"
                                         required
-                                        class="w-full bg-[#0f172a] border border-white/10 rounded-lg py-4 px-5 text-white font-mono focus:outline-none focus:border-[#38bdf8] transition">
+                                        class="w-full bg-[#0f172a] border border-white/10 rounded-lg py-4 px-5 text-white font-mono focus:outline-none focus:border-[#38bdf8] transition" aria-label="Terminal@Address">
                                 </div>
                                 <button type="submit" onclick="return prepareSubmission()"
                                     class="w-full bg-[#38bdf8] text-[#0f172a] font-mono font-bold uppercase py-4 rounded-lg shadow-[0_0_15px_#38bdf8] hover:bg-white transition mt-4">
@@ -1091,7 +1094,7 @@
                         {% if review.screenshot %}
                         <div
                             class="w-full md:w-32 h-24 bg-black/50 rounded overflow-hidden border border-white/10 shrink-0">
-                            <img src="{{ review.screenshot.url }}"
+                            <img loading="lazy" src="{{ review.screenshot.url }}"
                                 class="w-full h-full object-cover opacity-60 hover:opacity-100 transition">
                         </div>
                         {% endif %}
@@ -1106,9 +1109,9 @@
                 <form action="{% url 'agent_profile' agent.slug %}" method="post" class="max-w-lg mx-auto space-y-4">
                     {% csrf_token %}
                     <input type="text" name="name" placeholder="IDENTIFIER (Name)" required
-                        class="w-full bg-[#0f172a]/10 border border-[#0f172a]/20 p-4 rounded font-mono placeholder-[#0f172a]/60 focus:outline-none focus:bg-white/20">
+                        class="w-full bg-[#0f172a]/10 border border-[#0f172a]/20 p-4 rounded font-mono placeholder-[#0f172a]/60 focus:outline-none focus:bg-white/20" aria-label="IDENTIFIER (Name)">
                     <input type="email" name="email" placeholder="CONTACT_POINT (Email)" required
-                        class="w-full bg-[#0f172a]/10 border border-[#0f172a]/20 p-4 rounded font-mono placeholder-[#0f172a]/60 focus:outline-none focus:bg-white/20">
+                        class="w-full bg-[#0f172a]/10 border border-[#0f172a]/20 p-4 rounded font-mono placeholder-[#0f172a]/60 focus:outline-none focus:bg-white/20" aria-label="CONTACT_POINT (Email)">
                     <textarea name="message" rows="2" placeholder="PAYLOAD (Message)" required
                         class="w-full bg-[#0f172a]/10 border border-[#0f172a]/20 p-4 rounded font-mono placeholder-[#0f172a]/60 focus:outline-none focus:bg-white/20"></textarea>
                     <button
@@ -1368,14 +1371,14 @@
                                     style="color: var(--text-main);">Annual Income ($)</label>
                                 <input type="number" id="calc-income" placeholder="e.g. 120000"
                                     class="w-full bg-transparent border-b-2 border-black/10 dark:border-white/10 py-3 text-2xl focus:outline-none transition-colors"
-                                    style="color: var(--text-main);">
+                                    style="color: var(--text-main);" aria-label="e.g. 120000">
                             </div>
                             <div>
                                 <label class="block text-sm font-bold uppercase tracking-wider mb-2 opacity-80"
                                     style="color: var(--text-main);">Number of Dependents</label>
                                 <input type="number" id="calc-dependents" placeholder="e.g. 2"
                                     class="w-full bg-transparent border-b-2 border-black/10 dark:border-white/10 py-3 text-2xl focus:outline-none transition-colors"
-                                    style="color: var(--text-main);">
+                                    style="color: var(--text-main);" aria-label="e.g. 2">
                             </div>
                             <button onclick="nextStep(2)"
                                 class="w-full text-white font-bold py-4 rounded-xl shadow-lg hover:opacity-90 transition mt-4"
@@ -1391,14 +1394,14 @@
                                     style="color: var(--text-main);">Total Liabilities ($)</label>
                                 <input type="number" id="calc-liabilities" placeholder="e.g. 500000"
                                     class="w-full bg-transparent border-b-2 border-black/10 dark:border-white/10 py-3 text-2xl focus:outline-none transition-colors"
-                                    style="color: var(--text-main);">
+                                    style="color: var(--text-main);" aria-label="e.g. 500000">
                             </div>
                             <div>
                                 <label class="block text-sm font-bold uppercase tracking-wider mb-2 opacity-80"
                                     style="color: var(--text-main);">Existing Life Coverage ($)</label>
                                 <input type="number" id="calc-existing" placeholder="e.g. 200000"
                                     class="w-full bg-transparent border-b-2 border-black/10 dark:border-white/10 py-3 text-2xl focus:outline-none transition-colors"
-                                    style="color: var(--text-main);">
+                                    style="color: var(--text-main);" aria-label="e.g. 200000">
                             </div>
                             <div class="flex gap-4 mt-4">
                                 <button onclick="nextStep(1)"
@@ -1433,13 +1436,13 @@
                             <div>
                                 <input type="text" id="calc-name" placeholder="Your Name" required
                                     class="w-full bg-black/5 dark:bg-white/5 border-none py-4 px-5 rounded-xl text-lg transition"
-                                    style="color: var(--text-main);">
+                                    style="color: var(--text-main);" aria-label="Your Name">
                             </div>
                             <div>
                                 <input type="email" name="email" id="calc-email" placeholder="Your Email Address"
                                     required
                                     class="w-full bg-black/5 dark:bg-white/5 border-none py-4 px-5 rounded-xl text-lg transition"
-                                    style="color: var(--text-main);">
+                                    style="color: var(--text-main);" aria-label="Your Email Address">
                             </div>
                             <button type="submit" onclick="return prepareSubmission()"
                                 class="w-full text-white font-bold py-4 rounded-xl shadow-lg hover:opacity-90 transition mt-2 flex items-center justify-center gap-2"
@@ -1490,7 +1493,7 @@
 
                     {% if review.screenshot %}
                     <div class="mb-6 rounded-2xl overflow-hidden border border-white/10 shadow-sm relative z-10">
-                        <img src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Verified Proof">
+                        <img loading="lazy" src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Verified Proof">
                     </div>
 
                     <div class="mb-4">
@@ -1559,7 +1562,7 @@
                 <a href="{% url 'article_detail' article.slug %}"
                     class="group block paper-card rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition duration-300">
                     {% if article.cover_image %}
-                    <div class="h-56 overflow-hidden"><img src="{{ article.cover_image.url }}"
+                    <div class="h-56 overflow-hidden"><img loading="lazy" src="{{ article.cover_image.url }}"
                             class="w-full h-full object-cover group-hover:scale-105 transition duration-700"></div>
                     {% else %}
                     <div class="h-56 bg-theme-secondary flex items-center justify-center text-gray-300"><i
@@ -1697,9 +1700,9 @@
     <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
     {% endif %}
 
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
     <script>
-        AOS.init({ once: true, offset: 50, duration: 800, easing: 'ease-out-cubic' });
+        document.addEventListener("DOMContentLoaded", function() { AOS.init({ once: true, offset: 50, duration: 800, easing: 'ease-out-cubic' }); });
 
         function toggleContent(elementId, button) {
             const container = document.getElementById(elementId);
