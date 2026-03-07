@@ -1,75 +1,140 @@
 {% load markdown_extras %}
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth bg-[#0a0a0a]">
+<html lang="en" class="scroll-smooth bg-[#050505]">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ custom_fields.hero_headline|default:agent.name|striptags }} | Private Wealth</title>
+    <title>{{ custom_fields.hero_headline|default:agent.name|striptags }} | Wealth Advisory</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
 
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .font-serif { font-family: 'Playfair Display', serif; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0a0a0a; }
-        ::-webkit-scrollbar-thumb { background: #262626; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #fbbf24; }
-        
-        .content-toggle { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out; opacity: 0; }
-        .content-toggle.expanded { max-height: 5000px; opacity: 1; }
-        .rotate-icon { transition: transform 0.3s ease; }
-        .expanded .rotate-icon { transform: rotate(180deg); }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        /* Subtle Gold Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+
+        .content-toggle {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+
+        .content-toggle.expanded {
+            max-height: 5000px;
+            opacity: 1;
+        }
+
+        .rotate-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .expanded .rotate-icon {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 
-<body class="text-white selection:bg-[#fbbf24] selection:text-black antialiased">
-    <nav class="fixed top-0 w-full z-50 bg-[#0a0a0a]/70 backdrop-blur-xl border-b border-white/5">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-[#fbbf24] flex items-center justify-center text-black font-bold text-lg rounded-sm">{{ agent.name|slice:":1" }}</div>
-                <div class="hidden md:block text-xs uppercase tracking-[0.2em] text-white/80 font-bold">{{ agent.company }} <span class="text-[#fbbf24] mx-1">|</span> Private Client</div>
+<body class="text-white selection:bg-[#D4AF37] selection:text-black antialiased">
+
+    <nav class="fixed top-0 w-full z-50 bg-[#050505]/90 backdrop-blur-xl border-b border-white/5 transition-all">
+        <div class="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
+            <a href="{% url 'agent_profile' agent.slug %}" class="flex items-center gap-4 group">
+                <div
+                    class="w-10 h-10 border border-[#D4AF37]/50 rounded-full flex items-center justify-center text-[#D4AF37] font-serif text-xl group-hover:border-[#D4AF37] group-hover:bg-[#D4AF37]/10 transition duration-500">
+                    {{ agent.name|slice:":1" }}
+                </div>
+                <div class="hidden md:flex flex-col">
+                    <span class="text-sm font-serif tracking-wide text-white">{{ agent.name }}</span>
+                    <span class="text-[9px] uppercase tracking-[0.2em] text-[#D4AF37] font-medium">
+                        {{ agent.company }}
+                    </span>
+                </div>
             </a>
 
-            <div class="flex gap-6 md:gap-8">
+            <div class="flex gap-8 items-center">
                 {% if '/agent/' in request.path %}
-                    <a href="{% url 'agent_profile' agent.slug %}" class="text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all {% if request.resolver_match.url_name == 'agent_profile' %}text-[#fbbf24] border-b-2 border-[#fbbf24]{% else %}text-white/50 border-b-2 border-transparent hover:text-white{% endif %}">Overview</a>
-                    
-                    <a href="{% url 'agent_bio' agent.slug %}" class="text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all {% if request.resolver_match.url_name == 'agent_bio' %}text-[#fbbf24] border-b-2 border-[#fbbf24]{% else %}text-white/50 border-b-2 border-transparent hover:text-white{% endif %}">Expertise</a>
-                    
-                    <a href="{% url 'agent_testimonials' agent.slug %}" class="text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all {% if request.resolver_match.url_name == 'agent_testimonials' %}text-[#fbbf24] border-b-2 border-[#fbbf24]{% else %}text-white/50 border-b-2 border-transparent hover:text-white{% endif %}">Client Letters</a>
-                {% else %}
-                    <a href="/" class="text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all {% if request.path == '/' %}text-[#fbbf24] border-b-2 border-[#fbbf24]{% else %}text-white/50 border-b-2 border-transparent hover:text-white{% endif %}">Overview</a>
-                    
-                    <a href="/expertise/" class="text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all {% if '/expertise/' in request.path %}text-[#fbbf24] border-b-2 border-[#fbbf24]{% else %}text-white/50 border-b-2 border-transparent hover:text-white{% endif %}">Expertise</a>
-                    
-                    <a href="/letters/" class="text-xs uppercase tracking-[0.15em] font-medium pb-1 transition-all {% if '/letters/' in request.path %}text-[#fbbf24] border-b-2 border-[#fbbf24]{% else %}text-white/50 border-b-2 border-transparent hover:text-white{% endif %}">Client Letters</a>
-                {% endif %}
-            </div>
+                <a href="{% url 'agent_profile' agent.slug %}"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_profile' %}text-[#D4AF37]{% else %}text-gray-400 hover:text-white{% endif %}">Home</a>
 
-            <div>
-                {% if agent.calendly_link %}
-                <button onclick="Calendly.initPopupWidget({url: '{{ agent.calendly_link }}'});return false;" class="text-[10px] md:text-xs font-bold uppercase tracking-widest border border-[#fbbf24] text-[#fbbf24] px-4 md:px-6 py-2.5 hover:bg-[#fbbf24] hover:text-black transition">Inquire</button>
+                <a href="{% url 'agent_bio' agent.slug %}"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_bio' %}text-[#D4AF37]{% else %}text-gray-400 hover:text-white{% endif %}">About
+                    Me</a>
+
+                <a href="{% url 'agent_services' agent.slug %}"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_services' %}text-[#D4AF37]{% else %}text-gray-400 hover:text-white{% endif %}">Services</a>
+
+                <a href="{% url 'agent_testimonials' agent.slug %}"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_testimonials' %}text-[#D4AF37]{% else %}text-gray-400 hover:text-white{% endif %}">Testimonials</a>
                 {% else %}
-                <a href="{% url 'download_vcard' agent.slug %}" class="text-[10px] md:text-xs font-bold uppercase tracking-widest border border-[#fbbf24] text-[#fbbf24] px-4 md:px-6 py-2.5 hover:bg-[#fbbf24] hover:text-black transition">vCard</a>
+                <a href="/"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.path == '/' %}text-[#D4AF37]{% else %}text-gray-400 hover:text-white{% endif %}">Home</a>
+
+                <a href="/bio/"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if '/bio/' in request.path %}text-[#D4AF37]{% else %}text-gray-400 hover:text-white{% endif %}">About
+                    Me</a>
+
+                <a href="/expertise/"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if '/expertise/' in request.path %}text-[#D4AF37]{% else %}text-gray-400 hover:text-white{% endif %}">Services</a>
+
+                <a href="/letters/"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if '/letters/' in request.path %}text-[#D4AF37]{% else %}text-gray-400 hover:text-white{% endif %}">Testimonials</a>
                 {% endif %}
             </div>
         </div>
     </nav>
 
-    <main class="pt-20 min-h-[85vh]">
+    <main class="min-h-[85vh]">
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="border-t border-white/5 bg-[#0a0a0a] py-12 text-center">
-        <p class="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] mb-4">&copy; {% now "Y" %} {{ agent.name }}. All Rights Reserved.</p>
-        <p class="text-[10px] text-gray-700 max-w-2xl mx-auto px-6 leading-relaxed font-light">{{ agent.disclaimer }}</p>
+    <footer class="border-t border-white/5 bg-[#050505] py-16 text-center">
+        <p class="text-xs text-gray-400 font-medium mb-4">&copy; {% now "Y" %} {{ agent.name }}. All Rights Reserved.
+        </p>
+        <p class="text-[10px] text-gray-600 max-w-2xl mx-auto px-6 leading-relaxed font-light">{{ agent.disclaimer }}
+        </p>
     </footer>
 
-    {% if agent.calendly_link %}
-    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
-    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+    {% if agent.phone_number %}
+    <div class="fixed bottom-8 right-6 md:right-10 z-[100] pointer-events-none">
+        <a href="https://api.whatsapp.com/send?phone={{ agent.phone_number|cut:'+'|cut:' ' }}&text={{ agent.whatsapp_message|urlencode }}"
+            target="_blank"
+            class="pointer-events-auto bg-[#111] border border-[#D4AF37]/30 text-white pl-4 pr-6 py-3 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.5)] flex items-center gap-3 transform hover:-translate-y-1 hover:border-[#D4AF37] transition duration-500 group">
+            <div
+                class="bg-[#25D366] w-10 h-10 rounded-full flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition duration-300">
+                <i class='bx bxl-whatsapp'></i>
+            </div>
+            <div class="flex flex-col text-left">
+                <span class="text-[9px] text-[#D4AF37] uppercase tracking-wider font-bold">Have a question?</span>
+                <span class="text-sm font-medium">Chat with me</span>
+            </div>
+        </a>
+    </div>
     {% endif %}
 
     <script>
@@ -78,9 +143,61 @@
             el.classList.toggle('expanded');
             btn.classList.toggle('expanded');
             const span = btn.querySelector('span');
-            if (el.classList.contains('expanded')) { span.innerText = 'Hide Review Text'; } 
-            else { span.innerText = 'Read Review Text'; }
+            if (el.classList.contains('expanded')) { span.innerText = 'Hide Full Review'; }
+            else { span.innerText = 'Read Full Review'; }
+        }
+
+        let rawIncome = 0, rawDependents = 0, rawLiabilities = 0, rawExisting = 0, rawRecommended = 0, rawGap = 0;
+
+        function nextStep(step) {
+            document.querySelectorAll('.calc-step').forEach(el => el.classList.add('hidden'));
+            document.getElementById('step-' + step).classList.remove('hidden');
+            const progress = document.getElementById('calc-progress');
+            if (progress) progress.style.width = (step * 33.33) + '%';
+        }
+
+        function calculateAndShowStep3() {
+            rawIncome = parseFloat(document.getElementById('calc-income').value) || 0;
+            rawDependents = parseFloat(document.getElementById('calc-dependents').value) || 0;
+            rawLiabilities = parseFloat(document.getElementById('calc-liabilities').value) || 0;
+            rawExisting = parseFloat(document.getElementById('calc-existing').value) || 0;
+
+            rawRecommended = (rawIncome * 10) + rawLiabilities + (rawDependents * 100000);
+            rawGap = rawRecommended - rawExisting;
+            if (rawGap < 0) rawGap = 0;
+
+            nextStep(3);
+        }
+
+        function prepareSubmission() {
+            const nameInput = document.getElementById('calc-name').value;
+            const emailInput = document.getElementById('calc-email').value;
+
+            if (nameInput && emailInput) {
+                const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+                document.getElementById('hidden-name').value = nameInput + " (Calculator Lead)";
+                document.getElementById('hidden_income').value = formatter.format(rawIncome);
+                document.getElementById('hidden_dependents').value = rawDependents;
+                document.getElementById('hidden_liabilities').value = formatter.format(rawLiabilities);
+                document.getElementById('hidden_existing').value = formatter.format(rawExisting);
+                document.getElementById('hidden_recommended').value = formatter.format(rawRecommended);
+                document.getElementById('hidden_gap').value = formatter.format(rawGap);
+
+                document.getElementById('calc-hidden-message').value = "Client completed the Coverage Gap Calculator.\nGap: " + formatter.format(rawGap);
+
+                document.getElementById('step-3').classList.add('hidden');
+                document.getElementById('step-success').classList.remove('hidden');
+                const progress = document.getElementById('calc-progress');
+                if (progress) {
+                    progress.style.width = '100%';
+                    progress.style.backgroundColor = '#D4AF37';
+                }
+                return true;
+            }
+            return false;
         }
     </script>
 </body>
+
 </html>

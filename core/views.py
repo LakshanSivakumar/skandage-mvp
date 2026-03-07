@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash, logout
 from django.contrib import messages
+from django.template import TemplateDoesNotExist
 from django.urls import reverse
 from .models import Agent, Testimonial, Lead, Article, Credential, Service, ReviewLink, Agency, AgencyImage, AgencyReview, PendingAgentOnboarding
 from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm, ServiceForm, ClientSubmissionForm, AgencySiteForm, AgencyReviewForm, AgencyImageForm
@@ -36,6 +37,7 @@ import calendar
 from datetime import datetime, date
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 
 def add_months_to_date(source_date_str, months):
     """Calculates future review dates based on frequency."""
@@ -197,6 +199,7 @@ def delete_agency_review(request, pk):
     rev.delete()
     messages.success(request, "Review deleted.")
     return redirect('manage_agency_site')
+@xframe_options_sameorigin
 def agent_profile(request, slug):
     agent = get_object_or_404(Agent, slug=slug, is_public=True)
     
@@ -236,7 +239,8 @@ def agent_profile(request, slug):
                 f"<b>Name:</b> {lead.name}\n"
                 f"<b>Email:</b> {lead.email}\n"
                 f"<b>Phone:</b> {request.POST.get('phone', 'N/A')}\n\n"
-                f"<i>Log in to Skandage to view details.</i>"
+                f"<i>Log in to Skandage to view details.</i>\n"
+                f"<i>www.app.skandage.com</i>"
             )
             
             # Hardcode for testing, but later you can add 'telegram_chat_id' to your Agent model!
@@ -736,7 +740,7 @@ def account_settings(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
-
+@xframe_options_sameorigin
 # Subpage Views
 def agent_testimonials(request, slug):
     agent = get_object_or_404(Agent, slug=slug, is_public=True)
@@ -757,27 +761,67 @@ def agent_testimonials(request, slug):
         return render(request, template_name, context)
         
     return render(request, 'core/public_testimonials.html', context)
-
+@xframe_options_sameorigin
 def agent_bio(request, slug):
     agent = get_object_or_404(Agent, slug=slug, is_public=True)
-    theme_config = THEMES.get(agent.theme, THEMES['luxe'])
     
-    context = {
-        'agent': agent,
-        'credentials': agent.credentials.all().order_by('order'),
-        'services': agent.services.all(), # Ensure services are passed to the view
-        'theme': theme_config
-    }
-    
+    host = request.get_host().lower()
+    if 'skandage.com' not in host and 'localhost' not in host and '127.0.0.1' not in host:
+        if not agent.custom_domain or (agent.custom_domain not in host):
+            return render(request, 'core/error.html', {'message': 'Profile not available.'})
+            
     # VIP ARCHITECTURE INTERCEPT
     if getattr(agent, 'is_bespoke', False) and getattr(agent, 'bespoke_template_name', ''):
-        context['custom_fields'] = agent.bespoke_data or {}
-        # Automatically routes core/karna_custom.html -> core/karna_expertise.html
-        template_name = agent.bespoke_template_name.replace('_custom', '_expertise')
-        return render(request, template_name, context)
-        
-    return render(request, 'core/public_bio.html', context)
+        template_name = agent.bespoke_template_name.replace('_custom', '_bio')
+        try:
+            return render(request, template_name, {
+                'agent': agent,
+                'credentials': agent.credentials.all().order_by('order'),
+                'custom_fields': agent.bespoke_data or {}
+            })
+        except TemplateDoesNotExist:
+            pass
 
+    # Try to load the bespoke page. If it doesn't exist, redirect to their home profile.
+    try:
+        return render(request, f'themes/{agent.theme}_bio.html', {
+            'agent': agent,
+            'credentials': agent.credentials.all().order_by('order'),
+            'custom_fields': agent.bespoke_data or {}
+        })
+    except TemplateDoesNotExist:
+        return redirect('agent_profile', slug=agent.slug)
+
+
+@xframe_options_sameorigin
+def agent_services(request, slug):
+    agent = get_object_or_404(Agent, slug=slug, is_public=True)
+    
+    host = request.get_host().lower()
+    if 'skandage.com' not in host and 'localhost' not in host and '127.0.0.1' not in host:
+        if not agent.custom_domain or (agent.custom_domain not in host):
+            return render(request, 'core/error.html', {'message': 'Profile not available.'})
+            
+    # VIP ARCHITECTURE INTERCEPT
+    if getattr(agent, 'is_bespoke', False) and getattr(agent, 'bespoke_template_name', ''):
+        template_name = agent.bespoke_template_name.replace('_custom', '_expertise')
+        try:
+            return render(request, template_name, {
+                'agent': agent,
+                'services': agent.services.all(),
+                'custom_fields': agent.bespoke_data or {}
+            })
+        except TemplateDoesNotExist:
+            pass
+
+    try:
+        return render(request, f'themes/{agent.theme}_expertise.html', {
+            'agent': agent,
+            'services': agent.services.all(),
+            'custom_fields': agent.bespoke_data or {}
+        })
+    except TemplateDoesNotExist:
+        return redirect('agent_profile', slug=agent.slug)
 def single_testimonial(request, slug, pk):
     agent = get_object_or_404(Agent, slug=slug, is_public=True) # Check Public
     testimonial = get_object_or_404(Testimonial, pk=pk, agent=agent)
@@ -2005,39 +2049,63 @@ def manage_profile(request):
 def manage_bespoke_profile(request, agent):
     """
     VIP Dashboard logic. Automatically absorbs any HTML form inputs 
-    and saves them directly into the agent's bespoke JSON field.
+    and saves them directly into the agent's bespoke JSON field,
+    WHILE ALSO processing standard Agent fields via AgentProfileForm.
+    Supports AJAX Auto-Saving.
     """
     if request.method == 'POST':
-        # Grab the existing JSON data so we don't accidentally wipe it
-        custom_data = agent.bespoke_data or {}
-
-        # Loop through every input field submitted in the HTML form
-        for key, value in request.POST.items():
-            # Ignore standard Django hidden security fields
-            if key not in ['csrfmiddlewaretoken']:
-                custom_data[key] = value.strip()
-
-        # Save the updated JSON dictionary back to the database
-        agent.bespoke_data = custom_data
-        agent.save()
+        # 1. Handle standard fields via Django Form (Name, Photo, Socials, etc.)
+        form = AgentProfileForm(request.POST, request.FILES, instance=agent)
         
-        messages.success(request, "Your VIP profile has been updated.")
-        return redirect('manage_profile')
+        if form.is_valid():
+            agent = form.save(commit=False)
+            
+            # 2. Handle Bespoke JSON fields
+            custom_data = agent.bespoke_data or {}
+            
+            # Get a list of all standard fields so we don't accidentally put them in the JSON
+            standard_fields = list(form.fields.keys()) + ['csrfmiddlewaretoken']
+            
+            for key, value in request.POST.items():
+                if key not in standard_fields:
+                    custom_data[key] = value.strip()
+                    
+            agent.bespoke_data = custom_data
+            agent.save()
+            
+            # 3. Respond silently to AJAX Auto-Saves
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'success'})
+                
+            # Fallback for standard form submission
+            messages.success(request, "Your VIP profile has been updated.")
+            return redirect('manage_profile')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
 
-    # Send her existing JSON data to her custom dashboard template
+    else:
+        form = AgentProfileForm(instance=agent)
+
     context = {
         'agent': agent,
+        'form': form, # We pass the standard form to the template
         'custom_fields': agent.bespoke_data or {},
-        'section': 'profile' # Keeps the sidebar highlighted correctly
+        'credentials': agent.credentials.all().order_by('order'), # Pass credentials!
+        'section': 'profile'
     }
     
-    # You will create this specific HTML file for her dashboard edits
     return render(request, 'core/manage_bespoke_profile.html', context)
+
+def domain_bio(request):
+    host = request.get_host().split(':')[0].lower()
+    subdomain = host.split('.')[0]
+    return agent_bio(request, slug=subdomain)
 
 def domain_expertise(request):
     host = request.get_host().split(':')[0].lower()
     subdomain = host.split('.')[0]
-    return agent_bio(request, slug=subdomain)
+    return agent_services(request, slug=subdomain)
 
 def domain_letters(request):
     host = request.get_host().split(':')[0].lower()

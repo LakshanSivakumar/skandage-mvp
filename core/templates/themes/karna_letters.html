@@ -1,61 +1,44 @@
 {% extends "themes/karna_base.html" %}
 
 {% block content %}
-<div class="pb-24">
-    <div class="max-w-6xl mx-auto px-6 pt-20">
-        <div class="mb-16 text-center border-b border-white/5 pb-12">
-            <h2 class="text-5xl font-serif mb-4 text-white">Client Letters.</h2>
-            <p class="text-gray-400 text-lg font-light">Discretion is our standard. Trust is our foundation.</p>
-        </div>
 
+<section class="pt-32 pb-16 bg-[#050505] border-b border-white/5 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-[#D4AF37]/5 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-medium mb-6">Client Stories</div>
+        <h1 id="preview-letters-headline" class="text-5xl md:text-7xl font-serif text-white mb-6 leading-tight tracking-tight">{% if custom_fields.letters_headline %}{{ custom_fields.letters_headline|safe }}{% else %}Client Letters.{% endif %}</h1>
+        <p class="text-xl text-gray-400 font-light max-w-2xl mx-auto">Discretion is our standard. Trust is our foundation.</p>
+    </div>
+</section>
+
+<section class="py-24 bg-[#0a0a0a] relative overflow-hidden">
+    <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#D4AF37]/3 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="max-w-6xl mx-auto px-6 relative z-10">
+        {% if testimonials %}
         <div class="md:columns-2 gap-8">
             {% for review in testimonials %}
-            <div class="inline-block w-full mb-8 break-inside-avoid p-8 rounded-3xl shadow-sm relative hover:shadow-md transition-all duration-300 group bg-[#171717] border border-white/5">
-                
+            <div class="inline-block w-full mb-8 break-inside-avoid bg-[#111] rounded-2xl border border-white/5 overflow-hidden group hover:border-[#D4AF37]/20 transition-all duration-500 relative">
                 {% if review.video %}
-                    <div class="mb-6 rounded-2xl overflow-hidden border border-white/10 shadow-sm relative z-10 bg-[#0a0a0a]">
-                        <video controls playsinline preload="metadata" class="w-full object-cover max-h-[400px]">
-                            <source src="{{ review.video.url }}" type="video/mp4">
-                        </video>
-                    </div>
+                <div class="relative bg-black"><video controls playsinline preload="metadata" class="w-full object-cover max-h-[400px]"><source src="{{ review.video.url }}" type="video/mp4"></video></div>
                 {% elif review.screenshot %}
-                    <div class="mb-6 rounded-2xl overflow-hidden border border-white/10 shadow-sm relative z-10 bg-[#0a0a0a]">
-                        <img src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Verified Proof">
-                    </div>
+                <div class="relative bg-black"><img src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Client testimonial"></div>
                 {% endif %}
-
-                {% if review.video or review.screenshot %}
-                    <div class="mb-4">
-                        <button onclick="toggleContent('text-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition px-4 py-2 rounded-lg shadow-sm group w-full justify-center bg-[#0a0a0a] text-gray-400 border border-white/10 hover:text-white">
-                            <span>Read Review Text</span>
-                            <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
-                        </button>
-                    </div>
-                    <div id="text-{{ forloop.counter }}" class="content-toggle mb-6 relative z-10">
-                        <div class="p-4 rounded-xl border border-white/5 bg-[#0a0a0a]">
-                            <p class="text-lg italic leading-relaxed font-serif text-gray-400">"{{ review.review_text }}"</p>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="absolute -top-5 -left-2 opacity-20 transform rotate-12 text-[#fbbf24]"><i class='bx bxs-quote-left text-6xl'></i></div>
-                    <div class="relative z-10">
-                        <p class="text-lg italic leading-loose mb-8 font-serif text-gray-400">"{{ review.review_text }}"</p>
-                    </div>
-                {% endif %}
-
-                <div class="flex items-center gap-4 pt-6 border-t border-white/10 relative z-10">
-                    <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold font-serif text-xl shadow-sm bg-[#0a0a0a] text-gray-400 border border-white/5">
-                        {{ review.client_name|slice:":1" }}
-                    </div>
-                    <div>
-                        <div class="font-bold text-lg text-white">{{ review.client_name }}</div>
-                        <div class="text-xs font-bold uppercase tracking-wide text-[#fbbf24]">Verified Client</div>
-                    </div>
+                <div class="p-8 md:p-10">
+                    {% if review.video or review.screenshot %}
+                    <div class="mb-6"><button onclick="toggleContent('text-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider transition px-5 py-2.5 rounded-full w-full justify-center bg-[#0a0a0a] text-gray-400 border border-white/10 hover:text-[#D4AF37] hover:border-[#D4AF37]/30"><span>Read Review</span><i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i></button></div>
+                    <div id="text-{{ forloop.counter }}" class="content-toggle mb-6"><div class="p-5 rounded-xl border border-white/5 bg-[#0a0a0a]"><p class="text-base italic leading-relaxed font-serif text-gray-300">"{{ review.review_text }}"</p></div></div>
+                    {% else %}
+                    <div class="relative"><div class="absolute -top-4 -left-2 opacity-10"><i class='bx bxs-quote-left text-6xl text-[#D4AF37]'></i></div><p class="text-lg italic leading-loose font-serif text-gray-300 relative z-10 pl-4">"{{ review.review_text }}"</p></div>
+                    {% endif %}
+                    <div class="flex items-center gap-4 pt-6 mt-6 border-t border-white/5"><div class="w-11 h-11 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] font-serif text-lg">{{ review.client_name|slice:":1" }}</div><div><div class="font-medium text-white">{{ review.client_name }}</div><div class="text-[10px] uppercase tracking-widest text-[#D4AF37] font-medium">Verified Client</div></div></div>
                 </div>
-
             </div>
             {% endfor %}
         </div>
+        {% else %}
+        <div class="text-center py-16"><div class="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] text-3xl mx-auto mb-6"><i class='bx bx-message-square-dots'></i></div><p class="text-gray-400 font-light text-lg">Client stories coming soon.</p></div>
+        {% endif %}
     </div>
-</div>
+</section>
+
 {% endblock %}

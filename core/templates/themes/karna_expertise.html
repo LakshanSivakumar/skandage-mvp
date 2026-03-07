@@ -1,22 +1,86 @@
 {% extends "themes/karna_base.html" %}
 
 {% block content %}
-<div class="pb-24">
-    <div class="max-w-6xl mx-auto px-6 pt-20">
-        <div class="mb-16">
-            <h2 class="text-5xl font-serif mb-4 text-white">Areas of Expertise.</h2>
-            <p class="text-gray-400 text-lg font-light max-w-2xl">Bespoke strategies tailored specifically for wealth preservation, accumulation, and intergenerational transfer.</p>
-        </div>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 border-t border-white/5 pt-12">
+<!-- Hero Section -->
+<section class="pt-32 pb-16 bg-[#050505] border-b border-white/5 relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-[600px] h-[600px] bg-[#D4AF37]/5 rounded-full blur-[100px] pointer-events-none">
+    </div>
+
+    <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div
+            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-medium mb-6">
+            What I Do
+        </div>
+        <h1 id="preview-expertise-headline"
+            class="text-5xl md:text-7xl font-serif text-white mb-6 leading-tight tracking-tight">
+            {% if custom_fields.expertise_headline %}{{ custom_fields.expertise_headline|safe }}{% else %}Areas of
+            Expertise.{% endif %}
+        </h1>
+        <p class="text-xl text-gray-400 font-light max-w-2xl mx-auto">
+            Bespoke strategies tailored specifically for wealth preservation, accumulation, and intergenerational
+            transfer.
+        </p>
+    </div>
+</section>
+
+<!-- Services Grid -->
+<section class="py-24 bg-[#0a0a0a] relative overflow-hidden">
+    <div
+        class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#D4AF37]/3 rounded-full blur-[120px] pointer-events-none">
+    </div>
+
+    <div class="max-w-6xl mx-auto px-6 relative z-10">
+        {% if services %}
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {% for service in services %}
-            <div class="bg-[#171717] border border-white/5 p-8 hover:border-[#fbbf24]/50 transition duration-500 group">
-                <i class='bx {{ service.icon }} text-4xl text-white/20 group-hover:text-[#fbbf24] transition duration-500 mb-6 block'></i>
-                <h4 class="text-xl font-serif text-white mb-3">{{ service.title }}</h4>
-                <p class="text-sm text-gray-400 leading-relaxed font-light">{{ service.description }}</p>
+            <div
+                class="bg-[#111] rounded-2xl border border-white/5 p-10 relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all duration-500">
+                <!-- Hover glow -->
+                <div
+                    class="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 rounded-bl-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                </div>
+
+                <div class="relative z-10">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] mb-8 group-hover:bg-[#D4AF37]/20 transition duration-300">
+                        <i class='bx {{ service.icon }} text-2xl'></i>
+                    </div>
+                    <h3 class="text-xl font-serif text-white mb-4 group-hover:text-[#D4AF37] transition duration-300">
+                        {{ service.title }}
+                    </h3>
+                    <p class="text-sm text-gray-400 leading-relaxed font-light">
+                        {{ service.description }}
+                    </p>
+                </div>
             </div>
             {% endfor %}
         </div>
+        {% else %}
+        <div class="text-center py-16">
+            <div
+                class="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] text-3xl mx-auto mb-6">
+                <i class='bx bx-briefcase'></i>
+            </div>
+            <p class="text-gray-400 font-light text-lg">Services details coming soon.</p>
+        </div>
+        {% endif %}
     </div>
-</div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-20 bg-[#050505] border-t border-white/5">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+        <h2 class="text-3xl font-serif text-white mb-4">Ready to Start?</h2>
+        <div class="w-12 h-1 bg-[#D4AF37] rounded-full mx-auto mb-8"></div>
+        <p class="text-gray-400 font-light text-lg mb-10">
+            Every great wealth plan begins with a conversation. Let's discuss your goals.
+        </p>
+        <a href="{% url 'agent_profile' agent.slug %}#contact"
+            class="inline-block bg-[#D4AF37] text-black px-10 py-4 font-medium rounded-sm hover:bg-white transition duration-500 text-sm">
+            Get in Touch
+        </a>
+    </div>
+</section>
+
 {% endblock %}

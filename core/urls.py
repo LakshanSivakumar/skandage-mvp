@@ -11,6 +11,7 @@ urlpatterns = [
     # --- PUBLIC DOMAIN ROUTER ---
     path('', views.domain_router, name='home'),
     path('expertise/', views.domain_expertise, name='domain_expertise'), # NEW
+    path('bio/', views.domain_bio, name='domain_bio'), # NEW
     path('letters/', views.domain_letters, name='domain_letters'),
     path('accounts/', include('django.contrib.auth.urls')),
     
@@ -89,4 +90,5 @@ urlpatterns = [
     # --- CRM: REVIEW REMINDERS ---
     path('dashboard/crm/review-reminder/<int:pk>/send/', views.send_review_reminder, name='send_review_reminder'),
     path('dashboard/crm/review-reminders/bulk/', views.send_bulk_review_reminders, name='send_bulk_review_reminders'),
+    path('agent/<slug:slug>/services/', views.agent_services, name='agent_services'),
 ]
