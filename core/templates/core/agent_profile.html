@@ -80,83 +80,43 @@
 
     <style>
         :root {
-            --bg-page: {
-                    {
-                    theme.bg_page
-                }
-            }
+            --bg-page: {{ theme.bg_page }}
 
             ;
 
-            --bg-card: {
-                    {
-                    theme.bg_card
-                }
-            }
+            --bg-card: {{ theme.bg_card }}
 
             ;
 
-            --bg-secondary: {
-                    {
-                    theme.bg_secondary
-                }
-            }
+            --bg-secondary: {{ theme.bg_secondary }}
 
             ;
 
-            --text-main: {
-                    {
-                    theme.text_main
-                }
-            }
+            --text-main: {{ theme.text_main }}
 
             ;
 
-            --text-muted: {
-                    {
-                    theme.text_muted
-                }
-            }
+            --text-muted: {{ theme.text_muted }}
 
             ;
 
-            --accent: {
-                    {
-                    theme.accent
-                }
-            }
+            --accent: {{ theme.accent }}
 
             ;
 
-            --hero-start: {
-                    {
-                    theme.hero_start
-                }
-            }
+            --hero-start: {{ theme.hero_start }}
 
             ;
 
-            --hero-end: {
-                    {
-                    theme.hero_end
-                }
-            }
+            --hero-end: {{ theme.hero_end }}
 
             ;
 
-            --font-heading: {
-                    {
-                    theme.font_heading|safe
-                }
-            }
+            --font-heading: {{ theme.font_heading|safe }}
 
             ;
 
-            --font-body: {
-                    {
-                    theme.font_body|safe
-                }
-            }
+            --font-body: {{ theme.font_body|safe }}
 
             ;
         }
@@ -1194,7 +1154,8 @@
             </div>
             <div class="flex flex-col justify-center pt-4 max-w-2xl" data-aos="fade-up" data-aos-delay="200">
                 <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">Hello, I'm <br class="hidden md:block">
-                    <span class="text-theme-accent">{{ agent.name }}</span></h1>
+                    <span class="text-theme-accent">{{ agent.name }}</span>
+                </h1>
                 <p class="text-xl md:text-2xl text-white/80 font-light mb-6 leading-relaxed">{{ agent.title }} at <span
                         class="font-semibold text-white">{{ agent.company }}</span>.</p>
                 {% if agent.tagline %}
@@ -1626,7 +1587,8 @@
                 <div class="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
                     <div>
                         <h2 class="font-serif text-4xl md:text-5xl text-white mb-6 leading-tight">Let's Secure Your <br>
-                            <span class="text-theme-accent">Legacy Today.</span></h2>
+                            <span class="text-theme-accent">Legacy Today.</span>
+                        </h2>
                         <p class="text-white/70 font-light text-xl mb-8 leading-relaxed">Have questions about your
                             coverage or investment planning? Send me a message directly. I usually respond within 2
                             hours.</p>
@@ -1634,12 +1596,14 @@
                             <div class="flex items-center gap-4 text-white/80">
                                 <div
                                     class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-theme-accent">
-                                    <i class='bx bxs-envelope'></i></div><span>Direct Email Support</span>
+                                    <i class='bx bxs-envelope'></i>
+                                </div><span>Direct Email Support</span>
                             </div>
                             <div class="flex items-center gap-4 text-white/80">
                                 <div
                                     class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-theme-accent">
-                                    <i class='bx bxl-whatsapp'></i></div><span>WhatsApp Priority Chat</span>
+                                    <i class='bx bxl-whatsapp'></i>
+                                </div><span>WhatsApp Priority Chat</span>
                             </div>
                         </div>
                     </div>
