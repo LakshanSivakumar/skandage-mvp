@@ -1,4 +1,5 @@
 {% load markdown_extras %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth bg-[#FAFAF7]">
 
@@ -6,23 +7,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ custom_fields.hero_headline|default:agent.name|striptags }} | Wealth Advisory</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #FAFAF7; }
-        ::-webkit-scrollbar-thumb { background: #ddd; }
-        ::-webkit-scrollbar-thumb:hover { background: #B8941F; }
+        .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
 
-        .content-toggle { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out; opacity: 0; }
-        .content-toggle.expanded { max-height: 5000px; opacity: 1; }
-        .rotate-icon { transition: transform 0.3s ease; }
-        .expanded .rotate-icon { transform: rotate(180deg); }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #FAFAF7;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ddd;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #B8941F;
+        }
+
+        .content-toggle {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+
+        .content-toggle.expanded {
+            max-height: 5000px;
+            opacity: 1;
+        }
+
+        .rotate-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .expanded .rotate-icon {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 
@@ -31,24 +65,37 @@
     <nav class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-xl border-b border-black/5 transition-all">
         <div class="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
             <a href="{% url 'agent_profile' agent.slug %}" class="flex items-center gap-4 group">
-                <div class="w-10 h-10 border border-[#B8941F]/50 rounded-full flex items-center justify-center text-[#B8941F] font-serif text-xl group-hover:border-[#B8941F] group-hover:bg-[#B8941F]/10 transition duration-500">{{ agent.name|slice:":1" }}</div>
+                <div
+                    class="w-10 h-10 border border-[#B8941F]/50 rounded-full flex items-center justify-center text-[#B8941F] font-serif text-xl group-hover:border-[#B8941F] group-hover:bg-[#B8941F]/10 transition duration-500">
+                    {{ agent.name|slice:":1" }}</div>
                 <div class="hidden md:flex flex-col">
                     <span class="text-sm font-serif tracking-wide text-[#1a1a1a]">{{ agent.name }}</span>
-                    <span class="text-[9px] uppercase tracking-[0.2em] text-[#B8941F] font-medium">{{ agent.company }}</span>
+                    <span class="text-[9px] uppercase tracking-[0.2em] text-[#B8941F] font-medium">{{ agent.company
+                        }}</span>
                 </div>
             </a>
 
             <div class="flex gap-8 items-center">
                 {% if '/agent/' in request.path %}
-                <a href="{% url 'agent_profile' agent.slug %}" class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_profile' %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">Home</a>
-                <a href="{% url 'agent_bio' agent.slug %}" class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_bio' %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">About Me</a>
-                <a href="{% url 'agent_services' agent.slug %}" class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_services' %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">Services</a>
-                <a href="{% url 'agent_testimonials' agent.slug %}" class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_testimonials' %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">Testimonials</a>
+                <a href="{% url 'agent_profile' agent.slug %}"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_profile' %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">Home</a>
+                <a href="{% url 'agent_bio' agent.slug %}"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_bio' %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">About
+                    Me</a>
+                <a href="{% url 'agent_services' agent.slug %}"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_services' %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">Services</a>
+                <a href="{% url 'agent_testimonials' agent.slug %}"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_testimonials' %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">Testimonials</a>
                 {% else %}
-                <a href="/" class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.path == '/' %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">Home</a>
-                <a href="/bio/" class="text-xs font-medium tracking-wide transition-colors duration-300 {% if '/bio/' in request.path %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">About Me</a>
-                <a href="/expertise/" class="text-xs font-medium tracking-wide transition-colors duration-300 {% if '/expertise/' in request.path %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">Services</a>
-                <a href="/letters/" class="text-xs font-medium tracking-wide transition-colors duration-300 {% if '/letters/' in request.path %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">Testimonials</a>
+                <a href="/"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.path == '/' %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">Home</a>
+                <a href="/bio/"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if '/bio/' in request.path %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">About
+                    Me</a>
+                <a href="/expertise/"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if '/expertise/' in request.path %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">Services</a>
+                <a href="/letters/"
+                    class="text-xs font-medium tracking-wide transition-colors duration-300 {% if '/letters/' in request.path %}text-[#B8941F]{% else %}text-[#888] hover:text-[#1a1a1a]{% endif %}">Testimonials</a>
                 {% endif %}
             </div>
         </div>
@@ -65,8 +112,12 @@
 
     {% if agent.phone_number %}
     <div class="fixed bottom-8 right-6 md:right-10 z-[100] pointer-events-none">
-        <a href="https://api.whatsapp.com/send?phone={{ agent.phone_number|cut:'+'|cut:' ' }}&text={{ agent.whatsapp_message|urlencode }}" target="_blank" class="pointer-events-auto bg-white border border-[#B8941F]/30 text-[#1a1a1a] pl-4 pr-6 py-3 rounded-full shadow-lg flex items-center gap-3 transform hover:-translate-y-1 hover:border-[#B8941F] transition duration-500 group">
-            <div class="bg-[#25D366] w-10 h-10 rounded-full flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition duration-300"><i class='bx bxl-whatsapp'></i></div>
+        <a href="https://api.whatsapp.com/send?phone={{ agent.phone_number|cut:'+'|cut:' ' }}&text={{ agent.whatsapp_message|urlencode }}"
+            target="_blank"
+            class="pointer-events-auto bg-white border border-[#B8941F]/30 text-[#1a1a1a] pl-4 pr-6 py-3 rounded-full shadow-lg flex items-center gap-3 transform hover:-translate-y-1 hover:border-[#B8941F] transition duration-500 group">
+            <div
+                class="bg-[#25D366] w-10 h-10 rounded-full flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition duration-300">
+                <i class='bx bxl-whatsapp'></i></div>
             <div class="flex flex-col text-left">
                 <span class="text-[9px] text-[#B8941F] uppercase tracking-wider font-bold">Have a question?</span>
                 <span class="text-sm font-medium">Chat with me</span>
