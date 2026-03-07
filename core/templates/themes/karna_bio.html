@@ -165,7 +165,7 @@
                 class="bg-[#111] p-8 rounded-2xl border border-white/5 hover:border-[#D4AF37]/30 transition duration-500 text-center flex flex-col items-center justify-center">
                 <i class='bx bxs-award text-3xl text-[#D4AF37] mb-4'></i>
                 <div class="text-white font-medium text-lg mb-2">{{ cred.title }}</div>
-                <div class="text-xs text-gray-500 tracking-wider">{{ cred.issuer }} &bull; {{ cred.year }}</div>
+                <div class="text-xs text-gray-500 tracking-wider">{{ cred.issuer }}{% if cred.year %} &bull; {{ cred.year }}{% endif %}</div>
             </div>
             {% endfor %}
         </div>

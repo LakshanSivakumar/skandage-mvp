@@ -6,89 +6,118 @@
         <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Profile Settings</h2>
         <p class="text-slate-500 dark:text-slate-400 mt-1">Manage your public information and visual brand.</p>
     </div>
-    <button type="submit" form="profileForm" class="hidden md:flex bg-slate-900 dark:bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-blue-700 transition shadow-lg shadow-slate-200 dark:shadow-none items-center gap-2">
+    <button type="submit" form="profileForm"
+        class="hidden md:flex bg-slate-900 dark:bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-blue-700 transition shadow-lg shadow-slate-200 dark:shadow-none items-center gap-2">
         <i class='bx bx-save'></i> Save Changes
     </button>
 </div>
 
 <form id="profileForm" method="post" enctype="multipart/form-data" class="space-y-8">
     {% csrf_token %}
-    
-    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm transition-colors">
-        <div class="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+
+    <div
+        class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm transition-colors">
+        <div
+            class="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
             <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
-                <i class='bx bxs-palette text-purple-500 bg-purple-50 dark:bg-purple-900/30 p-1.5 rounded-lg'></i> 
+                <i class='bx bxs-palette text-purple-500 bg-purple-50 dark:bg-purple-900/30 p-1.5 rounded-lg'></i>
                 Design Studio
             </h3>
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Live Preview</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Live
+                Preview</span>
         </div>
 
         <div class="grid lg:grid-cols-12">
-            
-            <div class="lg:col-span-7 p-6 sm:p-8 border-r border-slate-100 dark:border-slate-700 space-y-10 bg-white dark:bg-slate-800 overflow-y-auto lg:max-h-[800px]">
-                
+
+            <div
+                class="lg:col-span-7 p-6 sm:p-8 border-r border-slate-100 dark:border-slate-700 space-y-10 bg-white dark:bg-slate-800 overflow-y-auto lg:max-h-[800px]">
+
                 <div>
                     <div class="flex items-center justify-between mb-4">
-                        <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Premium Architecture</label>
+                        <label
+                            class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Premium
+                            Architecture</label>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label class="relative cursor-pointer group block">
-                            <input type="radio" name="theme" value="executive" class="peer sr-only" {% if form.theme.value == 'executive' %}checked{% endif %} onchange="updatePreview()">
-                            <div class="h-full p-1 rounded-2xl border-2 border-slate-100 dark:border-slate-700 peer-checked:border-amber-500 peer-checked:ring-1 peer-checked:ring-amber-500 bg-white dark:bg-slate-900 transition-all duration-300 hover:border-amber-300">
-                                <div class="bg-[#0a0a0a] rounded-xl overflow-hidden relative aspect-[16/9] shadow-inner">
+                            <input type="radio" name="theme" value="executive" class="peer sr-only" {% if form.theme.value=='executive' %}checked{% endif %} onchange="updatePreview()">
+                            <div
+                                class="h-full p-1 rounded-2xl border-2 border-slate-100 dark:border-slate-700 peer-checked:border-amber-500 peer-checked:ring-1 peer-checked:ring-amber-500 bg-white dark:bg-slate-900 transition-all duration-300 hover:border-amber-300">
+                                <div
+                                    class="bg-[#0a0a0a] rounded-xl overflow-hidden relative aspect-[16/9] shadow-inner">
                                     <div class="absolute inset-0 p-5 flex flex-col justify-center">
                                         <div class="w-8 h-0.5 bg-amber-500 mb-2"></div>
                                         <div class="text-xl font-serif text-white leading-none mb-1">Wealth.</div>
-                                        <div class="text-xl font-serif text-amber-500 italic leading-none">Protected.</div>
+                                        <div class="text-xl font-serif text-amber-500 italic leading-none">Protected.
+                                        </div>
                                     </div>
-                                    <div class="absolute top-3 right-3 w-6 h-6 bg-amber-500 rounded-full items-center justify-center text-black hidden peer-checked:flex shadow-lg z-10"><i class='bx bx-check font-bold'></i></div>
+                                    <div
+                                        class="absolute top-3 right-3 w-6 h-6 bg-amber-500 rounded-full items-center justify-center text-black hidden peer-checked:flex shadow-lg z-10">
+                                        <i class='bx bx-check font-bold'></i></div>
                                 </div>
                                 <div class="mt-3 px-2 pb-2">
                                     <div class="flex justify-between items-center mb-1">
                                         <span class="font-bold text-slate-900 dark:text-white text-sm">Executive</span>
-                                        <span class="text-[9px] font-bold bg-slate-900 text-amber-500 px-1.5 py-0.5 rounded uppercase tracking-wider">Editorial</span>
+                                        <span
+                                            class="text-[9px] font-bold bg-slate-900 text-amber-500 px-1.5 py-0.5 rounded uppercase tracking-wider">Editorial</span>
                                     </div>
                                 </div>
                             </div>
                         </label>
 
                         <label class="relative cursor-pointer group block">
-                            <input type="radio" name="theme" value="vogue" class="peer sr-only" {% if form.theme.value == 'vogue' %}checked{% endif %} onchange="updatePreview()">
-                            <div class="h-full p-1 rounded-2xl border-2 border-slate-100 dark:border-slate-700 peer-checked:border-stone-500 peer-checked:ring-1 peer-checked:ring-stone-500 bg-white dark:bg-slate-900 transition-all duration-300 hover:border-stone-300">
-                                <div class="bg-[#fdfbf7] rounded-xl overflow-hidden relative aspect-[16/9] shadow-inner">
-                                    <div class="absolute inset-0 p-5 flex flex-col justify-center items-center text-center">
+                            <input type="radio" name="theme" value="vogue" class="peer sr-only" {% if form.theme.value=='vogue' %}checked{% endif %} onchange="updatePreview()">
+                            <div
+                                class="h-full p-1 rounded-2xl border-2 border-slate-100 dark:border-slate-700 peer-checked:border-stone-500 peer-checked:ring-1 peer-checked:ring-stone-500 bg-white dark:bg-slate-900 transition-all duration-300 hover:border-stone-300">
+                                <div
+                                    class="bg-[#fdfbf7] rounded-xl overflow-hidden relative aspect-[16/9] shadow-inner">
+                                    <div
+                                        class="absolute inset-0 p-5 flex flex-col justify-center items-center text-center">
                                         <div class="text-3xl font-serif text-stone-900 leading-none italic">Vogue.</div>
-                                        <div class="text-[8px] font-sans text-stone-500 uppercase tracking-[0.3em] mt-2">Lifestyle</div>
+                                        <div
+                                            class="text-[8px] font-sans text-stone-500 uppercase tracking-[0.3em] mt-2">
+                                            Lifestyle</div>
                                     </div>
-                                    <div class="absolute top-3 right-3 w-6 h-6 bg-stone-800 rounded-full items-center justify-center text-white hidden peer-checked:flex shadow-lg z-10"><i class='bx bx-check font-bold'></i></div>
+                                    <div
+                                        class="absolute top-3 right-3 w-6 h-6 bg-stone-800 rounded-full items-center justify-center text-white hidden peer-checked:flex shadow-lg z-10">
+                                        <i class='bx bx-check font-bold'></i></div>
                                 </div>
                                 <div class="mt-3 px-2 pb-2">
                                     <div class="flex justify-between items-center mb-1">
                                         <span class="font-bold text-slate-900 dark:text-white text-sm">Vogue</span>
-                                        <span class="text-[9px] font-bold bg-[#fdfbf7] text-stone-800 px-1.5 py-0.5 rounded uppercase tracking-wider border border-stone-200">Lifestyle</span>
+                                        <span
+                                            class="text-[9px] font-bold bg-[#fdfbf7] text-stone-800 px-1.5 py-0.5 rounded uppercase tracking-wider border border-stone-200">Lifestyle</span>
                                     </div>
                                 </div>
                             </div>
                         </label>
 
                         <label class="relative cursor-pointer group block">
-                            <input type="radio" name="theme" value="sterling" class="peer sr-only" {% if form.theme.value == 'sterling' %}checked{% endif %} onchange="updatePreview()">
-                            <div class="h-full p-1 rounded-2xl border-2 border-slate-100 dark:border-slate-700 peer-checked:border-sky-500 peer-checked:ring-1 peer-checked:ring-sky-500 bg-white dark:bg-slate-900 transition-all duration-300 hover:border-sky-300">
-                                <div class="bg-[#0f172a] rounded-xl overflow-hidden relative aspect-[16/9] shadow-inner">
-                                    <div class="absolute inset-0 opacity-20" style="background-image: linear-gradient(#38bdf8 1px, transparent 1px), linear-gradient(90deg, #38bdf8 1px, transparent 1px); background-size: 20px 20px;"></div>
+                            <input type="radio" name="theme" value="sterling" class="peer sr-only" {% if form.theme.value=='sterling' %}checked{% endif %} onchange="updatePreview()">
+                            <div
+                                class="h-full p-1 rounded-2xl border-2 border-slate-100 dark:border-slate-700 peer-checked:border-sky-500 peer-checked:ring-1 peer-checked:ring-sky-500 bg-white dark:bg-slate-900 transition-all duration-300 hover:border-sky-300">
+                                <div
+                                    class="bg-[#0f172a] rounded-xl overflow-hidden relative aspect-[16/9] shadow-inner">
+                                    <div class="absolute inset-0 opacity-20"
+                                        style="background-image: linear-gradient(#38bdf8 1px, transparent 1px), linear-gradient(90deg, #38bdf8 1px, transparent 1px); background-size: 20px 20px;">
+                                    </div>
                                     <div class="absolute inset-0 p-5 flex flex-col justify-center">
-                                        <div class="bg-slate-800/80 backdrop-blur border border-white/10 p-3 rounded-lg w-2/3">
+                                        <div
+                                            class="bg-slate-800/80 backdrop-blur border border-white/10 p-3 rounded-lg w-2/3">
                                             <div class="h-1.5 w-1/2 bg-sky-500 rounded mb-2"></div>
                                             <div class="h-1 w-3/4 bg-slate-500 rounded"></div>
                                         </div>
                                     </div>
-                                    <div class="absolute top-3 right-3 w-6 h-6 bg-sky-500 rounded-full items-center justify-center text-white hidden peer-checked:flex shadow-lg z-10"><i class='bx bx-check font-bold'></i></div>
+                                    <div
+                                        class="absolute top-3 right-3 w-6 h-6 bg-sky-500 rounded-full items-center justify-center text-white hidden peer-checked:flex shadow-lg z-10">
+                                        <i class='bx bx-check font-bold'></i></div>
                                 </div>
                                 <div class="mt-3 px-2 pb-2">
                                     <div class="flex justify-between items-center mb-1">
                                         <span class="font-bold text-slate-900 dark:text-white text-sm">Sterling</span>
-                                        <span class="text-[9px] font-bold bg-[#0f172a] text-sky-400 px-1.5 py-0.5 rounded uppercase tracking-wider border border-sky-900">Fintech</span>
+                                        <span
+                                            class="text-[9px] font-bold bg-[#0f172a] text-sky-400 px-1.5 py-0.5 rounded uppercase tracking-wider border border-sky-900">Fintech</span>
                                     </div>
                                 </div>
                             </div>
@@ -99,47 +128,68 @@
                 <hr class="border-slate-100 dark:border-slate-700">
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Standard Series</label>
+                    <label
+                        class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Standard
+                        Series</label>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {% for value, label in form.theme.field.choices %}
-                            {% if value != 'executive' and value != 'vogue' and value != 'sterling' %}
-                            <label class="cursor-pointer group relative block">
-                                <input type="radio" name="theme" value="{{ value }}" class="peer sr-only" {% if form.theme.value == value %}checked{% endif %} onchange="updatePreview()">
-                                <div class="p-3 rounded-xl border-2 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 peer-checked:border-blue-500 peer-checked:ring-1 peer-checked:ring-blue-500 hover:border-blue-300 transition-all text-center h-full flex flex-col items-center justify-center">
-                                    <div class="flex -space-x-2 mb-2">
-                                        <div class="w-5 h-5 rounded-full border border-black/10 shadow-sm swatch-bg-{{ value }}"></div>
-                                        <div class="w-5 h-5 rounded-full border border-black/10 shadow-sm swatch-accent-{{ value }}"></div>
+                        {% if value != 'executive' and value != 'vogue' and value != 'sterling' %}
+                        <label class="cursor-pointer group relative block">
+                            <input type="radio" name="theme" value="{{ value }}" class="peer sr-only" {% if form.theme.value==value %}checked{% endif %} onchange="updatePreview()">
+                            <div
+                                class="p-3 rounded-xl border-2 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 peer-checked:border-blue-500 peer-checked:ring-1 peer-checked:ring-blue-500 hover:border-blue-300 transition-all text-center h-full flex flex-col items-center justify-center">
+                                <div class="flex -space-x-2 mb-2">
+                                    <div
+                                        class="w-5 h-5 rounded-full border border-black/10 shadow-sm swatch-bg-{{ value }}">
                                     </div>
-                                    <span class="font-bold text-slate-600 dark:text-slate-300 peer-checked:text-blue-600 dark:peer-checked:text-blue-400 text-[10px]">{{ label }}</span>
+                                    <div
+                                        class="w-5 h-5 rounded-full border border-black/10 shadow-sm swatch-accent-{{ value }}">
+                                    </div>
                                 </div>
-                            </label>
-                            {% endif %}
+                                <span
+                                    class="font-bold text-slate-600 dark:text-slate-300 peer-checked:text-blue-600 dark:peer-checked:text-blue-400 text-[10px]">{{ label }}</span>
+                            </div>
+                        </label>
+                        {% endif %}
                         {% endfor %}
                     </div>
                 </div>
 
                 <div id="layout-selector">
-                    <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">
+                    <label
+                        class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">
                         Hero Layout <span class="font-normal normal-case opacity-50 ml-1">(Standard Themes Only)</span>
                     </label>
                     <div class="grid grid-cols-3 gap-3">
                         {% for value, label in form.layout.field.choices %}
                         <label class="cursor-pointer group block">
-                            <input type="radio" name="layout" value="{{ value }}" class="peer sr-only" {% if form.layout.value == value %}checked{% endif %} onchange="updatePreview()">
-                            <div class="p-3 rounded-xl border-2 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all hover:border-blue-300">
-                                <div class="h-10 bg-slate-100 dark:bg-slate-700 rounded-lg w-full relative overflow-hidden mb-2 opacity-50 peer-checked:opacity-100">
+                            <input type="radio" name="layout" value="{{ value }}" class="peer sr-only" {% if form.layout.value==value %}checked{% endif %} onchange="updatePreview()">
+                            <div
+                                class="p-3 rounded-xl border-2 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all hover:border-blue-300">
+                                <div
+                                    class="h-10 bg-slate-100 dark:bg-slate-700 rounded-lg w-full relative overflow-hidden mb-2 opacity-50 peer-checked:opacity-100">
                                     {% if value == 'classic' %}
-                                        <div class="absolute top-2 left-2 w-1/2 h-1.5 bg-slate-300 dark:bg-slate-500 rounded"></div>
-                                        <div class="absolute top-2 right-2 w-6 h-6 rounded-full bg-slate-300 dark:bg-slate-500"></div>
+                                    <div
+                                        class="absolute top-2 left-2 w-1/2 h-1.5 bg-slate-300 dark:bg-slate-500 rounded">
+                                    </div>
+                                    <div
+                                        class="absolute top-2 right-2 w-6 h-6 rounded-full bg-slate-300 dark:bg-slate-500">
+                                    </div>
                                     {% elif value == 'centered' %}
-                                        <div class="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-500"></div>
-                                        <div class="absolute top-7 left-1/2 -translate-x-1/2 w-1/2 h-1 bg-slate-300 dark:bg-slate-500 rounded"></div>
+                                    <div
+                                        class="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-500">
+                                    </div>
+                                    <div
+                                        class="absolute top-7 left-1/2 -translate-x-1/2 w-1/2 h-1 bg-slate-300 dark:bg-slate-500 rounded">
+                                    </div>
                                     {% elif value == 'minimal' %}
-                                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-slate-400"></div>
-                                        <div class="absolute top-3 left-3 w-2/3 h-2 bg-slate-300 dark:bg-slate-500 rounded"></div>
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-slate-400"></div>
+                                    <div class="absolute top-3 left-3 w-2/3 h-2 bg-slate-300 dark:bg-slate-500 rounded">
+                                    </div>
                                     {% endif %}
                                 </div>
-                                <span class="block text-center font-bold text-slate-700 dark:text-slate-200 peer-checked:text-blue-600 text-[10px] uppercase">{{ label }}</span>
+                                <span
+                                    class="block text-center font-bold text-slate-700 dark:text-slate-200 peer-checked:text-blue-600 text-[10px] uppercase">{{ label }}</span>
                             </div>
                         </label>
                         {% endfor %}
@@ -148,150 +198,262 @@
 
             </div>
 
-            <div class="lg:col-span-5 bg-slate-100 dark:bg-slate-900 p-8 flex items-center justify-center relative overflow-hidden transition-colors min-h-[500px] lg:h-auto lg:sticky lg:top-0">
-                <div class="absolute inset-0 opacity-5 dark:opacity-10" style="background-image: radial-gradient(#64748b 1px, transparent 1px); background-size: 24px 24px;"></div>
-                
-                <div id="preview-container" class="w-full max-w-[320px] aspect-[9/18] rounded-[2.5rem] shadow-2xl dark:shadow-none overflow-hidden relative transition-all duration-500 ease-in-out transform hover:scale-[1.02] border-[8px] border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10 bg-white">
-                    <div id="preview-content" class="h-full w-full flex flex-col p-6 transition-colors duration-300 relative overflow-hidden">
+            <div
+                class="lg:col-span-5 bg-slate-100 dark:bg-slate-900 p-8 flex items-center justify-center relative overflow-hidden transition-colors min-h-[500px] lg:h-auto lg:sticky lg:top-0">
+                <div class="absolute inset-0 opacity-5 dark:opacity-10"
+                    style="background-image: radial-gradient(#64748b 1px, transparent 1px); background-size: 24px 24px;">
+                </div>
+
+                <div id="preview-container"
+                    class="w-full max-w-[320px] aspect-[9/18] rounded-[2.5rem] shadow-2xl dark:shadow-none overflow-hidden relative transition-all duration-500 ease-in-out transform hover:scale-[1.02] border-[8px] border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10 bg-white">
+                    <div id="preview-content"
+                        class="h-full w-full flex flex-col p-6 transition-colors duration-300 relative overflow-hidden">
                         <div class="flex justify-between items-center mb-8 z-20">
                             <div class="w-6 h-6 rounded-full bg-current opacity-20"></div>
                             <div class="w-16 h-1.5 rounded-full bg-current opacity-20"></div>
                         </div>
-                        <div id="preview-hero" class="flex-1 flex flex-col justify-center relative z-20 transition-all duration-500"></div>
+                        <div id="preview-hero"
+                            class="flex-1 flex flex-col justify-center relative z-20 transition-all duration-500"></div>
                     </div>
-                    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-white dark:bg-slate-800 rounded-b-2xl z-50"></div>
+                    <div
+                        class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-white dark:bg-slate-800 rounded-b-2xl z-50">
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
+    <div
+        class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div class="flex items-start gap-5">
-                <div class="w-12 h-12 rounded-full bg-[#0088cc]/10 text-[#0088cc] flex items-center justify-center text-2xl shrink-0">
+                <div
+                    class="w-12 h-12 rounded-full bg-[#0088cc]/10 text-[#0088cc] flex items-center justify-center text-2xl shrink-0">
                     <i class='bx bxl-telegram'></i>
                 </div>
                 <div>
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white tracking-tight mb-1">Telegram Notifications</h3>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white tracking-tight mb-1">Telegram
+                        Notifications</h3>
                     <p class="text-xs text-slate-500 dark:text-gray-400 font-light leading-relaxed max-w-sm">
-                        Receive instant push notifications directly to your phone the second a lead completes your coverage calculator.
+                        Receive instant push notifications directly to your phone the second a lead completes your
+                        coverage calculator.
                     </p>
                 </div>
             </div>
-    
+
             <div class="shrink-0">
                 {% if agent.telegram_chat_id %}
-                    <div class="flex items-center gap-3 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-5 py-3 rounded-xl border border-emerald-200 dark:border-emerald-500/20">
-                        <i class='bx bxs-check-circle text-lg'></i>
-                        <span class="text-sm font-bold tracking-wide">Connected</span>
-                    </div>
+                <div
+                    class="flex items-center gap-3 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-5 py-3 rounded-xl border border-emerald-200 dark:border-emerald-500/20">
+                    <i class='bx bxs-check-circle text-lg'></i>
+                    <span class="text-sm font-bold tracking-wide">Connected</span>
+                </div>
                 {% else %}
-                    <a href="https://t.me/SkandageBot?start=agent_{{ agent.user.username }}" target="_blank" class="w-full md:w-auto bg-[#0088cc] hover:bg-[#0077b5] text-white px-6 py-3.5 rounded-xl text-sm font-bold tracking-wide transition shadow-lg shadow-[#0088cc]/20 flex items-center justify-center gap-2">
-                        <i class='bx bx-link'></i> Connect Account
-                    </a>
+                <a href="https://t.me/SkandageBot?start=agent_{{ agent.user.username }}" target="_blank"
+                    class="w-full md:w-auto bg-[#0088cc] hover:bg-[#0077b5] text-white px-6 py-3.5 rounded-xl text-sm font-bold tracking-wide transition shadow-lg shadow-[#0088cc]/20 flex items-center justify-center gap-2">
+                    <i class='bx bx-link'></i> Connect Account
+                </a>
                 {% endif %}
             </div>
         </div>
     </div>
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div class="xl:col-span-2 space-y-8">
-            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
-                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2"><i class='bx bxs-id-card text-blue-500 bg-blue-50 dark:bg-blue-900/30 p-1.5 rounded-lg'></i> Personal Details</h3>
+            <div
+                class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2"><i
+                        class='bx bxs-id-card text-blue-500 bg-blue-50 dark:bg-blue-900/30 p-1.5 rounded-lg'></i>
+                    Personal Details</h3>
                 <div class="space-y-6">
                     <div class="hidden">{{ form.headshot }}</div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Display Name</label>{{ form.name }}</div>
-                        <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Job Title</label>{{ form.title }}</div>
+                        <div class="space-y-1.5"><label
+                                class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Display
+                                Name</label>{{ form.name }}</div>
+                        <div class="space-y-1.5"><label
+                                class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Job
+                                Title</label>{{ form.title }}</div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Company</label>{{ form.company }}</div>
-                        <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">WhatsApp Number</label>{{ form.phone_number }}</div>
+                        <div class="space-y-1.5"><label
+                                class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Company</label>{{ form.company }}</div>
+                        <div class="space-y-1.5"><label
+                                class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">WhatsApp
+                                Number</label>{{ form.phone_number }}</div>
                     </div>
-                    
+
                     <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center gap-2">
+                        <label
+                            class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center gap-2">
                             <i class='bx bx-calendar text-blue-500 text-base'></i> Calendly Link
                         </label>
                         {{ form.calendly_link }}
-                        <p class="text-xs text-slate-400 dark:text-slate-500">Paste your scheduling link to replace the contact form with a booking popup.</p>
+                        <p class="text-xs text-slate-400 dark:text-slate-500">Paste your scheduling link to replace the
+                            contact form with a booking popup.</p>
                     </div>
 
-                    <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tagline</label>{{ form.tagline }}</div>
-                    <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Bio</label>{{ form.bio }}</div>
-                </div>
-            </div>
-            
-            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
-                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2"><i class='bx bxs-share-alt text-pink-500 bg-pink-50 dark:bg-pink-900/30 p-1.5 rounded-lg'></i> Social Media</h3>
-                <div class="space-y-4">
-                    <div class="relative"><span class="absolute left-4 top-3.5 text-slate-400 text-lg"><i class='bx bxl-linkedin-square'></i></span>{{ form.linkedin }}</div>
-                    <div class="relative"><span class="absolute left-4 top-3.5 text-slate-400 text-lg"><i class='bx bxl-instagram-alt'></i></span>{{ form.instagram }}</div>
-                    <div class="relative"><span class="absolute left-4 top-3.5 text-slate-400 text-lg"><i class='bx bxl-facebook-circle'></i></span>{{ form.facebook }}</div>
+                    <div class="space-y-1.5"><label
+                            class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tagline</label>{{ form.tagline }}</div>
+                    <div class="space-y-1.5"><label
+                            class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Bio</label>{{ form.bio }}</div>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
+            <div
+                class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2"><i
+                        class='bx bxs-share-alt text-pink-500 bg-pink-50 dark:bg-pink-900/30 p-1.5 rounded-lg'></i>
+                    Social Media</h3>
+                <div class="space-y-4">
+                    <div class="relative"><span class="absolute left-4 top-3.5 text-slate-400 text-lg"><i
+                                class='bx bxl-linkedin-square'></i></span>{{ form.linkedin }}</div>
+                    <div class="relative"><span class="absolute left-4 top-3.5 text-slate-400 text-lg"><i
+                                class='bx bxl-instagram-alt'></i></span>{{ form.instagram }}</div>
+                    <div class="relative"><span class="absolute left-4 top-3.5 text-slate-400 text-lg"><i
+                                class='bx bxl-facebook-circle'></i></span>{{ form.facebook }}</div>
+                </div>
+            </div>
+
+            <div
+                class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2"><i class='bx bxs-trophy text-amber-500 bg-amber-50 dark:bg-amber-900/30 p-1.5 rounded-lg'></i> Credentials</h3>
-                    <a href="{% url 'add_credential' %}" class="text-sm bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition">+ Add</a>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2"><i
+                            class='bx bxs-trophy text-amber-500 bg-amber-50 dark:bg-amber-900/30 p-1.5 rounded-lg'></i>
+                        Credentials</h3>
+                    <a href="{% url 'add_credential' %}"
+                        class="text-sm bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition">+
+                        Add</a>
                 </div>
                 {% if credentials %}
                 <div id="credential-list" class="space-y-3">
                     {% for cred in credentials %}
-                    <div class="credential-item p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 flex justify-between items-center group hover:border-blue-300 dark:hover:border-blue-500 transition cursor-move" data-id="{{ cred.pk }}">
+                    <div class="credential-item p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 flex justify-between items-center group hover:border-blue-300 dark:hover:border-blue-500 transition cursor-move"
+                        data-id="{{ cred.pk }}">
                         <div class="flex items-center gap-3 flex-1">
-                            <div class="text-slate-400 cursor-move hover:text-blue-600 dark:hover:text-blue-400"><i class='bx bx-grid-vertical text-2xl'></i></div>
+                            <div class="text-slate-400 cursor-move hover:text-blue-600 dark:hover:text-blue-400"><i
+                                    class='bx bx-grid-vertical text-2xl'></i></div>
                             <div>
                                 <div class="font-bold text-slate-900 dark:text-white">{{ cred.title }}</div>
-                                <div class="text-xs text-slate-500 dark:text-slate-400 uppercase">{{ cred.issuer }} &bull; {{ cred.year }}</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 uppercase">{{ cred.issuer }}{% if cred.year %} &bull; {{ cred.year }}{% endif %}</div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
-                            <a href="{% url 'edit_credential' cred.pk %}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-blue-600 hover:border-blue-600 dark:hover:text-blue-400 dark:hover:border-blue-400 transition shadow-sm"><i class='bx bxs-edit-alt'></i></a>
-                            <form action="{% url 'delete_credential' cred.pk %}" method="post" onsubmit="return confirm('Delete this credential?');">{% csrf_token %}<button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-red-600 hover:border-red-600 dark:hover:text-red-400 dark:hover:border-red-400 transition shadow-sm"><i class='bx bxs-trash'></i></button></form>
+                        <div
+                            class="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
+                            <a href="{% url 'edit_credential' cred.pk %}"
+                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-blue-600 hover:border-blue-600 dark:hover:text-blue-400 dark:hover:border-blue-400 transition shadow-sm"><i
+                                    class='bx bxs-edit-alt'></i></a>
+                            <form action="{% url 'delete_credential' cred.pk %}" method="post"
+                                onsubmit="return confirm('Delete this credential?');">{% csrf_token %}<button
+                                    type="submit"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-red-600 hover:border-red-600 dark:hover:text-red-400 dark:hover:border-red-400 transition shadow-sm"><i
+                                        class='bx bxs-trash'></i></button></form>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <p class="text-slate-400 text-sm text-center py-4 border-2 border-dashed dark:border-slate-700 rounded-xl">No credentials yet.</p>
+                <p
+                    class="text-slate-400 text-sm text-center py-4 border-2 border-dashed dark:border-slate-700 rounded-xl">
+                    No credentials yet.</p>
                 {% endif %}
             </div>
-            
-            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
-                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2"><i class='bx bxs-check-shield text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 p-1.5 rounded-lg'></i> Legal & Compliance</h3>
+
+            <div
+                class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm transition-colors">
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6 flex items-center gap-2"><i
+                        class='bx bxs-check-shield text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 p-1.5 rounded-lg'></i>
+                    Legal & Compliance</h3>
                 <div class="space-y-4">
-                    <div class="space-y-1.5"><label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Footer Disclaimer</label>{{ form.disclaimer }}</div>
+                    <div class="space-y-1.5"><label
+                            class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Footer
+                            Disclaimer</label>{{ form.disclaimer }}</div>
                 </div>
             </div>
         </div>
 
         <div class="space-y-8">
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm sticky top-8 transition-colors">
-                <h3 class="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wide mb-4">Profile Photo</h3>
+            <div
+                class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm sticky top-8 transition-colors">
+                <h3 class="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wide mb-4">Profile Photo
+                </h3>
                 <div class="flex flex-col items-center text-center">
                     <div class="relative group cursor-pointer mb-4">
                         {% if agent.headshot %}
-                            <img src="{{ agent.headshot.url }}" class="w-32 h-32 rounded-2xl object-cover shadow-lg border-2 border-white dark:border-slate-600">
+                        <img src="{{ agent.headshot.url }}"
+                            class="w-32 h-32 rounded-2xl object-cover shadow-lg border-2 border-white dark:border-slate-600">
                         {% else %}
-                            <div class="w-32 h-32 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-4xl text-slate-300 dark:text-slate-500"><i class='bx bxs-camera'></i></div>
+                        <div
+                            class="w-32 h-32 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-4xl text-slate-300 dark:text-slate-500">
+                            <i class='bx bxs-camera'></i></div>
                         {% endif %}
                     </div>
-                    <label for="id_headshot" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-white py-2 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-600 cursor-pointer transition shadow-sm flex items-center justify-center gap-2"><i class='bx bx-upload'></i> Change Photo</label>
+                    <label for="id_headshot"
+                        class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-white py-2 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-600 cursor-pointer transition shadow-sm flex items-center justify-center gap-2"><i
+                            class='bx bx-upload'></i> Change Photo</label>
                 </div>
             </div>
         </div>
     </div>
-    <button type="submit" class="md:hidden w-full bg-slate-900 dark:bg-blue-600 text-white py-3 rounded-xl font-bold mt-8 shadow-lg">Save Changes</button>
+    <button type="submit"
+        class="md:hidden w-full bg-slate-900 dark:bg-blue-600 text-white py-3 rounded-xl font-bold mt-8 shadow-lg">Save
+        Changes</button>
 </form>
 
 <style>
-    .swatch-bg-luxe { background-color: #fafaf9; } .swatch-accent-luxe { background-color: #f59e0b; }
-    .swatch-bg-corporate { background-color: #f8fafc; } .swatch-accent-corporate { background-color: #2563eb; }
-    .swatch-bg-midnight { background-color: #020617; } .swatch-accent-midnight { background-color: #22d3ee; }
-    .swatch-bg-midnight_rose { background-color: #0a0a0a; } .swatch-accent-midnight_rose { background-color: #f472b6; }
-    .swatch-bg-emerald { background-color: #022c22; } .swatch-accent-emerald { background-color: #34d399; }
-    .swatch-bg-obsidian { background-color: #000000; } .swatch-accent-obsidian { background-color: #ffffff; }
-    .swatch-bg-royal { background-color: #020617; } .swatch-accent-royal { background-color: #38bdf8; }
+    .swatch-bg-luxe {
+        background-color: #fafaf9;
+    }
+
+    .swatch-accent-luxe {
+        background-color: #f59e0b;
+    }
+
+    .swatch-bg-corporate {
+        background-color: #f8fafc;
+    }
+
+    .swatch-accent-corporate {
+        background-color: #2563eb;
+    }
+
+    .swatch-bg-midnight {
+        background-color: #020617;
+    }
+
+    .swatch-accent-midnight {
+        background-color: #22d3ee;
+    }
+
+    .swatch-bg-midnight_rose {
+        background-color: #0a0a0a;
+    }
+
+    .swatch-accent-midnight_rose {
+        background-color: #f472b6;
+    }
+
+    .swatch-bg-emerald {
+        background-color: #022c22;
+    }
+
+    .swatch-accent-emerald {
+        background-color: #34d399;
+    }
+
+    .swatch-bg-obsidian {
+        background-color: #000000;
+    }
+
+    .swatch-accent-obsidian {
+        background-color: #ffffff;
+    }
+
+    .swatch-bg-royal {
+        background-color: #020617;
+    }
+
+    .swatch-accent-royal {
+        background-color: #38bdf8;
+    }
 </style>
 
 <script>
@@ -303,7 +465,7 @@
         'emerald': { bg: '#022c22', text: '#ffffff', accent: '#34d399', font: '"Plus Jakarta Sans", sans-serif' },
         'obsidian': { bg: '#000000', text: '#ffffff', accent: '#ffffff', font: '"Playfair Display", serif' },
         'royal': { bg: '#020617', text: '#ffffff', accent: '#38bdf8', font: '"Plus Jakarta Sans", sans-serif' },
-        
+
         'executive': { bg: '#0a0a0a', text: '#ffffff', accent: '#fbbf24', font: '"Playfair Display", serif' },
         'vogue': { bg: '#fdfbf7', text: '#1c1917', accent: '#a8a29e', font: '"Playfair Display", serif' },
         'sterling': { bg: '#0f172a', text: '#ffffff', accent: '#38bdf8', font: '"Inter", sans-serif' }
@@ -313,7 +475,7 @@
         const themeKey = document.querySelector('input[name="theme"]:checked').value;
         const layoutKey = document.querySelector('input[name="layout"]:checked').value;
         const layoutSelector = document.getElementById('layout-selector');
-        
+
         // Disable Layout Selector for Premium Themes
         if (['executive', 'vogue', 'sterling'].includes(themeKey)) {
             layoutSelector.style.opacity = '0.5';
@@ -385,7 +547,7 @@
                 html = `<div style="border-left: 2px solid ${theme.accent}; padding-left: 1rem;"><h1 class="text-3xl font-bold leading-none mb-2">${name}<span style="${accentStyle}">.</span></h1><p class="text-xs opacity-70">${title}</p></div>`;
             }
         }
-        
+
         hero.innerHTML = html;
     }
 

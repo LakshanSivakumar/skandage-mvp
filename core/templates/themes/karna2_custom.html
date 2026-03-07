@@ -71,9 +71,10 @@
             {% for cred in credentials %}
             <div class="flex md:block items-center justify-between border-b md:border-b-0 border-black/5 pb-2 md:pb-0">
                 <div class="text-xl md:text-3xl font-bold text-[#1a1a1a] mb-0 md:mb-1 break-words leading-tight">{{ cred.title }}</div>
+                <!-- prettier-ignore -->
                 <div
                     class="text-[10px] md:text-xs text-[#888] uppercase tracking-widest text-right md:text-left min-w-[80px]">
-                    {{ cred.issuer }} <span class="text-[#B8941F] ml-1">{{ cred.year }}</span>
+                    {{ cred.issuer }}{% if cred.year %} <span class="text-[#B8941F] ml-1">{{ cred.year }}</span>{% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -178,6 +179,7 @@
                             class="w-full h-full object-cover group-hover:scale-105 transition duration-700"></div>
                     {% endif %}
                     <div class="p-6 flex flex-col flex-1">
+                        <!-- prettier-ignore -->
                         <div class="text-[10px] text-[#888] uppercase tracking-widest mb-3">{{ article.created_at|date:"M d, Y" }}</div>
                         <h3
                             class="text-lg font-serif text-[#1a1a1a] mb-3 group-hover:text-[#B8941F] transition duration-300 leading-snug">

@@ -130,8 +130,7 @@
                 {% for bday_sub in birthdays %}
                 <div class="list-item">
                     <p class="name">{{ bday_sub.name }}</p>
-                    <p class="detail">Email: {{ bday_sub.email|default:"N/A" }} | Phone: {{ bday_sub.phone|default:"N/A"
-                        }}</p>
+                    <p class="detail">Email: {{ bday_sub.email|default:"N/A" }} | Phone: {{ bday_sub.phone|default:"N/A" }}</p>
                 </div>
                 {% endfor %}
             </div>

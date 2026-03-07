@@ -191,8 +191,7 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-1.5"><label
-                                    class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Company</label>{{
-                                form.company }}</div>
+                                    class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Company</label>{{ form.company }}</div>
                             <div class="space-y-1.5"><label
                                     class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">WhatsApp
                                     Number</label>{{ form.phone_number }}</div>
@@ -207,11 +206,9 @@
                                 the contact form with a booking popup.</p>
                         </div>
                         <div class="space-y-1.5"><label
-                                class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tagline</label>{{
-                            form.tagline }}</div>
+                                class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tagline</label>{{ form.tagline }}</div>
                         <div class="space-y-1.5"><label
-                                class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Bio</label>{{
-                            form.bio }}</div>
+                                class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Bio</label>{{ form.bio }}</div>
                     </div>
                 </div>
 
@@ -251,7 +248,7 @@
                                 <div>
                                     <div class="font-bold text-slate-900 dark:text-white">{{ cred.title }}</div>
                                     <div class="text-xs text-slate-500 dark:text-slate-400 uppercase">{{ cred.issuer }}
-                                        &bull; {{ cred.year }}</div>
+                                        {% if cred.year %} &bull; {{ cred.year }}{% endif %}</div>
                                 </div>
                             </div>
                             <div
