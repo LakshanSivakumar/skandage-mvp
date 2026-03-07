@@ -311,7 +311,7 @@
                         alt="Verified Proof"></div>
                 {% endif %}
                 <div><i class='bx bxs-quote-alt-left text-3xl text-[#B8941F] mb-6 block'></i>
-                    <p class="text-lg italic leading-relaxed font-serif text-[#555] mb-8">"{{ review.review_text|truncatewords:35 }}"</p>
+                    <p class="text-lg italic leading-relaxed font-serif text-[#555] mb-8">"{{ review.review_text }}"</p>
                 </div>
                 <div class="flex items-center gap-4 pt-6 border-t border-black/5">
                     <div
@@ -321,9 +321,12 @@
                         <div class="font-medium text-[#1a1a1a]">{{ review.client_name }}</div>
                         <div class="text-xs text-[#888]">Verified Client</div>
                     </div>
-                    {% if review.review_text|wordcount > 35 %}<a
-                        href="{% url 'single_testimonial' agent.slug review.id %}"
-                        class="text-xs font-medium text-[#B8941F] hover:text-[#1a1a1a] transition">Read Full</a>{% endif %}
+                    <a href="https://wa.me/?text=Check%20out%20this%20review%20for%20{{ agent.name|urlencode }}:%20{{ request.scheme }}://{{ request.get_host }}{% url 'single_testimonial' agent.slug review.id %}"
+                        target="_blank"
+                        class="w-10 h-10 rounded-full flex items-center justify-center text-[#888] hover:bg-[#B8941F]/10 hover:text-[#B8941F] transition duration-300"
+                        title="Share Review via WhatsApp">
+                        <i class='bx bxl-whatsapp text-xl'></i>
+                    </a>
                 </div>
             </div>
             {% endfor %}

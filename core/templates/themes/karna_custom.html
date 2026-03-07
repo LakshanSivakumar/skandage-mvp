@@ -212,7 +212,7 @@
                     {% endif %}
                     <div class="p-6 flex flex-col flex-1">
                         <!-- prettier-ignore -->
-                <div class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">
+                        <div class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">
                             {{ article.created_at|date:"M d, Y" }}
                         </div>
                         <h3
@@ -368,7 +368,7 @@
                 <div>
                     <i class='bx bxs-quote-alt-left text-3xl text-[#D4AF37] mb-6 block'></i>
                     <p class="text-lg italic leading-relaxed font-serif text-gray-300 mb-8">
-                        "{{ review.review_text|truncatewords:35 }}"
+                        "{{ review.review_text }}"
                     </p>
                 </div>
 
@@ -381,10 +381,12 @@
                         <div class="font-medium text-white">{{ review.client_name }}</div>
                         <div class="text-xs text-gray-500">Verified Client</div>
                     </div>
-                    {% if review.review_text|wordcount > 35 %}
-                    <a href="{% url 'single_testimonial' agent.slug review.id %}"
-                        class="text-xs font-medium text-[#D4AF37] hover:text-white transition">Read Full</a>
-                    {% endif %}
+                    <a href="https://wa.me/?text=Check%20out%20this%20review%20for%20{{ agent.name|urlencode }}:%20{{ request.scheme }}://{{ request.get_host }}{% url 'single_testimonial' agent.slug review.id %}"
+                        target="_blank"
+                        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] transition duration-300"
+                        title="Share Review via WhatsApp">
+                        <i class='bx bxl-whatsapp text-xl'></i>
+                    </a>
                 </div>
             </div>
             {% endfor %}
