@@ -206,7 +206,7 @@ def agent_profile(request, slug):
     host = request.get_host().lower()
     
     # Domain Restriction Check
-    if 'skandage.com' not in host and 'localhost' not in host and '127.0.0.1' not in host:
+    if 'skandage.com' not in host and 'localhost' not in host and '127.0.0.1' not in host and '192.168.' not in host:
         # If agent has NO custom domain set, or the current host doesn't match their allowed domain
         if not agent.custom_domain or (agent.custom_domain not in host):
             return render(request, 'core/error.html', {'message': 'This profile is not available on this domain.'})
@@ -778,7 +778,7 @@ def agent_bio(request, slug):
     agent = get_object_or_404(Agent, slug=slug, is_public=True)
     
     host = request.get_host().lower()
-    if 'skandage.com' not in host and 'localhost' not in host and '127.0.0.1' not in host:
+    if 'skandage.com' not in host and 'localhost' not in host and '127.0.0.1' not in host and '192.168.' not in host:
         if not agent.custom_domain or (agent.custom_domain not in host):
             return render(request, 'core/error.html', {'message': 'Profile not available.'})
             
@@ -810,7 +810,7 @@ def agent_services(request, slug):
     agent = get_object_or_404(Agent, slug=slug, is_public=True)
     
     host = request.get_host().lower()
-    if 'skandage.com' not in host and 'localhost' not in host and '127.0.0.1' not in host:
+    if 'skandage.com' not in host and 'localhost' not in host and '127.0.0.1' not in host and '192.168.' not in host:
         if not agent.custom_domain or (agent.custom_domain not in host):
             return render(request, 'core/error.html', {'message': 'Profile not available.'})
             
