@@ -57,6 +57,74 @@
         .expanded .rotate-icon {
             transform: rotate(180deg);
         }
+
+        /* Custom Typography for Markdown (Replaces @tailwindcss/typography) */
+        .prose {
+            color: #555;
+            line-height: 2;
+            font-weight: 300;
+        }
+
+        .prose p {
+            margin-bottom: 2rem;
+        }
+
+        .prose h1,
+        .prose h2,
+        .prose h3 {
+            font-family: 'Cormorant Garamond', serif;
+            color: #1a1a1a;
+            font-weight: 400;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .prose h1 {
+            font-size: 2.5rem;
+        }
+
+        .prose h2 {
+            font-size: 2rem;
+        }
+
+        .prose h3 {
+            font-size: 1.5rem;
+        }
+
+        .prose a {
+            color: #B8941F;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .prose strong {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .prose ol {
+            list-style-type: decimal;
+            padding-left: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .prose li {
+            margin-bottom: 0.5rem;
+        }
+
+        .prose blockquote {
+            border-left: 4px solid #B8941F;
+            padding-left: 1.5rem;
+            font-style: italic;
+            color: #666;
+            margin: 2rem 0;
+        }
     </style>
 </head>
 
@@ -117,7 +185,8 @@
             class="pointer-events-auto bg-white border border-[#B8941F]/30 text-[#1a1a1a] pl-4 pr-6 py-3 rounded-full shadow-lg flex items-center gap-3 transform hover:-translate-y-1 hover:border-[#B8941F] transition duration-500 group">
             <div
                 class="bg-[#25D366] w-10 h-10 rounded-full flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition duration-300">
-                <i class='bx bxl-whatsapp'></i></div>
+                <i class='bx bxl-whatsapp'></i>
+            </div>
             <div class="flex flex-col text-left">
                 <span class="text-[9px] text-[#B8941F] uppercase tracking-wider font-bold">Have a question?</span>
                 <span class="text-sm font-medium">Chat with me</span>
