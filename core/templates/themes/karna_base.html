@@ -134,22 +134,23 @@
 
 <body class="text-white selection:bg-[#D4AF37] selection:text-black antialiased">
 
-    <nav class="fixed top-0 w-full z-50 bg-[#050505]/90 backdrop-blur-xl border-b border-white/5 transition-all">
-        <div class="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
+    <nav id="navbar" class="fixed top-0 w-full z-50 bg-[#050505] border-b border-white/5 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 h-16 md:h-24 flex items-center justify-between">
             <a href="{% url 'agent_profile' agent.slug %}" class="flex items-center gap-4 group">
                 <div
-                    class="w-10 h-10 border border-[#D4AF37]/50 rounded-full flex items-center justify-center text-[#D4AF37] font-serif text-xl group-hover:border-[#D4AF37] group-hover:bg-[#D4AF37]/10 transition duration-500">
+                    class="w-8 h-8 md:w-10 md:h-10 border border-[#D4AF37]/50 rounded-full flex items-center justify-center text-[#D4AF37] font-serif text-lg md:text-xl group-hover:border-[#D4AF37] group-hover:bg-[#D4AF37]/10 transition duration-500">
                     {{ agent.name|slice:":1" }}
                 </div>
-                <div class="hidden md:flex flex-col">
-                    <span class="text-sm font-serif tracking-wide text-white">{{ agent.name }}</span>
-                    <span class="text-[9px] uppercase tracking-[0.2em] text-[#D4AF37] font-medium">
+                <div class="flex flex-col">
+                    <span class="text-xs md:text-sm font-serif tracking-wide text-white">{{ agent.name }}</span>
+                    <span class="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-[#D4AF37] font-medium">
                         {{ agent.company }}
                     </span>
                 </div>
             </a>
 
-            <div class="flex gap-8 items-center">
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex gap-8 items-center">
                 {% if '/agent/' in request.path %}
                 <a href="{% url 'agent_profile' agent.slug %}"
                     class="text-xs font-medium tracking-wide transition-colors duration-300 {% if request.resolver_match.url_name == 'agent_profile' %}text-[#D4AF37]{% else %}text-gray-400 hover:text-white{% endif %}">Home</a>
@@ -178,10 +179,32 @@
                     class="text-xs font-medium tracking-wide transition-colors duration-300 {% if '/letters/' in request.path %}text-[#D4AF37]{% else %}text-gray-400 hover:text-white{% endif %}">Testimonials</a>
                 {% endif %}
             </div>
+
+            <!-- Mobile Hamburger -->
+            <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 p-2 z-[60]">
+                <span class="w-6 h-0.5 bg-white transition-all duration-300 origin-center"></span>
+                <span class="w-6 h-0.5 bg-white transition-all duration-300 origin-center"></span>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu"
+            class="fixed inset-0 bg-[#050505] z-50 transform translate-x-full transition-transform duration-500 ease-in-out md:hidden flex flex-col pt-32 px-10 gap-8">
+            {% if '/agent/' in request.path %}
+            <a href="{% url 'agent_profile' agent.slug %}" class="text-3xl font-serif text-white">Home</a>
+            <a href="{% url 'agent_bio' agent.slug %}" class="text-3xl font-serif text-white">About Me</a>
+            <a href="{% url 'agent_services' agent.slug %}" class="text-3xl font-serif text-white">Services</a>
+            <a href="{% url 'agent_testimonials' agent.slug %}" class="text-3xl font-serif text-white">Testimonials</a>
+            {% else %}
+            <a href="/" class="text-3xl font-serif text-white">Home</a>
+            <a href="/bio/" class="text-3xl font-serif text-white">About Me</a>
+            <a href="/expertise/" class="text-3xl font-serif text-white">Services</a>
+            <a href="/letters/" class="text-3xl font-serif text-white">Testimonials</a>
+            {% endif %}
         </div>
     </nav>
 
-    <main class="min-h-[85vh]">
+    <main class="min-h-[85vh] pt-16 md:pt-24">
         {% block content %}{% endblock %}
     </main>
 
@@ -217,6 +240,30 @@
             const span = btn.querySelector('span');
             if (el.classList.contains('expanded')) { span.innerText = 'Hide Full Review'; }
             else { span.innerText = 'Read Full Review'; }
+        }
+
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const body = document.body;
+
+        if (menuToggle && mobileMenu) {
+            menuToggle.addEventListener('click', () => {
+                const isOpen = mobileMenu.classList.contains('translate-x-0');
+                mobileMenu.classList.toggle('translate-x-full', isOpen);
+                mobileMenu.classList.toggle('translate-x-0', !isOpen);
+
+                // Animate hamburger to X
+                const spans = menuToggle.querySelectorAll('span');
+                if (!isOpen) {
+                    spans[0].style.transform = 'translateY(4px) rotate(45deg)';
+                    spans[1].style.transform = 'translateY(-4px) rotate(-45deg)';
+                    body.style.overflow = 'hidden';
+                } else {
+                    spans[0].style.transform = 'none';
+                    spans[1].style.transform = 'none';
+                    body.style.overflow = '';
+                }
+            });
         }
 
         let rawIncome = 0, rawDependents = 0, rawLiabilities = 0, rawExisting = 0, rawRecommended = 0, rawGap = 0;

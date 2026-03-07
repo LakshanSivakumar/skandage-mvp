@@ -4,10 +4,10 @@
 {% block content %}
 
 <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[90vh]">
-    <div class="lg:col-span-5 relative h-[50vh] lg:h-auto bg-[#F5F3EE] order-first lg:order-last overflow-hidden group">
+    <div class="lg:col-span-5 relative h-[75vh] lg:h-auto bg-[#F5F3EE] order-first lg:order-last overflow-hidden group">
         {% if agent.headshot %}
         <img src="{{ agent.headshot.url }}"
-            class="absolute inset-0 w-full h-full object-cover transition duration-1000 ease-in-out group-hover:scale-105"
+            class="absolute inset-0 w-full h-full object-cover object-[center_10%] transition duration-1000 ease-in-out group-hover:scale-105"
             alt="{{ agent.name }}">
         <div
             class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-90 lg:opacity-60">
@@ -150,7 +150,7 @@
                 </div>
                 <div class="text-3xl lg:text-4xl text-[#B8941F] font-serif mb-3">{{ custom_fields.aia_metrics.claims_value }}</div>
                 <div class="text-xs text-[#888] uppercase tracking-widest font-semibold mt-auto">Claims Value</div>
-    </div>
+            </div>
 </section>
 {% endif %}
 
@@ -284,7 +284,7 @@
                     <h3 class="text-3xl font-serif mb-3 text-[#1a1a1a]">Sent successfully!</h3>
                     <p class="text-[#888] font-light">Your report should arrive in your inbox in just a moment.</p>
                 </div>
-    </div>
+            </div>
 </section>
 
 {% if testimonials %}
