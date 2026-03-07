@@ -121,6 +121,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Disable strict manifest so Tailwind V4 @imports don't crash collectstatic
 WHITENOISE_MANIFEST_STRICT = False
 
+# Tell Whitenoise NOT to process input.css (preventing MissingFileError on @imports)
+WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ('css', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'gz', 'tgz', 'bz2', 'tbz', 'xz', 'txz', 'lzma', 'tlz', 'woff', 'woff2', 'ttf', 'otf', 'eot')
+
 # Login Redirects
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = '/accounts/login/'

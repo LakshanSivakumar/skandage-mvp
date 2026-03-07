@@ -70,8 +70,7 @@
             {% if credentials %}
             {% for cred in credentials %}
             <div class="flex md:block items-center justify-between border-b md:border-b-0 border-black/5 pb-2 md:pb-0">
-                <div class="text-xl md:text-3xl font-bold text-[#1a1a1a] mb-0 md:mb-1 break-words leading-tight">{{
-                    cred.title }}</div>
+                <div class="text-xl md:text-3xl font-bold text-[#1a1a1a] mb-0 md:mb-1 break-words leading-tight">{{ cred.title }}</div>
                 <div
                     class="text-[10px] md:text-xs text-[#888] uppercase tracking-widest text-right md:text-left min-w-[80px]">
                     {{ cred.issuer }} <span class="text-[#B8941F] ml-1">{{ cred.year }}</span>
@@ -113,8 +112,7 @@
                 <div
                     class="absolute top-0 right-0 w-32 h-32 bg-[#B8941F]/5 rounded-bl-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                 </div>
-                <div class="text-3xl lg:text-4xl text-[#1a1a1a] font-serif mb-3">{{
-                    custom_fields.aia_metrics.sum_assured_death }}</div>
+                <div class="text-3xl lg:text-4xl text-[#1a1a1a] font-serif mb-3">{{ custom_fields.aia_metrics.sum_assured_death }}</div>
                 <div class="text-xs text-[#888] uppercase tracking-widest font-semibold">Sum Assured<br /><span
                         class="text-[#B8941F]/80 font-normal lowercase tracking-normal">(Death)</span></div>
             </div>
@@ -123,8 +121,7 @@
                 <div
                     class="absolute top-0 right-0 w-32 h-32 bg-[#B8941F]/5 rounded-bl-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                 </div>
-                <div class="text-3xl lg:text-4xl text-[#1a1a1a] font-serif mb-3">{{
-                    custom_fields.aia_metrics.sum_assured_tpd }}</div>
+                <div class="text-3xl lg:text-4xl text-[#1a1a1a] font-serif mb-3">{{ custom_fields.aia_metrics.sum_assured_tpd }}</div>
                 <div class="text-xs text-[#888] uppercase tracking-widest font-semibold">Sum Assured<br /><span
                         class="text-[#B8941F]/80 font-normal lowercase tracking-normal">(Total Permanent
                         Disability)</span></div>
@@ -134,8 +131,7 @@
                 <div
                     class="absolute top-0 right-0 w-32 h-32 bg-[#B8941F]/5 rounded-bl-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                 </div>
-                <div class="text-3xl lg:text-4xl text-[#1a1a1a] font-serif mb-3">{{
-                    custom_fields.aia_metrics.sum_assured_ci }}</div>
+                <div class="text-3xl lg:text-4xl text-[#1a1a1a] font-serif mb-3">{{ custom_fields.aia_metrics.sum_assured_ci }}</div>
                 <div class="text-xs text-[#888] uppercase tracking-widest font-semibold">Sum Assured<br /><span
                         class="text-[#B8941F]/80 font-normal lowercase tracking-normal">(Critical Illness)</span></div>
             </div>
@@ -144,8 +140,7 @@
                 <div
                     class="absolute top-0 right-0 w-32 h-32 bg-[#B8941F]/5 rounded-bl-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                 </div>
-                <div class="text-3xl lg:text-4xl text-[#B8941F] font-serif mb-3">{{
-                    custom_fields.aia_metrics.claims_approved }}</div>
+                <div class="text-3xl lg:text-4xl text-[#B8941F] font-serif mb-3">{{ custom_fields.aia_metrics.claims_approved }}</div>
                 <div class="text-xs text-[#888] uppercase tracking-widest font-semibold mt-auto">Claims Approved</div>
             </div>
             <div
@@ -153,31 +148,8 @@
                 <div
                     class="absolute top-0 right-0 w-32 h-32 bg-[#B8941F]/5 rounded-bl-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                 </div>
-                <div class="text-3xl lg:text-4xl text-[#B8941F] font-serif mb-3">{{
-                    custom_fields.aia_metrics.claims_value }}</div>
+                <div class="text-3xl lg:text-4xl text-[#B8941F] font-serif mb-3">{{ custom_fields.aia_metrics.claims_value }}</div>
                 <div class="text-xs text-[#888] uppercase tracking-widest font-semibold mt-auto">Claims Value</div>
-            </div>
-        </div>
-    </div>
-    <div
-        class="bg-white p-8 rounded-2xl border border-black/5 relative overflow-hidden group hover:border-[#B8941F]/40 hover:shadow-lg transition duration-500 flex flex-col items-center sm:items-start text-center sm:text-left">
-        <div
-            class="absolute top-0 right-0 w-32 h-32 bg-[#B8941F]/5 rounded-bl-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-        </div>
-        <div class="text-3xl lg:text-4xl text-[#B8941F] font-serif mb-3">{{
-            custom_fields.aia_metrics.claims_approved }}</div>
-        <div class="text-xs text-[#888] uppercase tracking-widest font-semibold mt-auto">Claims Approved</div>
-    </div>
-    <div
-        class="bg-white p-8 rounded-2xl border border-black/5 relative overflow-hidden group hover:border-[#B8941F]/40 hover:shadow-lg transition duration-500 flex flex-col items-center sm:items-start text-center sm:text-left">
-        <div
-            class="absolute top-0 right-0 w-32 h-32 bg-[#B8941F]/5 rounded-bl-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-        </div>
-        <div class="text-3xl lg:text-4xl text-[#B8941F] font-serif mb-3">{{
-            custom_fields.aia_metrics.claims_value }}</div>
-        <div class="text-xs text-[#888] uppercase tracking-widest font-semibold mt-auto">Claims Value</div>
-    </div>
-    </div>
     </div>
 </section>
 {% endif %}
@@ -206,13 +178,11 @@
                             class="w-full h-full object-cover group-hover:scale-105 transition duration-700"></div>
                     {% endif %}
                     <div class="p-6 flex flex-col flex-1">
-                        <div class="text-[10px] text-[#888] uppercase tracking-widest mb-3">{{
-                            article.created_at|date:"M d, Y" }}</div>
+                        <div class="text-[10px] text-[#888] uppercase tracking-widest mb-3">{{ article.created_at|date:"M d, Y" }}</div>
                         <h3
                             class="text-lg font-serif text-[#1a1a1a] mb-3 group-hover:text-[#B8941F] transition duration-300 leading-snug">
                             {{ article.title }}</h3>
-                        <p class="text-sm text-[#555] font-light leading-relaxed line-clamp-3 flex-1">{{
-                            article.content|truncatewords:25|striptags }}</p>
+                        <p class="text-sm text-[#555] font-light leading-relaxed line-clamp-3 flex-1">{{ article.content|truncatewords:25|striptags }}</p>
                         <div class="mt-5 flex items-center gap-2 text-[#B8941F] text-xs font-medium">Read <i
                                 class='bx bx-right-arrow-alt text-sm group-hover:translate-x-1 transition'></i></div>
                     </div>
@@ -220,7 +190,6 @@
             </a>
             {% endfor %}
         </div>
-    </div>
 </section>
 {% endif %}
 
@@ -315,8 +284,6 @@
                     <h3 class="text-3xl font-serif mb-3 text-[#1a1a1a]">Sent successfully!</h3>
                     <p class="text-[#888] font-light">Your report should arrive in your inbox in just a moment.</p>
                 </div>
-            </div>
-        </div>
     </div>
 </section>
 
@@ -342,8 +309,7 @@
                         alt="Verified Proof"></div>
                 {% endif %}
                 <div><i class='bx bxs-quote-alt-left text-3xl text-[#B8941F] mb-6 block'></i>
-                    <p class="text-lg italic leading-relaxed font-serif text-[#555] mb-8">"{{
-                        review.review_text|truncatewords:35 }}"</p>
+                    <p class="text-lg italic leading-relaxed font-serif text-[#555] mb-8">"{{ review.review_text|truncatewords:35 }}"</p>
                 </div>
                 <div class="flex items-center gap-4 pt-6 border-t border-black/5">
                     <div
@@ -355,8 +321,7 @@
                     </div>
                     {% if review.review_text|wordcount > 35 %}<a
                         href="{% url 'single_testimonial' agent.slug review.id %}"
-                        class="text-xs font-medium text-[#B8941F] hover:text-[#1a1a1a] transition">Read Full</a>{% endif
-                    %}
+                        class="text-xs font-medium text-[#B8941F] hover:text-[#1a1a1a] transition">Read Full</a>{% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -372,8 +337,8 @@
     <div class="max-w-3xl mx-auto px-6">
         <div class="bg-white rounded-3xl p-8 md:p-12 border border-black/5 shadow-xl">
             <div class="text-center mb-10">
-                <div class="w-16 h-16 rounded-full overflow-hidden mx-auto mb-6 border-2 border-[#B8941F]/30">{% if
-                    agent.headshot %}<img src="{{ agent.headshot.url }}" class="w-full h-full object-cover">{% endif %}
+                <div class="w-16 h-16 rounded-full overflow-hidden mx-auto mb-6 border-2 border-[#B8941F]/30">
+                    {% if agent.headshot %}<img src="{{ agent.headshot.url }}" class="w-full h-full object-cover">{% endif %}
                 </div>
                 <h2 class="text-3xl md:text-4xl font-serif text-[#1a1a1a] mb-3">Let's Connect</h2>
                 <p class="text-[#888] font-light">Have a question? Drop me a message and I'll get back to you shortly.
@@ -404,7 +369,6 @@
                     Message</button>
             </form>
         </div>
-    </div>
 </section>
 
 {% endblock %}
