@@ -118,6 +118,9 @@ DEFAULT_FROM_EMAIL = 'updates@skandage.com'
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Disable strict manifest so Tailwind V4 @imports don't crash collectstatic
+WHITENOISE_MANIFEST_STRICT = False
+
 # Login Redirects
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
