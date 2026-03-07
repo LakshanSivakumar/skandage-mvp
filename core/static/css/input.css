@@ -1,3 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@source "../../templates";
+@source "../../../core/views.py";
