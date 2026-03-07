@@ -81,54 +81,6 @@
 </section>
 {% endif %}
 
-<!-- Articles / Insights Section -->
-{% if articles %}
-<section class="py-24 bg-[#050505] border-t border-white/5 relative overflow-hidden">
-    <div
-        class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#D4AF37]/3 rounded-full blur-[120px] pointer-events-none">
-    </div>
-    <div class="max-w-6xl mx-auto px-6 relative z-10">
-        <div class="flex items-end justify-between mb-16">
-            <div>
-                <h2 class="text-3xl font-serif text-white mb-4">Latest Insights</h2>
-                <div class="w-12 h-1 bg-[#D4AF37] rounded-full"></div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {% for article in articles %}
-            <a href="{% url 'article_detail' article.slug %}" class="group block">
-                <article
-                    class="bg-[#0a0a0a] rounded-2xl border border-white/5 overflow-hidden hover:border-[#D4AF37]/30 transition duration-500 h-full flex flex-col">
-                    {% if article.cover_image %}
-                    <div class="aspect-[16/9] overflow-hidden">
-                        <img src="{{ article.cover_image.url }}" alt="{{ article.title }}"
-                            class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
-                    </div>
-                    {% endif %}
-                    <div class="p-6 flex flex-col flex-1">
-                        <div class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">
-                            {{ article.created_at|date:"M d, Y" }}
-                        </div>
-                        <h3
-                            class="text-lg font-serif text-white mb-3 group-hover:text-[#D4AF37] transition duration-300 leading-snug">
-                            {{ article.title }}
-                        </h3>
-                        <p class="text-sm text-gray-400 font-light leading-relaxed line-clamp-3 flex-1">
-                            {{ article.body|truncatewords:25|striptags }}
-                        </p>
-                        <div class="mt-5 flex items-center gap-2 text-[#D4AF37] text-xs font-medium">
-                            Read <i class='bx bx-right-arrow-alt text-sm group-hover:translate-x-1 transition'></i>
-                        </div>
-                    </div>
-                </article>
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
-
 {% if custom_fields.aia_metrics %}
 <section class="py-24 bg-[#050505] border-t border-white/5 relative overflow-hidden">
     <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-[100px] pointer-events-none">
@@ -213,6 +165,54 @@
                 <div class="text-xs text-gray-500 uppercase tracking-widest font-semibold mt-auto">Claims Value</div>
             </div>
 
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Articles / Insights Section -->
+{% if articles %}
+<section class="py-24 bg-[#050505] border-t border-white/5 relative overflow-hidden">
+    <div
+        class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#D4AF37]/3 rounded-full blur-[120px] pointer-events-none">
+    </div>
+    <div class="max-w-6xl mx-auto px-6 relative z-10">
+        <div class="flex items-end justify-between mb-16">
+            <div>
+                <h2 class="text-3xl font-serif text-white mb-4">Latest Insights</h2>
+                <div class="w-12 h-1 bg-[#D4AF37] rounded-full"></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% for article in articles %}
+            <a href="{% url 'article_detail' article.slug %}" class="group block">
+                <article
+                    class="bg-[#0a0a0a] rounded-2xl border border-white/5 overflow-hidden hover:border-[#D4AF37]/30 transition duration-500 h-full flex flex-col">
+                    {% if article.cover_image %}
+                    <div class="aspect-[16/9] overflow-hidden">
+                        <img src="{{ article.cover_image.url }}" alt="{{ article.title }}"
+                            class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                    </div>
+                    {% endif %}
+                    <div class="p-6 flex flex-col flex-1">
+                        <div class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">
+                            {{ article.created_at|date:"M d, Y" }}
+                        </div>
+                        <h3
+                            class="text-lg font-serif text-white mb-3 group-hover:text-[#D4AF37] transition duration-300 leading-snug">
+                            {{ article.title }}
+                        </h3>
+                        <p class="text-sm text-gray-400 font-light leading-relaxed line-clamp-3 flex-1">
+                            {{ article.content|truncatewords:25|striptags }}
+                        </p>
+                        <div class="mt-5 flex items-center gap-2 text-[#D4AF37] text-xs font-medium">
+                            Read <i class='bx bx-right-arrow-alt text-sm group-hover:translate-x-1 transition'></i>
+                        </div>
+                    </div>
+                </article>
+            </a>
+            {% endfor %}
         </div>
     </div>
 </section>

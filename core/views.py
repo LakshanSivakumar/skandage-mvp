@@ -329,7 +329,19 @@ def agent_profile(request, slug):
 
 def article_detail(request, slug):
     article = get_object_or_404(Article, slug=slug, agent__is_public=True)
-    return render(request, 'core/article_detail.html', {'article': article, 'agent': article.agent})
+    agent = article.agent
+    context = {'article': article, 'agent': agent}
+    
+    # VIP ARCHITECTURE INTERCEPT
+    if getattr(agent, 'is_bespoke', False) and getattr(agent, 'bespoke_template_name', ''):
+        template_name = agent.bespoke_template_name.replace('_custom', '_article')
+        context['custom_fields'] = agent.bespoke_data or {}
+        try:
+            return render(request, template_name, context)
+        except TemplateDoesNotExist:
+            pass
+    
+    return render(request, 'core/article_detail.html', context)
 
 # ==========================================
 # CLIENT REVIEW SUBMISSION
