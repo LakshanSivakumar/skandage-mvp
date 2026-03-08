@@ -794,7 +794,7 @@ def agent_bio(request, slug):
         except TemplateDoesNotExist:
             pass
 
-    # Try to load the bespoke page. If it doesn't exist, redirect to their home profile.
+    # Try to load a theme-specific bio page, fall back to generic public_bio.
     try:
         return render(request, f'themes/{agent.theme}_bio.html', {
             'agent': agent,
@@ -802,7 +802,10 @@ def agent_bio(request, slug):
             'custom_fields': agent.bespoke_data or {}
         })
     except TemplateDoesNotExist:
-        return redirect('agent_profile', slug=agent.slug)
+        return render(request, 'core/public_bio.html', {
+            'agent': agent,
+            'credentials': agent.credentials.all().order_by('order'),
+        })
 
 
 @xframe_options_sameorigin
