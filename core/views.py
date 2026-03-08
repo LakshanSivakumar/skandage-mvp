@@ -20,7 +20,7 @@ import io
 from django.core.mail import send_mass_mail
 from email.mime.application import MIMEApplication # <--- NEW IMPORT
 from django.utils import timezone
-from .models import Subscriber, Newsletter, CardTemplate
+from .models import Subscriber, Newsletter, CardTemplate, Feedback
 from django.core.mail import get_connection, EmailMultiAlternatives
 from django.utils.html import strip_tags
 from .models import hash_email
@@ -2171,3 +2171,45 @@ def telegram_webhook(request):
 
     # You must always return a 200 OK so Telegram knows you received it
     return HttpResponse('OK')
+
+def api_agent_autocomplete(request):
+    """Returns a JSON list of agents (name and agency) for the autocomplete feature."""
+    query = request.GET.get('q', '').strip()
+    
+    if len(query) < 2:
+        return JsonResponse({'results': []})
+        
+    agents = Agent.objects.filter(name__icontains=query).select_related('user')[:10]
+    
+    results = []
+    for agent in agents:
+        results.append({
+            'name': agent.name,
+            'agency': agent.company,
+            'email': agent.user.email if agent.user_id else ''
+        })
+        
+    return JsonResponse({'results': results})
+
+def feedback_submit(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        agency_name = request.POST.get('agency_name', '').strip()
+        feedback_type = request.POST.get('feedback_type', 'General Feedback')
+        message = request.POST.get('message', '').strip()
+
+        if name and email and message:
+            Feedback.objects.create(
+                name=name,
+                email=email,
+                agency_name=agency_name,
+                feedback_type=feedback_type,
+                message=message
+            )
+            messages.success(request, "Thank you for your feedback! We've received your message and our team will review it shortly.", extra_tags="feedback_success")
+            return redirect('feedback')
+        else:
+            messages.error(request, "Please fill in all required fields (Name, Email, and Message).", extra_tags="feedback_error")
+
+    return render(request, 'core/feedback.html')

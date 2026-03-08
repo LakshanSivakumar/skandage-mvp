@@ -13,6 +13,8 @@ urlpatterns = [
     path('expertise/', views.domain_expertise, name='domain_expertise'), # NEW
     path('bio/', views.domain_bio, name='domain_bio'), # NEW
     path('letters/', views.domain_letters, name='domain_letters'),
+    path('feedback/', views.feedback_submit, name='feedback'),  # NEW
+    path('api/agent-autocomplete/', views.api_agent_autocomplete, name='api_agent_autocomplete'), # NEW
     path('accounts/', include('django.contrib.auth.urls')),
     
     # --- PUBLIC AGENT PAGES ---

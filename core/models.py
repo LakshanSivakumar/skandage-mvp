@@ -652,3 +652,25 @@ class PendingAgentOnboarding(models.Model):
                 agent.headshot = self.headshot
                 
             agent.save()
+
+class Feedback(models.Model):
+    FEEDBACK_TYPES = [
+        ('Bug Report', 'Bug Report'),
+        ('Feature Request', 'Feature Request'),
+        ('General Feedback', 'General Feedback'),
+    ]
+    STATUS_CHOICES = [
+        ('New', 'New'),
+        ('In Progress', 'In Progress'),
+        ('Resolved', 'Resolved'),
+    ]
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    agency_name = models.CharField(max_length=100, blank=True)
+    feedback_type = models.CharField(max_length=50, choices=FEEDBACK_TYPES, default='General Feedback')
+    message = models.TextField(help_text="What is the #1 point of friction?")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='New')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.feedback_type} from {self.name} - {self.status}"

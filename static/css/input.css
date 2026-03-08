@@ -1,3 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@source "../../core/templates";
+
+@theme {
+  --color-theme-page: var(--bg-page);
+  --color-theme-card: var(--bg-card);
+  --color-theme-secondary: var(--bg-secondary);
+  --color-theme-main: var(--text-main);
+  --color-theme-muted: var(--text-muted);
+  --color-theme-accent: var(--accent);
+  --color-theme-hero-start: var(--hero-start);
+  --color-theme-hero-end: var(--hero-end);
+}

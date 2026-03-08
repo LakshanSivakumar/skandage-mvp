@@ -1,0 +1,291 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth bg-[#0A0A0A]">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skandage Feedback | Help Us Improve</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-dark {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .input-dark:focus {
+            border-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-glow {
+            transition: all 0.3s ease;
+        }
+
+        .btn-glow:hover {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        /* Custom subtle scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0A0A0A;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body class="text-white min-h-screen flex flex-col antialiased selection:bg-white selection:text-black">
+
+    <!-- Navbar Minimal -->
+    <nav
+        class="w-full py-6 px-8 flex items-center justify-between border-b border-white/5 bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div
+                class="w-8 h-8 rounded bg-white flex items-center justify-center text-black font-bold text-xl tracking-tighter">
+                S</div>
+            <span class="font-medium tracking-wide text-sm">SKANDAGE</span>
+        </div>
+        <div class="text-xs text-gray-500 font-medium tracking-widest uppercase">
+            Feedback Portal
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex items-center justify-center p-6 sm:p-12 relative overflow-hidden">
+
+        <!-- Subtle Background Glows -->
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-900/10 rounded-full blur-[100px] pointer-events-none">
+        </div>
+        <div
+            class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-900/10 rounded-full blur-[100px] pointer-events-none">
+        </div>
+
+        <div class="w-full max-w-2xl z-10">
+            <!-- Header Section -->
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-semibold tracking-tight mb-4">How can we improve?</h1>
+                <p class="text-gray-400 text-sm md:text-base max-w-lg mx-auto leading-relaxed">
+                    We built Skandage to eliminate friction from your workflow.
+                    If something is broken, confusing, or missing, tell us directly. We read every submission.
+                </p>
+            </div>
+
+            <!-- Django Messages (Success/Error) -->
+            {% if messages %}
+            <div class="mb-8">
+                {% for message in messages %}
+                {% if 'feedback_success' in message.tags %}
+                <div
+                    class="bg-green-900/20 border border-green-500/20 text-green-400 p-4 rounded-xl flex items-start gap-3 text-sm font-medium">
+                    <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {{ message }}
+                </div>
+                {% elif 'feedback_error' in message.tags %}
+                <div
+                    class="bg-red-900/20 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-start gap-3 text-sm font-medium">
+                    <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {{ message }}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Form Container -->
+            <div class="glass-panel rounded-2xl p-8 sm:p-10">
+                <form method="POST" action="{% url 'feedback' %}" class="space-y-6">
+                    {% csrf_token %}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Name -->
+                        <div class="space-y-2 relative">
+                            <label for="name" class="text-xs font-medium text-gray-400 uppercase tracking-wider">Your
+                                Name</label>
+                            <input type="text" id="name" name="name" required autocomplete="off"
+                                class="w-full input-dark rounded-xl px-4 py-3 placeholder-gray-600 focus:ring-0 text-sm"
+                                placeholder="Kamen Rider" oninput="fetchAgents(this.value)"
+                                onfocus="if(this.value.length >= 2) fetchAgents(this.value)">
+
+                            <!-- Autocomplete Dropdown -->
+                            <div id="autocomplete-results"
+                                class="absolute z-50 w-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden hidden max-h-60 overflow-y-auto">
+                                <!-- Results injected via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="space-y-2">
+                            <label for="email" class="text-xs font-medium text-gray-400 uppercase tracking-wider">Email
+                                Address</label>
+                            <input type="email" id="email" name="email" required
+                                class="w-full input-dark rounded-xl px-4 py-3 placeholder-gray-600 focus:ring-0 text-sm"
+                                placeholder="kamen@example.com">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Agency Name -->
+                        <div class="space-y-2">
+                            <label for="agency_name"
+                                class="text-xs font-medium text-gray-400 uppercase tracking-wider">Agency/Company
+                                (Optional)</label>
+                            <input type="text" id="agency_name" name="agency_name"
+                                class="w-full input-dark rounded-xl px-4 py-3 placeholder-gray-600 focus:ring-0 text-sm"
+                                placeholder="AIA / Great Eastern">
+                        </div>
+
+                        <!-- Feedback Type -->
+                        <div class="space-y-2">
+                            <label for="feedback_type"
+                                class="text-xs font-medium text-gray-400 uppercase tracking-wider">Topic</label>
+                            <div class="relative">
+                                <select id="feedback_type" name="feedback_type"
+                                    class="w-full input-dark rounded-xl px-4 py-3 appearance-none focus:ring-0 text-sm cursor-pointer">
+                                    <option value="General Feedback">General Feedback</option>
+                                    <option value="Bug Report">Report a Bug / Issue</option>
+                                    <option value="Feature Request">Feature Request</option>
+                                </select>
+                                <div
+                                    class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message -->
+                    <div class="space-y-2">
+                        <label for="message"
+                            class="text-xs font-medium text-gray-400 uppercase tracking-wider flex justify-between">
+                            <span>The Details</span>
+                            <span class="text-gray-600 normal-case tracking-normal">What is the #1 point of
+                                friction?</span>
+                        </label>
+                        <textarea id="message" name="message" required rows="5"
+                            class="w-full input-dark rounded-xl px-4 py-4 placeholder-gray-600 focus:ring-0 text-sm resize-none"
+                            placeholder="Please describe what you were trying to do, and what went wrong or could be better..."></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-4">
+                        <button type="submit"
+                            class="w-full bg-white text-black font-semibold py-4 rounded-xl btn-glow flex items-center justify-center gap-2">
+                            <span>Submit Feedback</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <p class="text-center text-xs text-gray-600 mt-8">
+                Secured by Skandage &copy; {% now 'Y' %}. All rights reserved.
+            </p>
+        </div>
+    </main>
+
+    <script>
+        let autocompleteTimeout;
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const agencyInput = document.getElementById('agency_name');
+        const resultsContainer = document.getElementById('autocomplete-results');
+
+        function fetchAgents(query) {
+            clearTimeout(autocompleteTimeout);
+
+            if (query.trim().length < 2) {
+                resultsContainer.classList.add('hidden');
+                return;
+            }
+
+            autocompleteTimeout = setTimeout(() => {
+                fetch(`/api/agent-autocomplete/?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsContainer.innerHTML = '';
+
+                        if (data.results && data.results.length > 0) {
+                            data.results.forEach(agent => {
+                                const div = document.createElement('div');
+                                div.className = 'px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 flex flex-col gap-1 transition-colors';
+                                div.innerHTML = `
+                                    <div class="text-sm font-medium text-white">${agent.name}</div>
+                                    <div class="text-xs text-gray-500 flex items-center gap-2">
+                                        ${agent.agency ? `<span>${agent.agency}</span>` : ''}
+                                    </div>
+                                `;
+
+                                div.onclick = () => {
+                                    nameInput.value = agent.name;
+                                    if (agent.email && !emailInput.value) emailInput.value = agent.email;
+                                    if (agent.agency && !agencyInput.value) agencyInput.value = agent.agency;
+                                    resultsContainer.classList.add('hidden');
+                                };
+
+                                resultsContainer.appendChild(div);
+                            });
+                            resultsContainer.classList.remove('hidden');
+                        } else {
+                            resultsContainer.classList.add('hidden');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error fetching autocomplete:', err);
+                        resultsContainer.classList.add('hidden');
+                    });
+            }, 300); // 300ms debounce
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!nameInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                resultsContainer.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>
