@@ -1,5 +1,5 @@
 from django.contrib import admin, messages
-from .models import Agent, Testimonial, Service, Credential, Lead, Article, ReviewLink, Agency
+from .models import Agent, Testimonial, Service, Credential, Lead, Article, ReviewLink, Agency, Feedback
 from django.utils.html import strip_tags
 from django.utils import timezone
 from .models import Agent, GlobalNewsletter, Subscriber # Adjust Subscriber if named differently
@@ -136,3 +136,12 @@ class PendingAgentOnboardingAdmin(admin.ModelAdmin):
             'fields': ('headshot', 'credentials_upload', 'existing_website', 'linkedin', 'instagram', 'facebook')
         }),
     )
+
+@admin.register(Feedback)
+class FeedbackAdmin(admin.ModelAdmin):
+    list_display = ('feedback_type', 'name', 'email', 'agency_name', 'status', 'created_at')
+    list_filter = ('feedback_type', 'status')
+    search_fields = ('name', 'email', 'agency_name', 'message')
+    readonly_fields = ('name', 'email', 'agency_name', 'feedback_type', 'message', 'created_at')
+    list_editable = ('status',)
+    ordering = ('-created_at',)
