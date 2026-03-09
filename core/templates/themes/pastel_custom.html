@@ -51,44 +51,23 @@
     </div>
 </div>
 
-<div class="border-y border-pink-100 py-4 overflow-hidden bg-pink-50/50">
-    <div class="flex gap-12 whitespace-nowrap animate-marquee">
-        {% for i in "123456" %}
-            {% if agent.credentials.exists %}
-                {% for cred in agent.credentials.all %}
-                <span class="text-xs font-bold uppercase tracking-widest text-pink-400">{{ cred.title }} <span class="text-emerald-300 mx-2">//</span> {{ cred.issuer }}{% if cred.year %} <span class="text-slate-400 ml-1">{{ cred.year }}</span>{% endif %}</span>
-                {% endfor %}
-            {% else %}
-                <span class="text-xs font-bold uppercase tracking-widest text-pink-400">Trusted Advisor <span class="text-emerald-300 mx-2">//</span> {{ agent.company }}</span>
-                <span class="text-xs font-bold uppercase tracking-widest text-pink-400">Legacy Planning <span class="text-emerald-300 mx-2">//</span> Certified</span>
-                <span class="text-xs font-bold uppercase tracking-widest text-pink-400">Wealth Protection <span class="text-emerald-300 mx-2">//</span> Specialist</span>
-            {% endif %}
-        {% endfor %}
-    </div>
-</div>
-
+{% if services %}
 <div class="px-4 lg:px-8 py-24 max-w-7xl mx-auto" data-aos="fade-up">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-emerald-100 pt-12">
         <div class="md:col-span-1">
             <span class="text-xs font-bold uppercase tracking-widest text-emerald-400">(01) Expertise</span>
         </div>
         <div class="md:col-span-2 grid gap-12">
-            {% if services %}
-                {% for service in services %}
-                <div class="group cursor-default">
-                    <h3 class="text-3xl font-serif italic mb-3 text-slate-800 group-hover:pl-4 group-hover:text-pink-400 transition-all duration-300">{{ service.title }}</h3>
-                    <p class="text-base text-slate-500 max-w-lg leading-relaxed border-l-2 border-pink-100 pl-5 ml-1">{{ service.description }}</p>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="group cursor-default">
-                    <h3 class="text-3xl font-serif italic mb-3 text-slate-800 group-hover:pl-4 group-hover:text-pink-400 transition-all duration-300">Wealth Management</h3>
-                    <p class="text-base text-slate-500 max-w-lg leading-relaxed border-l-2 border-pink-100 pl-5 ml-1">Comprehensive planning to grow and protect your assets over generations.</p>
-                </div>
-            {% endif %}
+            {% for service in services %}
+            <div class="group cursor-default">
+                <h3 class="text-3xl font-serif italic mb-3 text-slate-800 group-hover:pl-4 group-hover:text-pink-400 transition-all duration-300">{{ service.title }}</h3>
+                <p class="text-base text-slate-500 max-w-lg leading-relaxed border-l-2 border-pink-100 pl-5 ml-1">{{ service.description }}</p>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>
+{% endif %}
 
 <section class="py-24 px-4 lg:px-8 border-t border-pink-50 bg-white" data-aos="fade-up">
     <div class="max-w-3xl mx-auto bg-pink-50/30 border border-pink-100 rounded-[2rem] p-8 md:p-16 relative shadow-sm">
@@ -167,6 +146,81 @@
         </div>
     </div>
 </section>
+
+{% if testimonials %}
+<section class="py-24 px-4 lg:px-8 border-t border-emerald-100 bg-white" data-aos="fade-up">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-emerald-400 block mb-4">(03) Client Diaries</span>
+                <h3 class="font-serif text-4xl text-slate-800">Kind Words</h3>
+                <p class="text-slate-500 mt-3 text-lg font-light">Recent feedback from clients.</p>
+            </div>
+            {% if total_testimonials > 4 %}
+            <a href="{% url 'agent_testimonials' agent.slug %}" class="hidden md:flex items-center gap-2 text-pink-500 font-bold hover:text-pink-600 transition group">
+                Read all {{ total_testimonials }} stories <i class='bx bx-right-arrow-alt group-hover:translate-x-1 transition'></i>
+            </a>
+            {% endif %}
+        </div>
+        
+        <div class="md:columns-2 gap-8">
+            {% for review in testimonials %}
+            <div class="inline-block w-full mb-8 break-inside-avoid bg-pink-50 p-10 rounded-3xl shadow-sm border border-pink-100 relative hover:shadow-md transition-all duration-300 group">
+
+                <a href="{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white border border-pink-200 text-pink-400 hover:text-white hover:bg-pink-400 transition z-20 shadow-sm" title="Share this review">
+                    <i class='bx bx-share-alt text-xl'></i>
+                </a>
+
+                {% if review.screenshot %}
+                <div class="mb-6 rounded-2xl overflow-hidden border border-pink-100 shadow-sm relative z-10">
+                    <img loading="lazy" src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Verified Proof">
+                </div>
+
+                <div class="mb-4">
+                    <button onclick="toggleContent('text-{{ forloop.counter }}', this)" class="inline-flex items-center justify-center gap-2 text-xs font-bold text-pink-500 uppercase tracking-wider hover:text-pink-600 transition border border-pink-200 px-4 py-2 rounded-lg bg-white shadow-sm group w-full">
+                        <span>Read Review Text</span> <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
+                    </button>
+                </div>
+
+                <div id="text-{{ forloop.counter }}" class="content-toggle mb-6 relative z-10">
+                    <div class="p-4 bg-white rounded-xl border border-pink-100">
+                        <p class="text-slate-600 text-xl italic leading-loose font-serif">"{{ review.review_text }}"</p>
+                    </div>
+                </div>
+
+                {% else %}
+                <div class="relative z-10 mb-6">
+                    <i class='bx bxs-quote-left text-4xl text-pink-300 opacity-50 mb-2'></i>
+                    <p class="text-slate-600 text-lg italic leading-relaxed font-serif">"{{ review.review_text }}"</p>
+                </div>
+                {% endif %}
+
+                <div class="flex items-center gap-4 pt-6 border-t border-pink-200 relative z-10">
+                    <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-pink-400 font-bold font-serif text-xl shadow-sm border border-pink-100">
+                        {{ review.client_name|slice:":1" }}
+                    </div>
+                    <div>
+                        {% if review.title %}
+                        <div class="text-sm font-bold text-pink-500 uppercase tracking-wide mb-0.5">{{ review.title }}</div>
+                        <div class="font-bold text-slate-800 text-lg">{{ review.client_name }}</div>
+                        {% else %}
+                        <div class="font-bold text-slate-800 text-lg">{{ review.client_name }}</div>
+                        <div class="text-xs text-emerald-500 font-bold uppercase tracking-wide"><i class='bx bxs-check-circle'></i> Verified Client</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+        {% if total_testimonials > 4 %}
+        <div class="md:hidden text-center mt-10">
+            <a href="{% url 'agent_testimonials' agent.slug %}" class="inline-block w-full border border-pink-200 px-8 py-4 rounded-full font-bold text-pink-500 hover:bg-pink-400 hover:text-white transition shadow-sm">View All {{ total_testimonials }} Testimonials</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
 
 <section id="contact" class="py-24 px-4 lg:px-8 border-t border-emerald-100 bg-emerald-50/20">
     <div class="max-w-4xl mx-auto text-center" data-aos="fade-up">

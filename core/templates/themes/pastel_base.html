@@ -44,12 +44,8 @@
 
         .content-toggle { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
         .content-toggle.expanded { max-height: 5000px; }
-        
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        .animate-marquee { animation: marquee 25s linear infinite; }
+        .rotate-icon { transition: transform 0.3s ease; }
+        .expanded .rotate-icon { transform: rotate(180deg); }
     </style>
 </head>
 
@@ -107,6 +103,18 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() { AOS.init({ once: true, offset: 50, duration: 800 }); });
+
+        function toggleContent(elementId, button) {
+            const container = document.getElementById(elementId);
+            container.classList.toggle('expanded');
+            button.classList.toggle('expanded');
+            const textSpan = button.querySelector('span');
+            if (container.classList.contains('expanded')) {
+                textSpan.textContent = "Hide Review";
+            } else {
+                textSpan.textContent = "Read Review Text";
+            }
+        }
 
         let rawIncome = 0, rawDependents = 0, rawLiabilities = 0, rawExisting = 0, rawRecommended = 0, rawGap = 0;
 
