@@ -24,7 +24,8 @@
             {% if agent.tagline %}
             <p class="text-xl text-slate-500 italic font-serif">"{{ agent.tagline }}"</p>
             {% endif %}
-            <div class="mt-10 flex justify-center gap-4 flex-wrap">
+            
+            <div class="mt-10 flex justify-center items-center gap-4 flex-wrap">
                 {% if agent.calendly_link %}
                 <button onclick="Calendly.initPopupWidget({url: '{{ agent.calendly_link }}'});return false;" class="inline-flex items-center gap-2 bg-pink-400 text-white px-8 py-4 rounded-full font-bold transition shadow-lg hover:bg-pink-500 hover:-translate-y-1">
                     <i class='bx bx-calendar'></i> Book Meeting
@@ -34,6 +35,24 @@
                 <a href="{% url 'download_vcard' agent.slug %}" class="inline-flex items-center gap-2 bg-white hover:bg-emerald-50 border border-emerald-200 text-emerald-500 px-8 py-4 rounded-full font-bold transition shadow-lg hover:-translate-y-1">
                     <i class='bx bxs-contact'></i> Save Contact
                 </a>
+
+                {% if agent.instagram %}
+                <a href="{{ agent.instagram }}" target="_blank" class="w-14 h-14 flex items-center justify-center rounded-full bg-white hover:bg-pink-50 border border-pink-200 text-pink-400 hover:text-pink-500 transition text-2xl shadow-lg hover:-translate-y-1">
+                    <i class='bx bxl-instagram'></i>
+                </a>
+                {% endif %}
+                
+                {% if agent.linkedin %}
+                <a href="{{ agent.linkedin }}" target="_blank" class="w-14 h-14 flex items-center justify-center rounded-full bg-white hover:bg-pink-50 border border-pink-200 text-pink-400 hover:text-pink-500 transition text-2xl shadow-lg hover:-translate-y-1">
+                    <i class='bx bxl-linkedin'></i>
+                </a>
+                {% endif %}
+                
+                {% if agent.facebook %}
+                <a href="{{ agent.facebook }}" target="_blank" class="w-14 h-14 flex items-center justify-center rounded-full bg-white hover:bg-pink-50 border border-pink-200 text-pink-400 hover:text-pink-500 transition text-2xl shadow-lg hover:-translate-y-1">
+                    <i class='bx bxl-facebook'></i>
+                </a>
+                {% endif %}
             </div>
         </div>
     </div>
