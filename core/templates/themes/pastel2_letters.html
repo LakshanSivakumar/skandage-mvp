@@ -1,0 +1,291 @@
+{% extends "themes/pastel2_base.html" %}
+{% load markdown_extras %}
+
+{% block content %}
+
+<nav class="px-8 py-6 flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur-md z-50 border-b border-pink-50">
+    <span class="text-xs font-bold uppercase tracking-[0.2em] border-b-2 border-pink-300 pb-1 text-slate-800">{{ agent.name }}</span>
+
+    {% if agent.calendly_link %}
+    <button onclick="Calendly.initPopupWidget({url: '{{ agent.calendly_link }}'});return false;"
+        class="text-sm font-serif italic text-slate-500 hover:text-pink-400 transition">Book Meeting</button>
+    {% else %}
+    <a href="#contact" class="text-sm font-serif italic text-slate-500 hover:text-pink-400 transition">Inquire</a>
+    {% endif %}
+</nav>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 min-h-[85vh] px-4 lg:px-8 pb-32 gap-4 bg-white relative">
+    
+    <div class="lg:col-span-5 flex flex-col justify-center pb-12 lg:pb-24 relative order-last lg:order-first z-10" data-aos="fade-right">
+        
+        <div class="mb-10">
+            <h1 class="text-7xl md:text-8xl font-serif text-pink-500 mb-2">{{ agent.name }}.</h1>
+            <p class="text-lg md:text-xl text-slate-500 font-light border-l-2 border-emerald-300 pl-4">{{ agent.title }} | {{ agent.company }}</p>
+        </div>
+
+        <p class="text-2xl font-serif italic leading-relaxed max-w-sm mb-10 text-slate-600">
+            {{ agent.tagline|default:"Curating financial legacies with a personal touch." }}
+        </p>
+
+        <div class="flex flex-wrap items-center gap-4">
+            {% if agent.calendly_link %}
+            <button onclick="Calendly.initPopupWidget({url: '{{ agent.calendly_link }}'});return false;"
+                class="text-xs font-bold uppercase tracking-widest bg-pink-400 text-white px-8 py-4 rounded-full shadow-lg hover:bg-pink-500 hover:-translate-y-1 transition">Book Meeting</button>
+            {% else %}
+            <a href="{% url 'download_vcard' agent.slug %}"
+                class="text-xs font-bold uppercase tracking-widest bg-emerald-400 text-white px-8 py-4 rounded-full shadow-lg hover:bg-emerald-500 hover:-translate-y-1 transition">Save Contact</a>
+            {% endif %}
+
+            <div class="flex gap-3">
+                {% if agent.linkedin %}<a href="{{ agent.linkedin }}" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-pink-50 text-pink-400 hover:text-white hover:bg-pink-400 transition text-xl shadow-sm"><i class='bx bxl-linkedin'></i></a>{% endif %}
+                {% if agent.instagram %}<a href="{{ agent.instagram }}" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-pink-50 text-pink-400 hover:text-white hover:bg-pink-400 transition text-xl shadow-sm"><i class='bx bxl-instagram'></i></a>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="lg:col-span-7 relative h-[60vh] lg:h-auto overflow-hidden rounded-none lg:rounded-[10rem] lg:rounded-tr-none lg:rounded-bl-none shadow-sm" data-aos="fade-left">
+        {% if agent.headshot %}
+        <img src="{{ agent.headshot.url }}" class="absolute inset-0 w-full h-full object-cover transition duration-1000 hover:scale-105">
+        {% else %}
+        <div class="absolute inset-0 bg-pink-50 flex items-center justify-center font-serif text-9xl text-pink-200 italic">
+            {{ agent.name|slice:":1" }}
+        </div>
+        {% endif %}
+        <div class="absolute inset-0 bg-gradient-to-t from-emerald-100/30 to-transparent pointer-events-none"></div>
+    </div>
+</div>
+
+<div class="max-w-6xl mx-auto px-6 -mt-32 relative z-20 mb-24">
+    <div class="grid grid-cols-1 {% if agent.credentials.exists %}lg:grid-cols-3{% endif %} gap-8">
+        
+        <div class="{% if agent.credentials.exists %}lg:col-span-2{% endif %} bg-white/80 backdrop-blur-xl p-10 md:p-14 rounded-[3rem] shadow-xl border border-white/50" data-aos="fade-up">
+            <h2 class="text-3xl font-serif italic text-slate-800 mb-6 flex items-center gap-4">
+                <span class="w-12 h-[2px] bg-pink-400 rounded-full"></span> My Story
+            </h2>
+            <div class="prose text-slate-600 leading-relaxed font-light max-w-none" style="font-size: 18px; line-height: 1.9;">
+                {{ agent.bio|markdown|truncatewords_html:80|safe }}
+            </div>
+            <div class="mt-8 pt-6 border-t border-pink-50">
+                <a href="{% url 'agent_bio' agent.slug %}" class="inline-flex items-center gap-2 text-pink-500 font-bold uppercase tracking-widest text-xs hover:text-pink-600 transition group">
+                    Read Full Story <i class='bx bx-right-arrow-alt group-hover:translate-x-1 transition text-lg'></i>
+                </a>
+            </div>
+        </div>
+
+        {% if agent.credentials.exists %}
+        <div class="lg:col-span-1 space-y-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="bg-emerald-50/80 backdrop-blur-xl text-slate-700 p-8 rounded-[3rem] border border-emerald-100 shadow-xl h-full flex flex-col">
+                <h3 class="text-xs font-bold text-emerald-500 uppercase tracking-widest mb-6 border-b border-emerald-200 pb-4">Accolades</h3>
+                <div class="space-y-6 flex-grow">
+                    {% for cred in agent.credentials.all %}
+                    <div class="flex items-start gap-4 group">
+                        <div class="mt-1 text-emerald-400 group-hover:text-emerald-500 transition"><i class='bx bxs-trophy text-xl'></i></div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wide group-hover:text-emerald-600 transition">{{ cred.title }}</h4>
+                            <p class="text-xs text-slate-500 mt-1 font-serif italic">{{ cred.issuer }}{% if cred.year %} • {{ cred.year }}{% endif %}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if services %}
+<div class="px-4 lg:px-8 py-24 max-w-7xl mx-auto" data-aos="fade-up">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-emerald-100 pt-12">
+        <div class="md:col-span-1">
+            <span class="text-xs font-bold uppercase tracking-widest text-emerald-400">(01) Expertise</span>
+        </div>
+        <div class="md:col-span-2 grid gap-12">
+            {% for service in services %}
+            <div class="group cursor-default">
+                <h3 class="text-3xl font-serif italic mb-3 text-slate-800 group-hover:pl-4 group-hover:text-pink-400 transition-all duration-300">{{ service.title }}</h3>
+                <p class="text-base text-slate-500 max-w-lg leading-relaxed border-l-2 border-pink-100 pl-5 ml-1">{{ service.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<section class="py-24 px-4 lg:px-8 border-t border-pink-50 bg-white" data-aos="fade-up">
+    <div class="max-w-3xl mx-auto bg-pink-50/30 border border-pink-100 rounded-[2rem] p-8 md:p-16 relative shadow-sm">
+
+        <div class="flex justify-between items-end mb-12 border-b border-pink-200 pb-6">
+            <span class="text-xs font-bold uppercase tracking-widest text-pink-400">(02) Analysis</span>
+            <span class="text-lg font-serif italic text-emerald-500">Gap Calculator</span>
+        </div>
+
+        <div class="relative z-10">
+            <h2 class="text-4xl font-serif italic mb-3 text-center text-slate-800">The Financial Audit</h2>
+            <p class="text-center mb-10 text-slate-500 text-sm font-light">Quantify your exact legacy exposure.</p>
+
+            <div class="w-full bg-pink-100 h-[2px] mb-12 relative rounded-full">
+                <div id="calc-progress" class="bg-pink-400 h-[2px] absolute top-0 left-0 transition-all duration-500 rounded-full" style="width: 25%;"></div>
+            </div>
+
+            <div id="step-1" class="calc-step transition-all duration-500">
+                <div class="space-y-8">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-widest mb-2 text-slate-400">Annual Income</label>
+                        <input type="number" id="calc-income" placeholder="120000" class="w-full bg-transparent border-b border-emerald-200 py-3 text-3xl font-serif italic text-slate-800 focus:outline-none focus:border-emerald-400 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-widest mb-2 text-slate-400">Dependents</label>
+                        <input type="number" id="calc-dependents" placeholder="2" class="w-full bg-transparent border-b border-emerald-200 py-3 text-3xl font-serif italic text-slate-800 focus:outline-none focus:border-emerald-400 transition-colors">
+                    </div>
+                    <button onclick="nextStep(2)" class="w-full bg-emerald-400 text-white text-xs font-bold uppercase tracking-widest py-5 rounded-full hover:bg-emerald-500 shadow-md hover:-translate-y-1 transition mt-8">Next Step</button>
+                </div>
+            </div>
+
+            <div id="step-2" class="calc-step hidden transition-all duration-500">
+                <div class="space-y-8">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-widest mb-2 text-slate-400">Total Liabilities</label>
+                        <input type="number" id="calc-liabilities" placeholder="500000" class="w-full bg-transparent border-b border-emerald-200 py-3 text-3xl font-serif italic text-slate-800 focus:outline-none focus:border-emerald-400 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-widest mb-2 text-slate-400">Existing Coverage</label>
+                        <input type="number" id="calc-existing" placeholder="200000" class="w-full bg-transparent border-b border-emerald-200 py-3 text-3xl font-serif italic text-slate-800 focus:outline-none focus:border-emerald-400 transition-colors">
+                    </div>
+                    <div class="flex gap-4 mt-8">
+                        <button onclick="nextStep(1)" class="w-1/3 border border-pink-200 text-pink-400 text-xs font-bold uppercase tracking-widest py-5 rounded-full hover:bg-pink-100 transition">Back</button>
+                        <button onclick="calculateAndShowStep3()" class="w-2/3 bg-pink-400 text-white text-xs font-bold uppercase tracking-widest py-5 rounded-full shadow-md hover:bg-pink-500 transition">Calculate</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="step-3" class="calc-step hidden text-center transition-all duration-500">
+                <h3 class="text-3xl font-serif italic mb-3 text-slate-800">Audit Complete</h3>
+                <p class="mb-8 text-slate-500 text-sm">Your exposure has been calculated. Enter your email for the confidential report.</p>
+
+                <form id="calc-form" action="{% url 'agent_profile' agent.slug %}" method="post" class="space-y-6 text-left">
+                    {% csrf_token %}
+                    <input type="hidden" name="is_calculator" value="true">
+                    <input type="hidden" name="name" id="hidden-name" value="">
+                    <input type="hidden" name="calc_income" id="hidden_income">
+                    <input type="hidden" name="calc_dependents" id="hidden_dependents">
+                    <input type="hidden" name="calc_liabilities" id="hidden_liabilities">
+                    <input type="hidden" name="calc_existing" id="hidden_existing">
+                    <input type="hidden" name="calc_recommended" id="hidden_recommended">
+                    <input type="hidden" name="calc_gap" id="hidden_gap">
+
+                    <div><input type="text" id="calc-name" placeholder="Full Name" required class="w-full bg-white border border-emerald-100 py-4 px-5 text-slate-800 rounded-xl focus:outline-none focus:border-emerald-400 transition shadow-sm"></div>
+                    <div><input type="email" name="email" id="calc-email" placeholder="Email Address" required class="w-full bg-white border border-emerald-100 py-4 px-5 text-slate-800 rounded-xl focus:outline-none focus:border-emerald-400 transition shadow-sm"></div>
+                    
+                    <button type="submit" onclick="return prepareSubmission()" class="w-full bg-emerald-400 text-white text-xs font-bold uppercase tracking-widest py-5 rounded-full shadow-md hover:bg-emerald-500 transition mt-4">Send Report</button>
+                </form>
+            </div>
+
+            <div id="step-success" class="calc-step hidden text-center py-12 transition-all duration-500">
+                <i class='bx bx-check-shield text-5xl text-emerald-400 mb-4'></i>
+                <h3 class="text-3xl font-serif italic mb-2 text-slate-800">Report Dispatched</h3>
+                <p class="text-slate-400 uppercase tracking-widest text-xs font-bold">Please check your inbox.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if testimonials %}
+<section class="py-24 px-4 lg:px-8 border-t border-emerald-100 bg-white" data-aos="fade-up">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-emerald-400 block mb-4">(03) Client Diaries</span>
+                <h3 class="font-serif text-4xl text-slate-800">Kind Words</h3>
+                <p class="text-slate-500 mt-3 text-lg font-light">Recent feedback from clients.</p>
+            </div>
+            {% if total_testimonials > 4 %}
+            <a href="{% url 'agent_testimonials' agent.slug %}" class="hidden md:flex items-center gap-2 text-pink-500 font-bold hover:text-pink-600 transition group">
+                Read all {{ total_testimonials }} stories <i class='bx bx-right-arrow-alt group-hover:translate-x-1 transition'></i>
+            </a>
+            {% endif %}
+        </div>
+        
+        <div class="md:columns-2 gap-8">
+            {% for review in testimonials %}
+            <div class="inline-block w-full mb-8 break-inside-avoid bg-pink-50 p-10 rounded-[3rem] shadow-sm border border-pink-100 relative hover:shadow-md transition-all duration-300 group">
+
+                <a href="{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white border border-pink-200 text-pink-400 hover:text-white hover:bg-pink-400 transition z-20 shadow-sm" title="Share this review">
+                    <i class='bx bx-share-alt text-xl'></i>
+                </a>
+
+                {% if review.screenshot %}
+                <div class="mb-6 rounded-2xl overflow-hidden border border-pink-100 shadow-sm relative z-10">
+                    <img loading="lazy" src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Verified Proof">
+                </div>
+
+                <div class="mb-4">
+                    <button onclick="toggleContent('text-{{ forloop.counter }}', this)" class="inline-flex items-center justify-center gap-2 text-xs font-bold text-pink-500 uppercase tracking-wider hover:text-pink-600 transition border border-pink-200 px-4 py-2.5 rounded-full bg-white shadow-sm group w-full">
+                        <span>Read Review Text</span> <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
+                    </button>
+                </div>
+
+                <div id="text-{{ forloop.counter }}" class="content-toggle mb-6 relative z-10">
+                    <div class="p-5 bg-white rounded-2xl border border-pink-100">
+                        <p class="text-slate-600 text-lg italic leading-relaxed font-serif">"{{ review.review_text }}"</p>
+                    </div>
+                </div>
+
+                {% else %}
+                <div class="relative z-10 mb-6">
+                    <i class='bx bxs-quote-left text-4xl text-pink-300 opacity-50 mb-2'></i>
+                    <p class="text-slate-600 text-lg italic leading-relaxed font-serif">"{{ review.review_text }}"</p>
+                </div>
+                {% endif %}
+
+                <div class="flex items-center gap-4 pt-6 border-t border-pink-200 relative z-10">
+                    <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-pink-400 font-bold font-serif text-xl shadow-sm border border-pink-100">
+                        {{ review.client_name|slice:":1" }}
+                    </div>
+                    <div>
+                        {% if review.title %}
+                        <div class="text-xs font-bold text-pink-500 uppercase tracking-widest mb-0.5">{{ review.title }}</div>
+                        <div class="font-bold text-slate-800 text-base">{{ review.client_name }}</div>
+                        {% else %}
+                        <div class="font-bold text-slate-800 text-base">{{ review.client_name }}</div>
+                        <div class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest"><i class='bx bxs-check-circle'></i> Verified Client</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+        {% if total_testimonials > 4 %}
+        <div class="md:hidden text-center mt-10">
+            <a href="{% url 'agent_testimonials' agent.slug %}" class="inline-block w-full border border-pink-200 px-8 py-4 rounded-full font-bold text-pink-500 hover:bg-pink-400 hover:text-white transition shadow-sm">View All {{ total_testimonials }} Testimonials</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<section id="contact" class="py-24 px-4 lg:px-8 border-t border-emerald-100 bg-emerald-50/20">
+    <div class="max-w-4xl mx-auto text-center" data-aos="fade-up">
+        <h2 class="text-5xl md:text-6xl font-serif italic mb-6 text-slate-800">Connect.</h2>
+        <p class="text-lg text-slate-500 font-light mb-12">Discretion and excellence are the pillars of my practice.</p>
+
+        <form action="{% url 'agent_profile' agent.slug %}" method="post" class="text-left space-y-8 max-w-xl mx-auto bg-white p-10 rounded-[3rem] shadow-sm border border-pink-50">
+            {% csrf_token %}
+            <div>
+                <label class="text-xs text-emerald-400 uppercase tracking-widest font-bold mb-2 block">Your Name</label>
+                <input type="text" name="name" required class="w-full bg-transparent border-b border-slate-200 py-3 text-slate-800 focus:outline-none focus:border-pink-400 transition font-serif italic text-xl">
+            </div>
+            <div>
+                <label class="text-xs text-emerald-400 uppercase tracking-widest font-bold mb-2 block">Email Address</label>
+                <input type="email" name="email" required class="w-full bg-transparent border-b border-slate-200 py-3 text-slate-800 focus:outline-none focus:border-pink-400 transition font-serif italic text-xl">
+            </div>
+            <div>
+                <label class="text-xs text-emerald-400 uppercase tracking-widest font-bold mb-2 block">How may I assist?</label>
+                <textarea name="message" rows="2" required class="w-full bg-transparent border-b border-slate-200 py-3 text-slate-800 focus:outline-none focus:border-pink-400 transition font-serif italic text-xl"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-pink-400 text-white text-xs font-bold uppercase tracking-widest py-5 rounded-full shadow-md hover:bg-pink-500 hover:-translate-y-1 transition mt-8 flex justify-center items-center gap-2 group">Send Message <i class='bx bx-send group-hover:translate-x-1 transition'></i></button>
+        </form>
+    </div>
+</section>
+
+{% endblock %}
