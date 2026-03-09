@@ -1,0 +1,158 @@
+{% load markdown_extras %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth bg-white">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ custom_fields.hero_headline|default:agent.name|striptags }} | Advisory</title>
+    
+    <meta property="og:site_name" content="{{ agent.name }}'s Portfolio" />
+    <meta property="og:title" content="{{ agent.name }} - {{ agent.title }}" />
+    <meta property="og:description" content="{{ agent.tagline|default:'Connect with me for trusted financial advice.' }}" />
+    {% if agent.headshot %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ agent.headshot.url }}" />
+    {% endif %}
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Lato', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { color: #1e293b; }
+        
+        /* Cute Pastel Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #fdf2f8; } 
+        ::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 10px; } 
+        ::-webkit-scrollbar-thumb:hover { background: #f472b6; } 
+
+        .content-toggle { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
+        .content-toggle.expanded { max-height: 5000px; }
+        
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee { animation: marquee 25s linear infinite; }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-pink-300 selection:text-slate-800 flex flex-col min-h-screen">
+
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="py-16 border-t border-emerald-100 mt-20 bg-emerald-50/30">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            {% if agent.linkedin or agent.instagram or agent.facebook %}
+            <div class="flex justify-center gap-6 mb-10">
+                {% if agent.linkedin %}<a href="{{ agent.linkedin }}" target="_blank" class="text-slate-400 hover:text-pink-400 transition text-2xl"><i class='bx bxl-linkedin'></i></a>{% endif %}
+                {% if agent.instagram %}<a href="{{ agent.instagram }}" target="_blank" class="text-slate-400 hover:text-pink-400 transition text-2xl"><i class='bx bxl-instagram'></i></a>{% endif %}
+                {% if agent.facebook %}<a href="{{ agent.facebook }}" target="_blank" class="text-slate-400 hover:text-pink-400 transition text-2xl"><i class='bx bxl-facebook'></i></a>{% endif %}
+            </div>
+            {% endif %}
+
+            <div class="max-w-3xl mx-auto space-y-4 mb-12">
+                <p class="text-[10px] uppercase tracking-widest font-bold text-slate-400">Important Disclaimer</p>
+                <div class="text-xs leading-relaxed text-slate-500 whitespace-pre-line">{{ agent.disclaimer }}</div>
+            </div>
+
+            <div class="flex flex-col items-center gap-3">
+                <p class="text-xs font-medium text-slate-400">&copy; {% now "Y" %} {{ agent.name }}. All rights reserved.</p>
+                <a href="https://www.skandage.com/sites" target="_blank" class="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-pink-300 hover:text-pink-500 transition-colors duration-300">
+                    <i class='bx bxs-bolt'></i> Powered by Skandage
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    {% if agent.phone_number %}
+    <div class="fixed bottom-8 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none">
+        <a href="https://api.whatsapp.com/send?phone={{ agent.phone_number|cut:'+'|cut:' ' }}&text={{ agent.whatsapp_message|urlencode }}"
+            target="_blank"
+            class="pointer-events-auto bg-white text-slate-800 pl-6 pr-8 py-3.5 rounded-full shadow-xl flex items-center gap-4 transform hover:-translate-y-1 hover:scale-105 transition duration-300 border border-emerald-100 group">
+            <div class="bg-[#25D366] p-2 rounded-full text-white shadow-lg group-hover:rotate-12 transition">
+                <i class='bx bxl-whatsapp text-xl'></i>
+            </div>
+            <div class="flex flex-col text-left">
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Have a question?</span>
+                <span class="text-base font-bold text-emerald-600">WhatsApp Me</span>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+
+    {% if agent.calendly_link %}
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+    {% endif %}
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() { AOS.init({ once: true, offset: 50, duration: 800 }); });
+
+        let rawIncome = 0, rawDependents = 0, rawLiabilities = 0, rawExisting = 0, rawRecommended = 0, rawGap = 0;
+
+        function nextStep(step) {
+            document.querySelectorAll('.calc-step').forEach(el => el.classList.add('hidden'));
+            document.getElementById('step-' + step).classList.remove('hidden');
+            const progress = document.getElementById('calc-progress');
+            if (progress) progress.style.width = (step * 33.33) + '%';
+        }
+
+        function calculateAndShowStep3() {
+            rawIncome = parseFloat(document.getElementById('calc-income').value) || 0;
+            rawDependents = parseFloat(document.getElementById('calc-dependents').value) || 0;
+            rawLiabilities = parseFloat(document.getElementById('calc-liabilities').value) || 0;
+            rawExisting = parseFloat(document.getElementById('calc-existing').value) || 0;
+            rawRecommended = (rawIncome * 10) + rawLiabilities + (rawDependents * 100000);
+            rawGap = rawRecommended - rawExisting;
+            if (rawGap < 0) rawGap = 0;
+            nextStep(3);
+        }
+
+        function prepareSubmission() {
+            const nameInput = document.getElementById('calc-name').value;
+            const emailInput = document.getElementById('calc-email').value;
+
+            if (nameInput && emailInput) {
+                const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+                document.getElementById('hidden-name').value = nameInput + " (Calculator Lead)";
+                document.getElementById('hidden_income').value = formatter.format(rawIncome);
+                document.getElementById('hidden_dependents').value = rawDependents;
+                document.getElementById('hidden_liabilities').value = formatter.format(rawLiabilities);
+                document.getElementById('hidden_existing').value = formatter.format(rawExisting);
+                document.getElementById('hidden_recommended').value = formatter.format(rawRecommended);
+                document.getElementById('hidden_gap').value = formatter.format(rawGap);
+
+                document.getElementById('step-3').classList.add('hidden');
+                document.getElementById('step-success').classList.remove('hidden');
+                const progress = document.getElementById('calc-progress');
+                if (progress) {
+                    progress.style.width = '100%';
+                    progress.style.backgroundColor = '#34d399';
+                }
+                return true;
+            }
+            return false;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+{% extends "themes/pastel2_base.html" %}
+{% load markdown_extras %}
+
+{% block content %}
+
+<div class="bg-gradient-to-b from-pink-100 to-white relative overflow-hidden pb-32 pt-28 rounded-b-[3rem]">
+    <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-emerald-200 opacity-30 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <div class="max-w-4xl mx-auto px-8 relative z-10 flex flex-col items-center text-center">
+        <div class="mb-8" data-aos="zoom-in">
+            {% if agent.headshot %}
+            <img src="{{ agent.headshot.url }}" class="w-40 h-40 md:w-56 md:h-56 rounded-full object-cover shadow-2xl border-4 border-white">
+            {% else %}
+            <div class="w-40 h-40 rounded-full bg-white flex items-center justify-center text-6xl font-serif text-pink-400 shadow-xl border-4 border-pink-100">
+                {{ agent.name|slice:":1" }}</div>
+            {% endif %}
+        </div>
+        <div data-aos="fade-up">
+            <h1 class="text-5xl md:text-8xl font-bold mb-6 leading-tight tracking-tight text-slate-800">
+                <span class="text-pink-500">{{ agent.name }}</span>
+            </h1>
+            <div class="w-24 h-1 bg-pink-400 mx-auto mb-8 rounded-full"></div>
+            <p class="text-2xl md:text-3xl text-slate-700 font-light mb-4">{{ agent.title }} <span class="text-pink-300 mx-2">|</span> {{ agent.company }}</p>
+            {% if agent.tagline %}
+            <p class="text-xl text-slate-500 italic font-serif">"{{ agent.tagline }}"</p>
+            {% endif %}
+            <div class="mt-10 flex justify-center gap-4 flex-wrap">
+                {% if agent.calendly_link %}
+                <button onclick="Calendly.initPopupWidget({url: '{{ agent.calendly_link }}'});return false;" class="inline-flex items-center gap-2 bg-pink-400 text-white px-8 py-4 rounded-full font-bold transition shadow-lg hover:bg-pink-500 hover:-translate-y-1">
+                    <i class='bx bx-calendar'></i> Book Meeting
+                </button>
+                {% endif %}
+
+                <a href="{% url 'download_vcard' agent.slug %}" class="inline-flex items-center gap-2 bg-white hover:bg-emerald-50 border border-emerald-200 text-emerald-500 px-8 py-4 rounded-full font-bold transition shadow-lg hover:-translate-y-1">
+                    <i class='bx bxs-contact'></i> Save Contact
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-6xl mx-auto px-6 -mt-24 relative z-20 space-y-16 pb-24">
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 bg-white p-10 md:p-12 rounded-[2rem] shadow-xl border border-pink-100" data-aos="fade-up">
+            <h2 class="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-4"><span class="w-10 h-1 bg-pink-400 rounded-full"></span> My Story</h2>
+            <div class="prose text-slate-600 leading-relaxed font-light max-w-none" style="font-size: 20px; line-height: 1.8;">
+                {{ agent.bio|markdown|truncatewords_html:80|safe }}
+            </div>
+            <div class="mt-8 pt-6 border-t border-pink-50">
+                <a href="{% url 'agent_bio' agent.slug %}" class="inline-flex items-center gap-2 text-pink-500 font-bold hover:text-pink-600 transition group text-lg">
+                    Read full story <i class='bx bx-right-arrow-alt group-hover:translate-x-1 transition'></i>
+                </a>
+            </div>
+        </div>
+
+        {% if agent.credentials.exists %}
+        <div class="lg:col-span-1 space-y-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="bg-emerald-50 text-slate-700 p-8 rounded-[2rem] border border-emerald-100 shadow-sm h-full">
+                <h3 class="text-xs font-bold text-emerald-500 uppercase tracking-[0.2em] mb-6 border-b border-emerald-200 pb-4">Accolades</h3>
+                <div class="space-y-6">
+                    {% for cred in agent.credentials.all %}
+                    <div class="flex items-start gap-4 group">
+                        <div class="mt-1 text-emerald-400 group-hover:text-emerald-500 transition"><i class='bx bxs-trophy text-lg'></i></div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-base leading-tight group-hover:text-emerald-600 transition">{{ cred.title }}</h4>
+                            <p class="text-xs text-slate-500 uppercase mt-1 font-bold">{{ cred.issuer }}{% if cred.year %} {{ cred.year }}{% endif %}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if services %}
+    <section data-aos="fade-up">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+                <h3 class="font-serif text-4xl text-slate-800">How I Can Help</h3>
+                <p class="text-slate-500 mt-3 text-lg font-light">Specialized solutions for your life stage.</p>
+            </div>
+        </div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for service in services %}
+            <div class="bg-white p-8 rounded-3xl group hover:-translate-y-1 transition duration-300 border-t-4 border-pink-300 shadow-md">
+                <div class="w-12 h-12 rounded-xl bg-pink-50 flex items-center justify-center text-pink-500 text-2xl mb-6 group-hover:scale-110 transition">
+                    <i class='bx {{ service.icon }}'></i>
+                </div>
+                <h4 class="font-bold text-xl text-slate-800 mb-3">{{ service.title }}</h4>
+                <p class="text-slate-500 text-sm leading-relaxed mb-6 min-h-[80px]">{{ service.description|truncatewords:25 }}</p>
+                <a href="#contact" class="inline-flex items-center gap-2 text-sm font-bold text-pink-500 uppercase tracking-wider hover:opacity-80 transition">
+                    Ask about this <i class='bx bx-right-arrow-alt'></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="py-16 relative z-10 font-sans" data-aos="fade-up">
+        <div class="max-w-2xl mx-auto bg-white p-8 md:p-12 rounded-[2rem] shadow-xl relative overflow-hidden border border-emerald-100">
+
+            <div class="absolute -top-20 -right-20 w-64 h-64 bg-emerald-100 opacity-50 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-pink-100 opacity-50 rounded-full blur-3xl"></div>
+
+            <div class="relative z-10">
+                <h2 class="text-3xl font-bold mb-2 text-center text-slate-800">Secure Your Family's Future</h2>
+                <p class="text-center mb-8 text-slate-500">Discover your true coverage gap in under 60 seconds.</p>
+
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mb-8 overflow-hidden">
+                    <div id="calc-progress" class="h-1.5 rounded-full transition-all duration-500 bg-pink-400" style="width: 25%;"></div>
+                </div>
+
+                <div id="step-1" class="calc-step transition-all duration-500">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold uppercase tracking-wider mb-2 text-slate-600">Annual Income ($)</label>
+                            <input type="number" id="calc-income" placeholder="e.g. 120000" class="w-full bg-transparent border-b-2 border-pink-200 py-3 text-2xl focus:outline-none focus:border-pink-400 text-slate-800 transition-colors" aria-label="e.g. 120000">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold uppercase tracking-wider mb-2 text-slate-600">Number of Dependents</label>
+                            <input type="number" id="calc-dependents" placeholder="e.g. 2" class="w-full bg-transparent border-b-2 border-pink-200 py-3 text-2xl focus:outline-none focus:border-pink-400 text-slate-800 transition-colors" aria-label="e.g. 2">
+                        </div>
+                        <button onclick="nextStep(2)" class="w-full bg-pink-400 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-pink-500 transition mt-4">Continue <i class='bx bx-right-arrow-alt'></i></button>
+                    </div>
+                </div>
+
+                <div id="step-2" class="calc-step hidden transition-all duration-500">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold uppercase tracking-wider mb-2 text-slate-600">Total Liabilities ($)</label>
+                            <input type="number" id="calc-liabilities" placeholder="e.g. 500000" class="w-full bg-transparent border-b-2 border-pink-200 py-3 text-2xl focus:outline-none focus:border-pink-400 text-slate-800 transition-colors" aria-label="e.g. 500000">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold uppercase tracking-wider mb-2 text-slate-600">Existing Life Coverage ($)</label>
+                            <input type="number" id="calc-existing" placeholder="e.g. 200000" class="w-full bg-transparent border-b-2 border-pink-200 py-3 text-2xl focus:outline-none focus:border-pink-400 text-slate-800 transition-colors" aria-label="e.g. 200000">
+                        </div>
+                        <div class="flex gap-4 mt-4">
+                            <button onclick="nextStep(1)" class="w-1/3 border-2 border-pink-200 text-pink-400 font-bold py-4 rounded-xl hover:bg-pink-50 transition">Back</button>
+                            <button onclick="calculateAndShowStep3()" class="w-2/3 bg-pink-400 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-pink-500 transition">Calculate Gap</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="step-3" class="calc-step hidden text-center transition-all duration-500">
+                    <i class='bx bxs-magic-wand text-5xl mb-4 text-emerald-400'></i>
+                    <h3 class="text-2xl font-bold mb-2 text-slate-800">Calculation Complete</h3>
+                    <p class="mb-6 text-slate-500">We've identified your exact coverage gap. Where should we send your personalized report?</p>
+
+                    <form id="calc-form" action="{% url 'agent_profile' agent.slug %}" method="post" class="space-y-4 text-left">
+                        {% csrf_token %}
+                        <input type="hidden" name="is_calculator" value="true">
+                        <input type="hidden" name="name" id="hidden-name" value="">
+                        <input type="hidden" name="message" id="calc-hidden-message" value="">
+                        <input type="hidden" name="calc_income" id="hidden_income">
+                        <input type="hidden" name="calc_dependents" id="hidden_dependents">
+                        <input type="hidden" name="calc_liabilities" id="hidden_liabilities">
+                        <input type="hidden" name="calc_existing" id="hidden_existing">
+                        <input type="hidden" name="calc_recommended" id="hidden_recommended">
+                        <input type="hidden" name="calc_gap" id="hidden_gap">
+
+                        <div>
+                            <input type="text" id="calc-name" placeholder="Your Name" required class="w-full bg-slate-50 border border-slate-200 py-4 px-5 rounded-xl text-lg transition text-slate-800 focus:outline-none focus:border-pink-400" aria-label="Your Name">
+                        </div>
+                        <div>
+                            <input type="email" name="email" id="calc-email" placeholder="Your Email Address" required class="w-full bg-slate-50 border border-slate-200 py-4 px-5 rounded-xl text-lg transition text-slate-800 focus:outline-none focus:border-pink-400" aria-label="Your Email Address">
+                        </div>
+                        <button type="submit" onclick="return prepareSubmission()" class="w-full bg-emerald-400 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-emerald-500 transition mt-2 flex items-center justify-center gap-2">
+                            Reveal My Number
+                        </button>
+                    </form>
+                </div>
+
+                <div id="step-success" class="calc-step hidden text-center py-8 transition-all duration-500">
+                    <div class="w-20 h-20 rounded-full flex items-center justify-center text-white text-4xl mx-auto mb-6 shadow-lg bg-emerald-400">
+                        <i class='bx bx-check'></i>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-2 text-slate-800">Report Sent</h3>
+                    <p class="text-slate-500">Check your inbox shortly.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    {% if testimonials %}
+    <div data-aos="fade-up">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+                <h3 class="font-serif text-4xl text-slate-800">Kind Words</h3>
+                <p class="text-slate-500 mt-3 text-lg font-light">Recent feedback from clients</p>
+            </div>
+            {% if total_testimonials > 4 %}
+            <a href="{% url 'agent_testimonials' agent.slug %}" class="hidden md:flex items-center gap-2 text-pink-500 font-bold hover:text-pink-600 transition group">
+                Read all {{ total_testimonials }} stories <i class='bx bx-right-arrow-alt group-hover:translate-x-1 transition'></i>
+            </a>
+            {% endif %}
+        </div>
+        <div class="md:columns-2 gap-8">
+            {% for review in testimonials %}
+            <div class="inline-block w-full mb-8 break-inside-avoid bg-pink-50 p-10 rounded-3xl shadow-sm border border-pink-100 relative hover:shadow-md transition-all duration-300 group">
+
+                <a href="{% url 'single_testimonial' agent.slug review.id %}" target="_blank" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white border border-pink-200 text-pink-400 hover:text-white hover:bg-pink-400 transition z-20 shadow-sm" title="Share this review">
+                    <i class='bx bx-share-alt text-xl'></i>
+                </a>
+
+                {% if review.screenshot %}
+                <div class="mb-6 rounded-2xl overflow-hidden border border-pink-100 shadow-sm relative z-10">
+                    <img loading="lazy" src="{{ review.screenshot.url }}" class="w-full object-cover" alt="Verified Proof">
+                </div>
+
+                <div class="mb-4">
+                    <button onclick="toggleContent('text-{{ forloop.counter }}', this)" class="inline-flex items-center gap-2 text-xs font-bold text-pink-500 uppercase tracking-wider hover:text-pink-600 transition border border-pink-200 px-4 py-2 rounded-lg bg-white shadow-sm group w-full justify-center">
+                        <span>Read Review Text</span> <i class='bx bx-chevron-down text-lg rotate-icon ml-1'></i>
+                    </button>
+                </div>
+
+                <div id="text-{{ forloop.counter }}" class="content-toggle mb-6 relative z-10">
+                    <div class="p-4 bg-white rounded-xl border border-pink-100">
+                        <p class="text-slate-600 text-xl italic leading-loose font-serif">"{{ review.review_text }}"</p>
+                    </div>
+                </div>
+
+                {% else %}
+                <div class="relative z-10 mb-6">
+                    <i class='bx bxs-quote-left text-4xl text-pink-300 opacity-50 mb-2'></i>
+                    <p class="text-slate-600 text-lg italic leading-relaxed font-serif">"{{ review.review_text }}"</p>
+                </div>
+                {% endif %}
+
+                <div class="flex items-center gap-4 pt-6 border-t border-pink-200 relative z-10">
+                    <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-pink-400 font-bold font-serif text-xl shadow-sm border border-pink-100">
+                        {{ review.client_name|slice:":1" }}
+                    </div>
+                    <div>
+                        {% if review.title %}
+                        <div class="text-sm font-bold text-pink-500 uppercase tracking-wide mb-0.5">{{ review.title }}</div>
+                        <div class="font-bold text-slate-800 text-lg">{{ review.client_name }}</div>
+                        {% else %}
+                        <div class="font-bold text-slate-800 text-lg">{{ review.client_name }}</div>
+                        <div class="text-xs text-emerald-500 font-bold uppercase tracking-wide"><i class='bx bxs-check-circle'></i> Verified Client</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+        {% if total_testimonials > 4 %}
+        <div class="md:hidden text-center mt-10">
+            <a href="{% url 'agent_testimonials' agent.slug %}" class="inline-block w-full border border-pink-200 px-8 py-4 rounded-full font-bold text-pink-500 hover:bg-pink-400 hover:text-white transition shadow-sm">View All {{ total_testimonials }} Testimonials</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if articles %}
+    <section data-aos="fade-up">
+        <div class="flex items-end justify-between mb-10 px-2">
+            <div>
+                <h3 class="font-serif text-4xl text-slate-800 mb-2">Expert Insights</h3>
+                <p class="text-slate-500">Thoughts on finance, life, and planning.</p>
+            </div>
+            <div class="hidden md:block h-px bg-slate-200 flex-1 ml-10 mb-2"></div>
+        </div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for article in articles %}
+            <a href="{% url 'article_detail' article.slug %}" class="group block bg-white rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition duration-300 border border-slate-100">
+                {% if article.cover_image %}
+                <div class="h-56 overflow-hidden"><img loading="lazy" src="{{ article.cover_image.url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700"></div>
+                {% else %}
+                <div class="h-56 bg-emerald-50 flex items-center justify-center text-emerald-200"><i class='bx bx-news text-5xl'></i></div>
+                {% endif %}
+                <div class="p-8">
+                    <div class="text-xs text-emerald-500 font-bold uppercase mb-3 tracking-wide">{{ article.created_at|date:"M d, Y" }}</div>
+                    <h4 class="font-serif text-2xl font-bold text-slate-800 mb-3 group-hover:text-pink-500 transition leading-tight">{{ article.title }}</h4>
+                    <p class="text-slate-500 text-base line-clamp-3 mb-4 leading-relaxed">{{ article.content|striptags|truncatewords:20 }}</p>
+                    <div class="text-pink-500 text-sm font-bold flex items-center gap-2 group-hover:gap-3 transition-all">Read Article <i class='bx bx-right-arrow-alt'></i></div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section id="contact" class="scroll-mt-20 pt-10 pb-10" data-aos="fade-up">
+        <div class="rounded-[3rem] p-10 md:p-16 relative overflow-hidden shadow-xl bg-gradient-to-r from-pink-100 to-emerald-100">
+            <div class="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <h2 class="font-serif text-4xl md:text-5xl text-slate-800 mb-6 leading-tight">Let's Secure Your <br> <span class="text-pink-500">Legacy Today.</span></h2>
+                    <p class="text-slate-600 font-light text-xl mb-8 leading-relaxed">Have questions about your coverage or investment planning? Send me a message directly. I usually respond within 2 hours.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 text-slate-700">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-pink-500 shadow-sm"><i class='bx bxs-envelope'></i></div><span>Direct Email Support</span>
+                        </div>
+                        <div class="flex items-center gap-4 text-slate-700">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-emerald-500 shadow-sm"><i class='bx bxl-whatsapp'></i></div><span>WhatsApp Priority Chat</span>
+                        </div>
+                    </div>
+                </div>
+                <form action="{% url 'agent_profile' agent.slug %}" method="post" class="bg-white/60 p-8 rounded-3xl border border-white/40 backdrop-blur-sm space-y-5 shadow-lg">
+                    {% csrf_token %}
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <div><label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Name</label><input type="text" name="name" required class="w-full bg-white border border-white rounded-xl px-4 py-3.5 text-slate-800 focus:outline-none focus:border-pink-400 transition shadow-sm"></div>
+                        <div><label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Phone</label><input type="text" name="phone" class="w-full bg-white border border-white rounded-xl px-4 py-3.5 text-slate-800 focus:outline-none focus:border-pink-400 transition shadow-sm"></div>
+                    </div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Email Address</label><input type="email" name="email" required class="w-full bg-white border border-white rounded-xl px-4 py-3.5 text-slate-800 focus:outline-none focus:border-pink-400 transition shadow-sm"></div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">How can I help?</label><textarea name="message" rows="3" required class="w-full bg-white border border-white rounded-xl px-4 py-3.5 text-slate-800 focus:outline-none focus:border-pink-400 transition shadow-sm"></textarea></div>
+                    <button type="submit" class="w-full bg-pink-400 hover:bg-pink-500 text-white font-bold text-lg py-4 rounded-xl transition shadow-lg flex items-center justify-center gap-2 mt-2 group">Send Message <i class='bx bx-send group-hover:translate-x-1 transition'></i></button>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

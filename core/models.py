@@ -59,6 +59,8 @@ class Agent(models.Model):
         ('emerald', 'Private Client (Deep Green)'),
         ('obsidian', 'Obsidian (Black & White)'),
         ('royal', 'Royal Navy (Deep Blue & Silver)'),
+
+
         
     ]
     theme = models.CharField(max_length=20, choices=THEME_CHOICES, default='luxe')
