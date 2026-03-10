@@ -17,7 +17,10 @@
 
 <form id="bespoke-form" method="POST" enctype="multipart/form-data" class="space-y-12">
     {% csrf_token %}
-
+    <div class="hidden">
+        {{ form.theme }}
+        {{ form.layout }}
+    </div>
     <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 h-auto xl:h-[75vh]">
 
         <div class="xl:col-span-4 xl:overflow-y-auto pr-2 pb-10 custom-scrollbar">
@@ -345,7 +348,8 @@
             { inputId: 'input-framework-name', targetId: 'preview-framework-name', useHTML: false },
             { inputId: 'input-framework-details', targetId: 'preview-framework-details', useHTML: true },
             { inputId: 'input-expertise-headline', targetId: 'preview-expertise-headline', useHTML: true },
-            { inputId: 'input-letters-headline', targetId: 'preview-letters-headline', useHTML: true }
+            { inputId: 'input-letters-headline', targetId: 'preview-letters-headline', useHTML: true },
+            { inputId: 'id_bio', targetId: 'preview-bio', useHTML: true } // ADD THIS LINE!
         ];
 
         // 1. THE IFRAME SPY
@@ -445,14 +449,22 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        saveStatus.classList.remove('text-amber-500');
+                        saveStatus.classList.remove('text-amber-500', 'text-red-500');
                         saveStatus.classList.add('text-green-500');
                         saveText.innerText = 'Saved to Cloud';
                         setTimeout(() => { saveStatus.style.opacity = '0'; }, 3000);
+                    } else {
+                        // THIS CATCHES THE SILENT FAILURES!
+                        console.error("Django Form Validation Failed:", data.errors);
+                        saveStatus.classList.remove('text-amber-500', 'text-green-500');
+                        saveStatus.classList.add('text-red-500');
+                        saveText.innerText = 'Missing Field Error';
                     }
                 })
                 .catch(error => {
-                    saveText.innerText = 'Error saving!';
+                    console.error("Network Error:", error);
+                    saveText.innerText = 'Connection Error!';
+                    saveStatus.classList.remove('text-amber-500', 'text-green-500');
                     saveStatus.classList.add('text-red-500');
                 });
         }
