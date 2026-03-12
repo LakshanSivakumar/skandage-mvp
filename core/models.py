@@ -251,7 +251,7 @@ class Subscriber(models.Model):
     archived_at = models.DateTimeField(null=True, blank=True, help_text="When the agent soft-deleted this record")
     is_anonymized = models.BooleanField(default=False, help_text="True if PII was scrubbed after 7 years")
     is_subscribed = models.BooleanField(default=True, help_text="False if client opted out of bulk marketing/cards")
-    unsubscribe_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    unsubscribe_token = models.UUIDField(default=uuid.uuid4, editable=False, null=True)
     # --- ANONYMIZED DATABASE INDEXES (For SQL Queries) ---
     is_active = models.BooleanField(default=True)
     birth_month = models.IntegerField(null=True, blank=True, help_text="Used for safe SQL birthday querying")
