@@ -357,6 +357,33 @@
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') closeMobileMenu();
         });
+        
+        
+        // ── MAS TRM COMPLIANCE: IDLE TIMEOUT ──────────────────────────────
+        let idleTime = 0;
+        const IDLE_TIMEOUT_MINUTES = 15;
+        
+        // Reset the timer if the agent interacts with the page
+        function resetTimer() {
+            idleTime = 0;
+        }
+
+        // Listen for standard desktop and mobile activity
+        window.addEventListener('mousemove', resetTimer);
+        window.addEventListener('keydown', resetTimer);
+        window.addEventListener('scroll', resetTimer);
+        window.addEventListener('touchstart', resetTimer);
+
+        // Increment the timer every 1 minute
+        setInterval(function() {
+            idleTime += 1;
+            if (idleTime >= IDLE_TIMEOUT_MINUTES) {
+                // 15 minutes have passed with zero interaction. 
+                // Force a page reload. This hits the Django server, which triggers 
+                // our AutoLogoutMiddleware to instantly destroy the session and kick them out.
+                window.location.reload();
+            }
+        }, 60000); // 60,000 milliseconds = 1 minute
     </script>
 </body>
 

@@ -15,6 +15,8 @@ urlpatterns = [
     path('letters/', views.domain_letters, name='domain_letters'),
     path('feedback/', views.feedback_submit, name='feedback'),  # NEW
     path('api/agent-autocomplete/', views.api_agent_autocomplete, name='api_agent_autocomplete'), # NEW
+    path('accounts/login/', views.custom_login, name='login'),
+    path('accounts/otp-verify/', views.otp_verify, name='otp_verify'),
     path('accounts/', include('django.contrib.auth.urls')),
     
     # --- PUBLIC AGENT PAGES ---
@@ -93,4 +95,6 @@ urlpatterns = [
     path('dashboard/crm/review-reminder/<int:pk>/send/', views.send_review_reminder, name='send_review_reminder'),
     path('dashboard/crm/review-reminders/bulk/', views.send_bulk_review_reminders, name='send_bulk_review_reminders'),
     path('agent/<slug:slug>/services/', views.agent_services, name='agent_services'),
+    path('dashboard/audience/export/', views.secure_export_subscribers, name='export_subscribers'),
+    path('unsubscribe/<uuid:token>/', views.unsubscribe_client, name='unsubscribe'),
 ]

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unsubscribed - Skandage</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+</head>
+<body class="bg-slate-100 h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full border border-slate-200 text-center">
+        
+        <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+
+        <h1 class="text-2xl font-bold text-slate-900 mb-2">Successfully Unsubscribed</h1>
+        
+        <p class="text-slate-500 mb-6 text-sm">
+            You have been removed from <strong>{{ subscriber.agent.name }}</strong>'s marketing mailing list. You will no longer receive bulk email broadcasts or digital cards.
+        </p>
+
+        <div class="bg-slate-50 p-4 rounded-xl text-xs text-slate-600 mb-6 border border-slate-100 text-left">
+            <strong>PDPA Compliance Note:</strong> Your preferences have been updated immediately in our system. If you wish to resubscribe in the future, please contact your financial consultant directly to provide explicit consent.
+        </div>
+        
+        <div class="mt-4 text-xs font-medium text-slate-400">
+            <p>Powered securely by Skandage Technologies</p>
+        </div>
+
+    </div>
+
+</body>
+</html>

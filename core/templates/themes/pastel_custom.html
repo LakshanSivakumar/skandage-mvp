@@ -175,7 +175,13 @@
 
                     <div><input type="text" id="calc-name" placeholder="Full Name" required class="w-full bg-white border border-emerald-100 py-4 px-5 text-slate-800 rounded-xl focus:outline-none focus:border-emerald-400 transition shadow-sm"></div>
                     <div><input type="email" name="email" id="calc-email" placeholder="Email Address" required class="w-full bg-white border border-emerald-100 py-4 px-5 text-slate-800 rounded-xl focus:outline-none focus:border-emerald-400 transition shadow-sm"></div>
-                    
+                    <div class="flex items-start gap-3 mt-4 mb-2">
+                        <input type="checkbox" id="pdpa_consent" name="pdpa_consent" required 
+                               class="mt-1 w-4 h-4 rounded border-gray-400 text-blue-600 focus:ring-blue-500 bg-transparent cursor-pointer">
+                        <label for="pdpa_consent" class="text-xs opacity-70 cursor-pointer leading-relaxed text-left" style="color: var(--text-muted, #9ca3af);">
+                            I consent to {{ agent.name }} collecting and using my information to generate this report and contact me regarding financial planning services in accordance with the PDPA.
+                        </label>
+                    </div>
                     <button type="submit" onclick="return prepareSubmission()" class="w-full bg-emerald-400 text-white text-xs font-bold uppercase tracking-widest py-5 rounded-full shadow-md hover:bg-emerald-500 transition mt-4">Send Report</button>
                 </form>
             </div>

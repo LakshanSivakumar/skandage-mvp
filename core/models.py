@@ -12,6 +12,7 @@ import random
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+from datetime import timedelta
 fernet = Fernet(settings.ENCRYPTION_KEY.encode() if isinstance(settings.ENCRYPTION_KEY, str) else settings.ENCRYPTION_KEY)
 class Agent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -247,7 +248,10 @@ def hash_email(email):
 
 class Subscriber(models.Model):
     agent = models.ForeignKey('Agent', on_delete=models.CASCADE, related_name='subscribers')
-    
+    archived_at = models.DateTimeField(null=True, blank=True, help_text="When the agent soft-deleted this record")
+    is_anonymized = models.BooleanField(default=False, help_text="True if PII was scrubbed after 7 years")
+    is_subscribed = models.BooleanField(default=True, help_text="False if client opted out of bulk marketing/cards")
+    unsubscribe_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     # --- ANONYMIZED DATABASE INDEXES (For SQL Queries) ---
     is_active = models.BooleanField(default=True)
     birth_month = models.IntegerField(null=True, blank=True, help_text="Used for safe SQL birthday querying")
@@ -676,3 +680,38 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"{self.feedback_type} from {self.name} - {self.status}"
+    
+class EmailOTP(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='email_otp')
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def generate_otp(self):
+        # Generates a random 6-digit number
+        self.otp = str(random.randint(100000, 999999))
+        self.created_at = timezone.now()
+        self.save()
+
+    def is_valid(self):
+        # OTP expires after 10 minutes
+        return self.created_at >= timezone.now() - timedelta(minutes=10)
+    
+class AuditLog(models.Model):
+    ACTION_CHOICES = [
+        ('VAULT_VIEWED', 'Viewed Entire Vault'),
+        ('CLIENT_VIEWED', 'Viewed Single Client Details'),
+        ('CLIENT_EXPORTED', 'Exported Vault to CSV'),
+        ('CLIENT_DELETED', 'Deleted Client Record'),
+    ]
+    
+    agent = models.ForeignKey('Agent', on_delete=models.CASCADE, related_name='audit_logs')
+    action = models.CharField(max_length=50, choices=ACTION_CHOICES)
+    target_info = models.CharField(max_length=255, help_text="e.g., 'Client: John Doe (ID: 4)' or 'Exported 150 clients'")
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.agent.name} - {self.action} at {self.timestamp}"

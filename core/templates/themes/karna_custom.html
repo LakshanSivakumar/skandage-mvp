@@ -317,7 +317,13 @@
 
                         <input type="email" name="email" id="calc-email" placeholder="Your Email Address" required
                             class="w-full bg-[#050505] border border-white/10 rounded-xl py-4 px-5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition duration-500" aria-label="Your Email Address">
-
+                            <div class="flex items-start gap-3 mt-4 mb-2">
+                                <input type="checkbox" id="pdpa_consent" name="pdpa_consent" required 
+                                       class="mt-1 w-4 h-4 rounded border-gray-400 text-blue-600 focus:ring-blue-500 bg-transparent cursor-pointer">
+                                <label for="pdpa_consent" class="text-xs opacity-70 cursor-pointer leading-relaxed text-left" style="color: var(--text-muted, #9ca3af);">
+                                    I consent to {{ agent.name }} collecting and using my information to generate this report and contact me regarding financial planning services in accordance with the PDPA.
+                                </label>
+                            </div>
                         <button type="submit" onclick="return prepareSubmission()"
                             class="w-full bg-[#D4AF37] text-black font-medium text-sm py-4 rounded-xl hover:bg-white transition duration-500 mt-2">
                             Send My Report

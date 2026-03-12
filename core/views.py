@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash, logout
+from django.contrib.auth import update_session_auth_hash, logout, authenticate, login
 from django.contrib import messages
 from django.template import TemplateDoesNotExist
 from django.urls import reverse
@@ -14,13 +14,14 @@ from .themes import THEMES
 from django.http import HttpResponse, JsonResponse
 from django.db.models import F, Max
 from .utils import scrape_and_save_testimonials
+from django.core.mail import send_mail
 from django.core.signing import Signer, BadSignature
 import csv
 import io
 from django.core.mail import send_mass_mail
 from email.mime.application import MIMEApplication # <--- NEW IMPORT
 from django.utils import timezone
-from .models import Subscriber, Newsletter, CardTemplate, Feedback
+from .models import Subscriber, Newsletter, CardTemplate, Feedback, AuditLog
 from django.core.mail import get_connection, EmailMultiAlternatives
 from django.utils.html import strip_tags
 from .models import hash_email
@@ -38,7 +39,25 @@ from datetime import datetime, date
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.views.decorators.clickjacking import xframe_options_sameorigin
+from .models import EmailOTP
+def get_client_ip(request):
+    """Extracts the real IP address, bypassing Render/Cloudflare load balancers."""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        # The first IP in the list is the actual client
+        ip = x_forwarded_for.split(',')[0].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
+def log_audit_event(request, agent, action, target_info):
+    """Creates an immutable audit log entry."""
+    AuditLog.objects.create(
+        agent=agent,
+        action=action,
+        target_info=target_info,
+        ip_address=get_client_ip(request)
+    )
 def add_months_to_date(source_date_str, months):
     """Calculates future review dates based on frequency."""
     if not source_date_str or not months: return None
@@ -85,6 +104,74 @@ def download_vcard(request, slug):
     response["Content-Disposition"] = f'attachment; filename="{agent.slug}.vcf"'
     return response
 
+def custom_login(request):
+    # Redirect if already logged in
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        # Verify the username and password FIRST
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            # Credentials are valid. Generate OTP!
+            email_otp, created = EmailOTP.objects.get_or_create(user=user)
+            email_otp.generate_otp()
+
+            # Send the Email
+            send_mail(
+                subject='Your Skandage Login Security Code',
+                message=f'Your 2FA code is: {email_otp.otp}\n\nThis code will expire in 10 minutes.',
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'security@skandage.com'),
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+
+            # Store the user's ID in the session temporarily (DO NOT log them in yet)
+            request.session['pre_2fa_user_id'] = user.id
+            return redirect('otp_verify')
+        else:
+            messages.error(request, 'Invalid username or password.')
+
+    return render(request, 'registration/login.html')
+
+def otp_verify(request):
+    user_id = request.session.get('pre_2fa_user_id')
+    
+    # If they try to access this page without logging in first, kick them back
+    if not user_id:
+        return redirect('login') 
+
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp', '').strip()
+        
+        try:
+            email_otp = user.email_otp
+            if email_otp.otp == entered_otp and email_otp.is_valid():
+                # Success! Log the agent in.
+                login(request, user)
+                
+                # Clean up the session
+                del request.session['pre_2fa_user_id'] 
+                
+                messages.success(request, 'Login successful.')
+                return redirect('dashboard') 
+            else:
+                messages.error(request, 'Invalid or expired authentication code.')
+        except EmailOTP.DoesNotExist:
+            messages.error(request, 'No OTP found. Please log in again.')
+            return redirect('login')
+
+    # Mask the email for the UI (e.g., j***@gmail.com)
+    email_parts = user.email.split('@')
+    masked_email = f"{email_parts[0][0]}***@{email_parts[1]}" if len(email_parts) == 2 else "***"
+
+    return render(request, 'registration/otp_verify.html', {'masked_email': masked_email})
 # ==========================================
 # PUBLIC ROUTER (The "Brain")
 # ==========================================
@@ -1082,7 +1169,7 @@ def manage_subscribers(request):
                 subscribers.append(sub)
     else:
         subscribers = list(all_subscribers)
-
+    log_audit_event(request, agent, 'VAULT_VIEWED', f'Viewed vault list ({len(subscribers)} records)')
     return render(request, 'core/manage_subscribers.html', {
         'agent': agent,
         'subscribers': subscribers,
@@ -1289,7 +1376,7 @@ def send_newsletter(request, pk):
     agent = request.user.agent
     newsletter = get_object_or_404(Newsletter, pk=pk, agent=agent)
     
-    subscribers = agent.subscribers.filter(is_active=True)
+    subscribers = agent.subscribers.filter(is_active=True, is_subscribed=True)
     if not subscribers.exists():
         messages.error(request, "You have no active subscribers.")
         return redirect('newsletter_dashboard')
@@ -1338,8 +1425,15 @@ def send_newsletter(request, pk):
     # ---------------------------------------------------------
     # 2. BUILD THE EMAILS
     # ---------------------------------------------------------
+    # ---------------------------------------------------------
+    # 2. BUILD THE EMAILS
+    # ---------------------------------------------------------
     for sub in subscribers:
         client_name = sub.name or "there"
+        
+        # --- FIX: Generate the link INSIDE the loop so 'sub' exists! ---
+        site_url = getattr(settings, 'SITE_URL', request.build_absolute_uri('/')[:-1])
+        unsub_url = f"{site_url}{reverse('unsubscribe', args=[sub.unsubscribe_token])}"
         
         # If there's a PDF, generate a massive, beautiful button
         pdf_button_html = ""
@@ -1357,9 +1451,9 @@ def send_newsletter(request, pk):
             # Use the uploaded HTML file, allow dynamic name insertion
             html_message = custom_html_template.replace('{{ client_name }}', client_name)
             if pdf_button_html:
-                html_message += pdf_button_html # Append button to the bottom if PDF exists
+                html_message += pdf_button_html 
         else:
-            # Use the standard Text Editor fallback
+            # Use the standard Text Editor fallback with the PDPA footer
             html_message = f"""
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1c1917; line-height: 1.6;">
                 <p>Hi {client_name},</p>
@@ -1367,6 +1461,12 @@ def send_newsletter(request, pk):
                 {pdf_button_html}
                 <br>
                 <p>Best regards,<br><strong>{agent.name}</strong><br>{agent.title} at {agent.company}</p>
+                
+                <hr style="border: 0; border-top: 1px solid #e5e7eb; margin-top: 40px; margin-bottom: 20px;">
+                <p style="font-size: 11px; color: #9ca3af; text-align: center;">
+                    You are receiving this email because you are a registered client of {agent.name}.<br>
+                    <a href="{unsub_url}" style="color: #6b7280; text-decoration: underline;">Unsubscribe from future updates</a>
+                </p>
             </div>
             """
         
@@ -1623,8 +1723,20 @@ def delete_subscriber(request, pk):
 
     if request.method == 'POST':
         name = subscriber.name
-        subscriber.delete()
-        messages.success(request, f"'{name}' has been removed from your vault.")
+        
+        # 1. Log the action (using the audit function we discussed)
+        log_audit_event(request, agent, 'CLIENT_DELETED', f'Archived Client: {name} (ID: {pk})')
+        
+        # 2. Soft Delete & Archive
+        subscriber.is_active = False
+        subscriber.archived_at = timezone.now()
+        
+        # 3. Free up the email hash so the agent can re-add this person later if needed
+        subscriber.email_hash = f"archived_{subscriber.pk}_{subscriber.email_hash}"
+        
+        subscriber.save()
+        
+        messages.success(request, f"'{name}' has been securely archived and removed from your active vault.")
 
     return redirect('manage_subscribers')
 
@@ -1907,7 +2019,7 @@ def upcoming_events(request):
     reviews_list = []     # upcoming policy reviews
     unique_occasions = set()
 
-    for sub in agent.subscribers.filter(is_active=True):
+    for sub in agent.subscribers.filter(is_active=True, is_subscribed=True):   
         
         # 0. CHECK UPCOMING REVIEWS
         if sub.next_review_date:
@@ -2216,3 +2328,49 @@ def feedback_submit(request):
             messages.error(request, "Please fill in all required fields (Name, Email, and Message).", extra_tags="feedback_error")
 
     return render(request, 'core/feedback.html')
+
+
+
+
+@login_required
+def secure_export_subscribers(request):
+    agent = request.user.agent
+    subscribers = agent.subscribers.filter(is_active=True)
+    
+    # Create the HTTP response with CSV headers
+    response = HttpResponse(
+        content_type='text/csv',
+        headers={'Content-Disposition': f'attachment; filename="Skandage_Vault_{agent.slug}.csv"'},
+    )
+
+    writer = csv.writer(response)
+    # Define the columns
+    writer.writerow(['Name', 'Email', 'Phone', 'Date of Birth', 'Race', 'Gender', 'Tags', 'Next Review Date'])
+
+    # Write the decrypted data directly to the stream
+    for sub in subscribers:
+        writer.writerow([
+            sub.name,
+            sub.email,
+            sub.phone,
+            sub.date_of_birth.strftime('%Y-%m-%d') if sub.date_of_birth else '',
+            sub.get_race_display(),
+            sub.get_gender_display(),
+            sub.tags,
+            sub.next_review_date.strftime('%Y-%m-%d') if sub.next_review_date else ''
+        ])
+
+    # 🚨 CRITICAL COMPLIANCE STEP: Log the export
+    log_audit_event(request, agent, 'CLIENT_EXPORTED', f'Exported {subscribers.count()} active records to CSV')
+
+    return response
+def unsubscribe_client(request, token):
+    """Public one-click unsubscribe endpoint for PDPA compliance."""
+    subscriber = get_object_or_404(Subscriber, unsubscribe_token=token)
+    
+    if request.method == 'POST':
+        subscriber.is_subscribed = False
+        subscriber.save()
+        return render(request, 'core/unsubscribe_success.html', {'subscriber': subscriber})
+
+    return render(request, 'core/unsubscribe_confirm.html', {'subscriber': subscriber})

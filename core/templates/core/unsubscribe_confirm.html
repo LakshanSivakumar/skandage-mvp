@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unsubscribe - Skandage</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+</head>
+<body class="bg-slate-100 h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full border border-slate-200 text-center">
+        
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+            </svg>
+        </div>
+
+        <h1 class="text-2xl font-bold text-slate-900 mb-2">Unsubscribe from Updates</h1>
+        
+        <p class="text-slate-500 mb-6 text-sm">
+            Hi <strong>{{ subscriber.name|default:"there" }}</strong>, are you sure you want to stop receiving marketing updates, newsletters, and festive cards from <strong>{{ subscriber.agent.name }}</strong>?
+        </p>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition shadow-md shadow-red-200">
+                Yes, Unsubscribe Me
+            </button>
+        </form>
+        
+        <div class="mt-6 text-xs text-slate-400">
+            <p><i class='bx bxs-info-circle'></i> Note: You will still receive critical policy alerts and review reminders.</p>
+        </div>
+
+    </div>
+
+</body>
+</html>

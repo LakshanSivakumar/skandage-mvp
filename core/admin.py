@@ -6,6 +6,7 @@ from .models import Agent, GlobalNewsletter, Subscriber # Adjust Subscriber if n
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from .models import PendingAgentOnboarding
+from .models import AuditLog
 # --- INLINE EDITING (Keeps your current workflow) ---
 class TestimonialInline(admin.TabularInline):
     model = Testimonial
@@ -145,3 +146,29 @@ class FeedbackAdmin(admin.ModelAdmin):
     readonly_fields = ('name', 'email', 'agency_name', 'feedback_type', 'message', 'created_at')
     list_editable = ('status',)
     ordering = ('-created_at',)
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    # What columns to show in the list view
+    list_display = ('agent', 'action', 'target_info', 'ip_address', 'timestamp')
+    
+    # Adds a sidebar filter to quickly find specific events
+    list_filter = ('action', 'timestamp')
+    
+    # Adds a search bar to look up specific IPs or Agent names
+    search_fields = ('agent__name', 'target_info', 'ip_address')
+    
+    # Make all fields read-only in the detail view
+    readonly_fields = ('agent', 'action', 'target_info', 'ip_address', 'timestamp')
+
+    # --- COMPLIANCE LOCKDOWN ---
+    # Disable the ability to add, edit, or delete logs via the admin panel
+    def has_add_permission(self, request):
+        return False
+        
+    def has_change_permission(self, request, obj=None):
+        return False
+        
+    def has_delete_permission(self, request, obj=None):
+        return False

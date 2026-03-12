@@ -13,13 +13,17 @@
                     class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-5 rounded-xl text-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-2">
                 <i class='bx bx-revision'></i> Update Frequency
             </button>
+            <a href="{% url 'export_subscribers' %}"
+               class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-5 rounded-xl text-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-2">
+                <i class='bx bx-download'></i> Export
+            </a>
             <button onclick="document.getElementById('import-modal').classList.remove('hidden')"
-                    class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-5 rounded-xl text-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition">
-                <i class='bx bx-upload mr-1'></i> Import
+                    class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-5 rounded-xl text-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-2">
+                <i class='bx bx-upload text-lg'></i> Import
             </button>
             <button onclick="document.getElementById('add-modal').classList.remove('hidden')"
-                    class="bg-blue-600 text-white font-bold py-2.5 px-5 rounded-xl text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
-                <i class='bx bx-plus mr-1'></i> Add Client
+                    class="bg-blue-600 text-white font-bold py-2.5 px-5 rounded-xl text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-200 dark:shadow-blue-900/30 flex items-center gap-2">
+                <i class='bx bx-plus text-lg'></i> Add Client
             </button>
         </div>
     </div>
@@ -33,6 +37,11 @@
                 class="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-4 rounded-xl text-sm shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-1.5">
             <i class='bx bx-upload text-base'></i> Import
         </button>
+        <a href="{% url 'export_subscribers' %}"
+           class="w-11 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-sm shadow-sm hover:bg-slate-50 transition flex items-center justify-center flex-shrink-0"
+           title="Export Vault">
+            <i class='bx bx-download text-lg'></i>
+        </a>
         <button onclick="document.getElementById('freq-modal').classList.remove('hidden')"
                 class="w-11 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-sm shadow-sm hover:bg-slate-50 transition flex items-center justify-center flex-shrink-0"
                 title="Update Frequency">
@@ -93,8 +102,19 @@
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                        <div class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                            {% if sub.email %}<i class='bx bx-lock-alt text-green-500'></i> {{ sub.email }}{% else %}<span class="text-slate-400 italic text-xs">No Email</span>{% endif %}
+                        <div class="text-sm text-slate-500 dark:text-slate-400 flex flex-col gap-1">
+                            {% if sub.email %}
+                                <span class="flex items-center gap-2">
+                                    <i class='bx bx-lock-alt text-green-500'></i> {{ sub.email }}
+                                </span>
+                                {% if not sub.is_subscribed %}
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-red-600 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded w-max">
+                                        <i class='bx bx-block'></i> Unsubscribed
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-slate-400 italic text-xs">No Email</span>
+                            {% endif %}
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">

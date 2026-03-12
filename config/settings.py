@@ -45,6 +45,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.AutoLogoutMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -171,3 +172,14 @@ else:
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
+# ==========================================
+# MAS TRM COMPLIANCE: SESSION SECURITY
+# ==========================================
+# Force the session to expire when the user closes their browser window
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Standard Django session age (15 minutes in seconds)
+SESSION_COOKIE_AGE = 15 * 60 
+
+# The variable our custom AutoLogoutMiddleware reads (in minutes)
+AUTO_LOGOUT_DELAY = 15
