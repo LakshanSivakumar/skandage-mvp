@@ -137,7 +137,7 @@ if 'AWS_ACCESS_KEY_ID' in os.environ:
     AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
     
     # Quick CTO Note: If your AWS bucket is in Singapore, this should be 'ap-southeast-1'
-    AWS_S3_REGION_NAME = 'ap-southeast-2' 
+    AWS_S3_REGION_NAME = 'ap-southeast-1' 
     
     AWS_S3_ADDRESSING_STYLE = "virtual"
     AWS_S3_SIGNATURE_VERSION = 's3v4'
