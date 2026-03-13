@@ -41,7 +41,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label class="relative cursor-pointer group block">
-                            <input type="radio" name="theme" value="executive" class="peer sr-only" {% if form.theme.value=='executive' %}checked{% endif %} onchange="updatePreview()">
+                            <input type="radio" name="theme" value="executive" class="peer sr-only" {% if form.theme.value == 'executive' %}checked{% endif %} onchange="updatePreview()">
                             <div
                                 class="h-full p-1 rounded-2xl border-2 border-slate-100 dark:border-slate-700 peer-checked:border-amber-500 peer-checked:ring-1 peer-checked:ring-amber-500 bg-white dark:bg-slate-900 transition-all duration-300 hover:border-amber-300">
                                 <div
@@ -67,7 +67,7 @@
                         </label>
 
                         <label class="relative cursor-pointer group block">
-                            <input type="radio" name="theme" value="vogue" class="peer sr-only" {% if form.theme.value=='vogue' %}checked{% endif %} onchange="updatePreview()">
+                            <input type="radio" name="theme" value="vogue" class="peer sr-only" {% if form.theme.value == 'vogue' %}checked{% endif %} onchange="updatePreview()">
                             <div
                                 class="h-full p-1 rounded-2xl border-2 border-slate-100 dark:border-slate-700 peer-checked:border-stone-500 peer-checked:ring-1 peer-checked:ring-stone-500 bg-white dark:bg-slate-900 transition-all duration-300 hover:border-stone-300">
                                 <div
@@ -94,7 +94,7 @@
                         </label>
 
                         <label class="relative cursor-pointer group block">
-                            <input type="radio" name="theme" value="sterling" class="peer sr-only" {% if form.theme.value=='sterling' %}checked{% endif %} onchange="updatePreview()">
+                            <input type="radio" name="theme" value="sterling" class="peer sr-only" {% if form.theme.value == 'sterling' %}checked{% endif %} onchange="updatePreview()">
                             <div
                                 class="h-full p-1 rounded-2xl border-2 border-slate-100 dark:border-slate-700 peer-checked:border-sky-500 peer-checked:ring-1 peer-checked:ring-sky-500 bg-white dark:bg-slate-900 transition-all duration-300 hover:border-sky-300">
                                 <div
@@ -135,7 +135,7 @@
                         {% for value, label in form.theme.field.choices %}
                         {% if value != 'executive' and value != 'vogue' and value != 'sterling' %}
                         <label class="cursor-pointer group relative block">
-                            <input type="radio" name="theme" value="{{ value }}" class="peer sr-only" {% if form.theme.value==value %}checked{% endif %} onchange="updatePreview()">
+                            <input type="radio" name="theme" value="{{ value }}" class="peer sr-only" {% if form.theme.value == value %}checked{% endif %} onchange="updatePreview()">
                             <div
                                 class="p-3 rounded-xl border-2 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 peer-checked:border-blue-500 peer-checked:ring-1 peer-checked:ring-blue-500 hover:border-blue-300 transition-all text-center h-full flex flex-col items-center justify-center">
                                 <div class="flex -space-x-2 mb-2">
@@ -163,7 +163,7 @@
                     <div class="grid grid-cols-3 gap-3">
                         {% for value, label in form.layout.field.choices %}
                         <label class="cursor-pointer group block">
-                            <input type="radio" name="layout" value="{{ value }}" class="peer sr-only" {% if form.layout.value==value %}checked{% endif %} onchange="updatePreview()">
+                            <input type="radio" name="layout" value="{{ value }}" class="peer sr-only" {% if form.layout.value == value %}checked{% endif %} onchange="updatePreview()">
                             <div
                                 class="p-3 rounded-xl border-2 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all hover:border-blue-300">
                                 <div
@@ -472,8 +472,12 @@
     };
 
     function updatePreview() {
-        const themeKey = document.querySelector('input[name="theme"]:checked').value;
-        const layoutKey = document.querySelector('input[name="layout"]:checked').value;
+        const themeRadio = document.querySelector('input[name="theme"]:checked');
+        const layoutRadio = document.querySelector('input[name="layout"]:checked');
+        if (!themeRadio) return;
+
+        const themeKey = themeRadio.value;
+        const layoutKey = layoutRadio ? layoutRadio.value : 'classic';
         const layoutSelector = document.getElementById('layout-selector');
 
         // Disable Layout Selector for Premium Themes
