@@ -2000,8 +2000,13 @@ def upcoming_events(request):
                     emoji = OCCASION_DEMOGRAPHIC_MAP.get(occasion_type, {}).get('emoji', '🎉')
 
                 site_url = getattr(settings, 'SITE_URL', request.build_absolute_uri('/')[:-1])
-                image_url = f"{site_url}{template.image.url}" if template.image else ""
-                agent_headshot_url = f"{site_url}{agent.headshot.url}" if agent.headshot else ""
+                image_url = template.image.url if template.image else ""
+                if image_url and not image_url.startswith('http'):
+                    image_url = f"{site_url}{image_url}"
+                
+                agent_headshot_url = agent.headshot.url if agent.headshot else ""
+                if agent_headshot_url and not agent_headshot_url.startswith('http'):
+                    agent_headshot_url = f"{site_url}{agent_headshot_url}"
                 
                 context = {
                     'client_name': sub.name, 'agent': agent, 'occasion': occasion_type,
