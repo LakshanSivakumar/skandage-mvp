@@ -123,14 +123,24 @@ def custom_login(request):
             email_otp, created = EmailOTP.objects.get_or_create(user=user)
             email_otp.generate_otp()
 
-            # Send the Email
-            send_mail(
-                subject='Your Skandage Login Security Code',
-                message=f'Your 2FA code is: {email_otp.otp}\n\nThis code will expire in 10 minutes.',
+            # --- NEW HTML EMAIL DISPATCH ---
+            context = {
+                'agent_name': user.first_name or user.username,
+                'otp': email_otp.otp,
+                'user_email': user.email
+            }
+            
+            html_content = render_to_string('core/emails/2fa_code.html', context)
+            text_content = strip_tags(html_content)
+            
+            msg = EmailMultiAlternatives(
+                subject='Verify your identity (Skandage)',
+                body=text_content,
                 from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'security@skandage.com'),
-                recipient_list=[user.email],
-                fail_silently=False,
+                to=[user.email]
             )
+            msg.attach_alternative(html_content, "text/html")
+            msg.send(fail_silently=False)
 
             # Store the user's ID in the session temporarily (DO NOT log them in yet)
             request.session['pre_2fa_user_id'] = user.id
