@@ -149,7 +149,7 @@ if 'AWS_ACCESS_KEY_ID' in os.environ:
     # This routes all media traffic through your edge network to kill egress costs.
     # If you prefer, you can also use os.environ.get('CDN_DOMAIN', 'cdn.skandage.com') here.
     AWS_S3_CUSTOM_DOMAIN = 'cdn.skandage.com'
-
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
     # STORAGE CONFIGURATION (Django 6.0+)
     STORAGES = {
         "default": {
