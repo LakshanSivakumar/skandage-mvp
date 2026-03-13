@@ -183,3 +183,5 @@ SESSION_COOKIE_AGE = 15 * 60
 
 # The variable our custom AutoLogoutMiddleware reads (in minutes)
 AUTO_LOGOUT_DELAY = 15
+
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_fallback_key_here')

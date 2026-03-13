@@ -42,6 +42,9 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin
 from .models import EmailOTP
 from django.utils.text import slugify
 import string, random
+import stripe
+import os
+
 def get_client_ip(request):
     """Extracts the real IP address, bypassing Render/Cloudflare load balancers."""
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -2186,7 +2189,33 @@ def upcoming_events(request):
         'card_window_days': 30,
     })
 
+import stripe
+
+# Set your Stripe Secret Key (Ideally, pull this from os.environ in production)
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
 def onboarding_form_view(request):
+
+    # 1. Grab the secure session ID from the URL (GET) or the hidden form field (POST)
+    session_id = request.GET.get('session_id') or request.POST.get('session_id')
+
+    if not session_id:
+        return render(request, 'core/error.html', {'message': 'Unauthorized Access. Please complete payment first.'})
+
+    # 2. Check if this payment was already used to create an account
+    if PendingAgentOnboarding.objects.filter(stripe_session_id=session_id).exists():
+        return render(request, 'core/error.html', {'message': 'This payment link has already been used to create an account.'})
+
+    # 3. Ask Stripe directly if this session actually paid
+    try:
+        checkout_session = stripe.checkout.Session.retrieve(session_id)
+        if checkout_session.payment_status != 'paid':
+            return render(request, 'core/error.html', {'message': 'Payment has not been completed.'})
+    except Exception as e:
+        return render(request, 'core/error.html', {'message': f'Invalid payment session: {str(e)}'})
+
+    # --- THE PAYMENT IS VERIFIED. PROCEED WITH ONBOARDING ---
+
     if request.method == 'POST':
         try:
             email = request.POST.get('email', '').strip()
@@ -2195,20 +2224,17 @@ def onboarding_form_view(request):
             phone_number = request.POST.get('phone_number', '').strip()
             agency_name = request.POST.get('agency_name', 'AIAFA').strip()
             job_title = request.POST.get('job_title', 'Financial Consultant').strip()
-            bio = request.POST.get('bio', '').strip()
-            existing_website = request.POST.get('existing_website', '').strip()
-            linkedin = request.POST.get('linkedin', '').strip()
-            instagram = request.POST.get('instagram', '').strip()
-            facebook = request.POST.get('facebook', '').strip()
-            headshot = request.FILES.get('headshot')
-            credentials_upload = request.FILES.get('credentials_upload')
-
+            
             # 1. Validation: Prevent Duplicate Accounts
             if User.objects.filter(email__iexact=email).exists():
-                messages.error(request, "An account with this email already exists. Please log in or use a different email.")
-                return redirect('onboarding_form_view')
+                messages.error(request, "An account with this email already exists.")
+                # We render the form again, keeping the session_id in the URL
+                return redirect(f"{request.path}?session_id={session_id}")
 
             # 2. Generate Unique Username / Slug
+            import string, random
+            from django.utils.text import slugify
+            
             base_username = slugify(requested_subdomain)
             username = base_username
             counter = 1
@@ -2224,60 +2250,32 @@ def onboarding_form_view(request):
             first_name = full_name.split()[0] if full_name else ''
             last_name = ' '.join(full_name.split()[1:]) if len(full_name.split()) > 1 else ''
             
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=temp_password,
-                first_name=first_name,
-                last_name=last_name
-            )
+            user = User.objects.create_user(username=username, email=email, password=temp_password, first_name=first_name, last_name=last_name)
 
             # 5. Create the Skandage Agent Profile
             agent = Agent.objects.create(
-                user=user,
-                name=full_name,
-                slug=username,
-                title=job_title,
-                company=agency_name,
-                phone_number=phone_number,
-                bio=bio,
-                linkedin=linkedin,
-                instagram=instagram,
-                facebook=facebook,
-                headshot=headshot,
-                is_public=True
+                user=user, name=full_name, slug=username, title=job_title,
+                company=agency_name, phone_number=phone_number, is_public=True
             )
 
-            # 6. Log the onboarding request (Flagged as approved instantly)
+            # 6. Log the onboarding request AND burn the Stripe Session ID so it can't be reused
             PendingAgentOnboarding.objects.create(
-                full_name=full_name,
-                email=email,
-                phone_number=phone_number,
-                agency_name=agency_name,
-                job_title=job_title,
-                requested_subdomain=requested_subdomain,
-                bio=bio,
-                existing_website=existing_website,
-                linkedin=linkedin,
-                instagram=instagram,
-                facebook=facebook,
-                headshot=headshot,
-                credentials_upload=credentials_upload,
-                status='approved'
+                full_name=full_name, email=email, phone_number=phone_number,
+                agency_name=agency_name, job_title=job_title, requested_subdomain=requested_subdomain,
+                status='approved',
+                stripe_session_id=session_id # <--- BURNS THE LINK
             )
-            dashboard_url = "https://app.skandage.com/dashboard"
-            login_url = "https://app.skandage.com/accounts/login/"
             
-            # For the public preview, we still use the subdomain logic
+            # 7. Send the Welcome Email
             site_url = getattr(settings, 'SITE_URL', request.build_absolute_uri('/')[:-1])
             live_site_url = f"https://{username}.skandage.com" if 'RENDER' in os.environ else f"http://{username}.localhost:8000"
 
             context = {
-                'agent_name': full_name.split()[0] if full_name else 'there',
+                'agent_name': first_name or 'there',
                 'username': username,
                 'temp_password': temp_password,
-                'login_url': login_url,
-                'dashboard_url': dashboard_url,
+                'login_url': "https://app.skandage.com/accounts/login/",
+                'dashboard_url': "https://app.skandage.com/dashboard",
                 'live_site_url': live_site_url
             }
             
@@ -2297,9 +2295,10 @@ def onboarding_form_view(request):
 
         except Exception as e:
             messages.error(request, f"Onboarding error: {str(e)}")
-            return redirect('onboarding_form_view')
+            return redirect(f"{request.path}?session_id={session_id}")
 
-    return render(request, 'core/onboarding_form.html')
+    # Pass the session_id to the template so it can be included as a hidden field
+    return render(request, 'core/onboarding_form.html', {'session_id': session_id})
 
 @login_required
 def manage_profile(request):

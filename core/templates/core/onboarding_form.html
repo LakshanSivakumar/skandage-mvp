@@ -28,7 +28,7 @@
 
             <form method="POST" enctype="multipart/form-data" class="space-y-10">
                 {% csrf_token %}
-                
+                <input type="hidden" name="session_id" value="{{ session_id }}">
                 <div>
                     <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-700 pb-2 flex items-center gap-2">
                         <i class='bx bxs-user-detail text-blue-500'></i> Personal Details

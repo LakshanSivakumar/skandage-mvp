@@ -587,7 +587,7 @@ class PendingAgentOnboarding(models.Model):
     # 4. System Tracking
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
-
+    stripe_session_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
     def __str__(self):
         return f"{self.full_name} - {self.agency_name} ({self.get_status_display()})"
 
