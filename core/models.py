@@ -658,3 +658,13 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.agent.name} - {self.action} at {self.timestamp}"
+
+
+class DailyProfileView(models.Model):
+    agent = models.ForeignKey(Agent, on_delete=models.CASCADE, related_name='daily_views')
+    date = models.DateField(auto_now_add=True)
+    views = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('agent', 'date')
+        ordering = ['-date']

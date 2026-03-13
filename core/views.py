@@ -8,7 +8,7 @@ from django.contrib.auth import update_session_auth_hash, logout, authenticate, 
 from django.contrib import messages
 from django.template import TemplateDoesNotExist
 from django.urls import reverse
-from .models import Agent, Testimonial, Lead, Article, Credential, Service, ReviewLink, Agency, AgencyImage, AgencyReview, PendingAgentOnboarding
+from .models import Agent, Testimonial, Lead, Article, Credential, Service, ReviewLink, Agency, AgencyImage, AgencyReview, PendingAgentOnboarding, DailyProfileView
 from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm, ServiceForm, ClientSubmissionForm, AgencySiteForm, AgencyReviewForm, AgencyImageForm
 from .themes import THEMES
 from django.http import HttpResponse, JsonResponse
@@ -357,7 +357,11 @@ def agent_profile(request, slug):
         agent.profile_views = F('profile_views') + 1
         agent.save(update_fields=['profile_views'])
         request.session[session_key] = True
-
+        from django.utils import timezone
+        today = timezone.now().date()
+        daily_view, created = DailyProfileView.objects.get_or_create(agent=agent, date=today)
+        daily_view.views = F('views') + 1
+        daily_view.save()
     theme_config = THEMES.get(agent.theme, THEMES['luxe'])
     testimonials = agent.testimonials.filter(is_published=True).order_by('-is_featured', '-id')[:4]    
     services = agent.services.all()
@@ -565,23 +569,51 @@ def dashboard_stats(request):
 
     leads = Lead.objects.filter(agent=agent).order_by('-created_at')
     
-    # ==========================================
-    # NEW: ADVANCED ANALYTICS CALCULATIONS
-    # ==========================================
+    # Calculate Audience & Broadcasts
     audience_size = agent.subscribers.filter(is_active=True).count()
     broadcasts_sent = agent.newsletters.filter(status='sent').count()
     
-    # Calculate Conversion Rate (%) safely to avoid ZeroDivisionError
+    # Calculate Conversion Rate (%)
     conversion_rate = 0
     if agent.profile_views > 0:
         conversion_rate = round((leads.count() / agent.profile_views) * 100, 1)
 
-    # Calculate CRM events due today
     from core.festivals import FESTIVALS_2026
-    today = date.today()
+    from datetime import timedelta, date
+    from django.utils import timezone
+    
+    today = timezone.now().date()
     today_str = today.strftime('%Y-%m-%d')
     today_festivals = [name for name, d in FESTIVALS_2026.items() if d == today_str]
     
+    # --- CHART DATA ARRAYS (Renamed to match HTML exactly) ---
+    chart_labels = []
+    views_data = []
+    leads_data = []
+    conversion_data = []
+    vcard_data = []
+
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        chart_labels.append(day.strftime('%a')) # 'Mon', 'Tue'
+
+        # Fetch Views
+        dv = agent.daily_views.filter(date=day).first()
+        day_views = dv.views if dv else 0
+        views_data.append(day_views)
+
+        # Fetch Leads
+        day_leads = leads.filter(created_at__date=day).count()
+        leads_data.append(day_leads)
+
+        # Calculate Daily Conversion
+        day_conv = round((day_leads / day_views) * 100, 1) if day_views > 0 else 0
+        conversion_data.append(day_conv)
+        
+        # Placeholder for daily vCards (keeps the chart from breaking)
+        vcard_data.append(0) 
+
+    # Calculate CRM events due today
     today_events_count = 0
     for sub in agent.subscribers.filter(is_active=True):
         is_event_today = False
@@ -600,11 +632,19 @@ def dashboard_stats(request):
         'agency': agency, 
         'leads': leads,
         'section': 'stats',
-        # Pass new variables to the template:
         'audience_size': audience_size,
         'broadcasts_sent': broadcasts_sent,
         'conversion_rate': conversion_rate,
         'today_events_count': today_events_count,
+        
+        # --- PASSING THE RENAMED CHART DATA ---
+        'chart_labels': json.dumps(chart_labels),
+        'views_data': json.dumps(views_data),
+        'leads_data': json.dumps(leads_data),
+        'conversion_data': json.dumps(conversion_data),
+        'vcard_data': json.dumps(vcard_data),
+        
+        'total_leads_count': leads.count(),
     }
     return render(request, 'core/dashboard_stats.html', context)
 
