@@ -20,6 +20,7 @@ urlpatterns = [
     
     path('accounts/login/', views.custom_login, name='login'),
     path('accounts/otp-verify/', views.otp_verify, name='otp_verify'),
+    path('accounts/require-email/', views.require_email, name='require_email'), 
 
     # ==========================================
     # --- CUSTOM FORGOT PASSWORD FLOW ---

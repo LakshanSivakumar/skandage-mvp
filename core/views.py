@@ -106,8 +106,31 @@ def download_vcard(request, slug):
     response["Content-Disposition"] = f'attachment; filename="{agent.slug}.vcf"'
     return response
 
+# --- HELPER FUNCTION FOR 2FA ---
+def send_2fa_email(user):
+    email_otp, created = EmailOTP.objects.get_or_create(user=user)
+    email_otp.generate_otp()
+
+    context = {
+        'agent_name': user.first_name or user.username,
+        'otp': email_otp.otp,
+        'user_email': user.email
+    }
+    
+    html_content = render_to_string('core/emails/2fa_code.html', context)
+    text_content = strip_tags(html_content)
+    
+    msg = EmailMultiAlternatives(
+        subject='Verify your identity (Skandage)',
+        body=text_content,
+        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'security@skandage.com'),
+        to=[user.email]
+    )
+    msg.attach_alternative(html_content, "text/html")
+    msg.send(fail_silently=False)
+
+# --- UPDATED LOGIN VIEW ---
 def custom_login(request):
-    # Redirect if already logged in
     if request.user.is_authenticated:
         return redirect('dashboard')
 
@@ -115,40 +138,56 @@ def custom_login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         
-        # Verify the username and password FIRST
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-            # Credentials are valid. Generate OTP!
-            email_otp, created = EmailOTP.objects.get_or_create(user=user)
-            email_otp.generate_otp()
-
-            # --- NEW HTML EMAIL DISPATCH ---
-            context = {
-                'agent_name': user.first_name or user.username,
-                'otp': email_otp.otp,
-                'user_email': user.email
-            }
-            
-            html_content = render_to_string('core/emails/2fa_code.html', context)
-            text_content = strip_tags(html_content)
-            
-            msg = EmailMultiAlternatives(
-                subject='Verify your identity (Skandage)',
-                body=text_content,
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'security@skandage.com'),
-                to=[user.email]
-            )
-            msg.attach_alternative(html_content, "text/html")
-            msg.send(fail_silently=False)
-
-            # Store the user's ID in the session temporarily (DO NOT log them in yet)
+            # Store the user's ID in the session temporarily
             request.session['pre_2fa_user_id'] = user.id
+            
+            # INTERCEPT: If the user has no email, force them to add one
+            if not user.email:
+                return redirect('require_email')
+                
+            # If email exists, generate OTP and proceed to verification
+            send_2fa_email(user)
             return redirect('otp_verify')
         else:
             messages.error(request, 'Invalid username or password.')
 
     return render(request, 'registration/login.html')
+
+# --- NEW REQUIRE EMAIL VIEW ---
+def require_email(request):
+    user_id = request.session.get('pre_2fa_user_id')
+    
+    # Boot them back to login if they try to skip the queue
+    if not user_id:
+        return redirect('login')
+        
+    user = get_object_or_404(User, id=user_id)
+    
+    # If they somehow hit this page but already have an email, push them to OTP
+    if user.email:
+        send_2fa_email(user)
+        return redirect('otp_verify')
+        
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+        if email:
+            # Security Check: Ensure email isn't already used by another account
+            if User.objects.filter(email__iexact=email).exclude(id=user.id).exists():
+                messages.error(request, 'This email is already registered to another account.')
+            else:
+                user.email = email
+                user.save()
+                
+                # Success! Send the OTP to their new email and push to verification
+                send_2fa_email(user)
+                return redirect('otp_verify')
+        else:
+            messages.error(request, 'Please enter a valid email address.')
+            
+    return render(request, 'registration/require_email.html')
 
 def otp_verify(request):
     user_id = request.session.get('pre_2fa_user_id')
