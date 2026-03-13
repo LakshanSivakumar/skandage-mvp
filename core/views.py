@@ -1734,17 +1734,20 @@ def delete_subscriber(request, pk):
     subscriber = get_object_or_404(Subscriber, pk=pk, agent=agent)
 
     if request.method == 'POST':
-        name = subscriber.name
+        # Added a fallback just in case the client was imported without a name
+        name = subscriber.name or "Unnamed Client"
         
-        # 1. Log the action (using the audit function we discussed)
+        # 1. Log the action
         log_audit_event(request, agent, 'CLIENT_DELETED', f'Archived Client: {name} (ID: {pk})')
         
         # 2. Soft Delete & Archive
         subscriber.is_active = False
         subscriber.archived_at = timezone.now()
         
-        # 3. Free up the email hash so the agent can re-add this person later if needed
-        subscriber.email_hash = f"archived_{subscriber.pk}_{subscriber.email_hash}"
+        # 3. FIX: Safely free up the email hash without exceeding the 64-character DB limit
+        import hashlib
+        new_hash_input = f"archived_{subscriber.pk}_{subscriber.email_hash}"
+        subscriber.email_hash = hashlib.sha256(new_hash_input.encode()).hexdigest()
         
         subscriber.save()
         
