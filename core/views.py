@@ -40,6 +40,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from .models import EmailOTP
+from django.utils.text import slugify
+import string, random
 def get_client_ip(request):
     """Extracts the real IP address, bypassing Render/Cloudflare load balancers."""
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -2121,27 +2123,114 @@ def upcoming_events(request):
 def onboarding_form_view(request):
     if request.method == 'POST':
         try:
-            # Create the pending profile from form data
-            PendingAgentOnboarding.objects.create(
-                full_name=request.POST.get('full_name'),
-                email=request.POST.get('email'),
-                phone_number=request.POST.get('phone_number'),
-                agency_name=request.POST.get('agency_name', 'AIAFA'),
-                job_title=request.POST.get('job_title', 'Financial Consultant'),
-                requested_subdomain=request.POST.get('requested_subdomain'),
-                bio=request.POST.get('bio', ''),
-                existing_website=request.POST.get('existing_website', ''),
-                linkedin=request.POST.get('linkedin', ''),
-                instagram=request.POST.get('instagram', ''),
-                facebook=request.POST.get('facebook', ''),
-                headshot=request.FILES.get('headshot'),
-                credentials_upload=request.FILES.get('credentials_upload')
-            )
-            # You can add a quick email notification to yourself here later!
-            return render(request, 'core/onboarding_success.html')
+            email = request.POST.get('email', '').strip()
+            requested_subdomain = request.POST.get('requested_subdomain', '').strip()
+            full_name = request.POST.get('full_name', '').strip()
+            phone_number = request.POST.get('phone_number', '').strip()
+            agency_name = request.POST.get('agency_name', 'AIAFA').strip()
+            job_title = request.POST.get('job_title', 'Financial Consultant').strip()
+            bio = request.POST.get('bio', '').strip()
+            existing_website = request.POST.get('existing_website', '').strip()
+            linkedin = request.POST.get('linkedin', '').strip()
+            instagram = request.POST.get('instagram', '').strip()
+            facebook = request.POST.get('facebook', '').strip()
+            headshot = request.FILES.get('headshot')
+            credentials_upload = request.FILES.get('credentials_upload')
+
+            # 1. Validation: Prevent Duplicate Accounts
+            if User.objects.filter(email__iexact=email).exists():
+                messages.error(request, "An account with this email already exists. Please log in or use a different email.")
+                return redirect('onboarding_form_view')
+
+            # 2. Generate Unique Username / Slug
+            base_username = slugify(requested_subdomain)
+            username = base_username
+            counter = 1
+            while User.objects.filter(username=username).exists() or Agent.objects.filter(slug=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            # 3. Generate Secure Temporary Password
+            chars = string.ascii_letters + string.digits + "!@#$%^&*"
+            temp_password = ''.join(random.choice(chars) for _ in range(12))
+
+            # 4. Create the Django User
+            first_name = full_name.split()[0] if full_name else ''
+            last_name = ' '.join(full_name.split()[1:]) if len(full_name.split()) > 1 else ''
             
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=temp_password,
+                first_name=first_name,
+                last_name=last_name
+            )
+
+            # 5. Create the Skandage Agent Profile
+            agent = Agent.objects.create(
+                user=user,
+                name=full_name,
+                slug=username,
+                title=job_title,
+                company=agency_name,
+                phone_number=phone_number,
+                bio=bio,
+                linkedin=linkedin,
+                instagram=instagram,
+                facebook=facebook,
+                headshot=headshot,
+                is_public=True
+            )
+
+            # 6. Log the onboarding request (Flagged as approved instantly)
+            PendingAgentOnboarding.objects.create(
+                full_name=full_name,
+                email=email,
+                phone_number=phone_number,
+                agency_name=agency_name,
+                job_title=job_title,
+                requested_subdomain=requested_subdomain,
+                bio=bio,
+                existing_website=existing_website,
+                linkedin=linkedin,
+                instagram=instagram,
+                facebook=facebook,
+                headshot=headshot,
+                credentials_upload=credentials_upload,
+                status='approved'
+            )
+            dashboard_url = "https://app.skandage.com/dashboard"
+            login_url = "https://app.skandage.com/accounts/login/"
+            
+            # For the public preview, we still use the subdomain logic
+            site_url = getattr(settings, 'SITE_URL', request.build_absolute_uri('/')[:-1])
+            live_site_url = f"https://{username}.skandage.com" if 'RENDER' in os.environ else f"http://{username}.localhost:8000"
+
+            context = {
+                'agent_name': full_name.split()[0] if full_name else 'there',
+                'username': username,
+                'temp_password': temp_password,
+                'login_url': login_url,
+                'dashboard_url': dashboard_url,
+                'live_site_url': live_site_url
+            }
+            
+            html_content = render_to_string('core/emails/welcome_agent.html', context)
+            text_content = strip_tags(html_content)
+            
+            msg = EmailMultiAlternatives(
+                subject="Welcome to Skandage! Your Premium Vault is Ready.",
+                body=text_content,
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'updates@skandage.com'),
+                to=[email]
+            )
+            msg.attach_alternative(html_content, "text/html")
+            msg.send(fail_silently=False)
+
+            return render(request, 'core/onboarding_success.html', {'email': email})
+
         except Exception as e:
-            messages.error(request, f"There was an error submitting your profile: {str(e)}")
+            messages.error(request, f"Onboarding error: {str(e)}")
             return redirect('onboarding_form_view')
 
     return render(request, 'core/onboarding_form.html')

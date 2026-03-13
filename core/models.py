@@ -600,63 +600,7 @@ class PendingAgentOnboarding(models.Model):
         
         super().save(*args, **kwargs)
 
-    def _automate_account_creation(self):
-        # 1. Create a clean username from the requested subdomain
-        base_username = slugify(self.requested_subdomain)
-        username = base_username
-        counter = 1
-        
-        # Ensure the username doesn't already exist
-        while User.objects.filter(username=username).exists():
-            username = f"{base_username}{counter}"
-            counter += 1
-
-        # 2. Generate a secure random 10-character password
-        temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
-
-        # 3. Create the underlying Django User
-        # We use get_or_create just in case they already exist by email
-        user, created = User.objects.get_or_create(
-            email=self.email,
-            defaults={
-                'username': username,
-                'first_name': self.full_name.split()[0] if self.full_name else '',
-                'last_name': ' '.join(self.full_name.split()[1:]) if self.full_name else ''
-            }
-        )
-        
-        if created:
-            user.set_password(temp_password)
-            user.save()
-            print(f"CRITICAL: Account created for {self.email}. Temporary Password: {temp_password}")
-
-        # 4. Create the Skandage Agent Profile
-        from .models import Agent # Local import to prevent circular dependency issues
-        
-        # Check if agent already exists to prevent duplicate crashes
-        if not Agent.objects.filter(user=user).exists():
-            agent = Agent(
-                user=user,
-                name=self.full_name,
-                slug=username, 
-                title=self.job_title,
-                company=self.agency_name,
-                phone_number=self.phone_number,
-                
-                # THE FIX: Add 'or ""' to ensure we never pass a NULL value
-                bio=self.bio or "",
-                linkedin=self.linkedin or "",
-                instagram=self.instagram or "",
-                facebook=self.facebook or "",
-                
-                is_public=True
-            )
-            
-            # Transfer the uploaded headshot safely
-            if self.headshot:
-                agent.headshot = self.headshot
-                
-            agent.save()
+    
 
 class Feedback(models.Model):
     FEEDBACK_TYPES = [

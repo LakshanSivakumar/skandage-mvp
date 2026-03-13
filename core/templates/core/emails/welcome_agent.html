@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <tr>
+                        <td align="center" style="background-color: #0f172a; padding: 40px 20px;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 800; text-transform: uppercase;">Skandage<span style="color: #3b82f6;">.</span></h1>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="color: #0f172a; margin: 0 0 20px 0;">Welcome, {{ agent_name }}!</h2>
+                            <p style="color: #475569; line-height: 1.6;">Your premium digital storefront is now live at: <br>
+                                <a href="{{ live_site_url }}" style="color: #3b82f6; font-weight: bold; text-decoration: none;">{{ live_site_url }}</a>
+                            </p>
+                            
+                            <div style="background-color: #f1f5f9; border-radius: 12px; padding: 24px; margin: 30px 0;">
+                                <p style="margin: 0 0 8px 0; font-size: 14px; color: #64748b; text-transform: uppercase; font-weight: bold;">Login Credentials</p>
+                                <p style="margin: 0 0 5px 0;"><strong>Username:</strong> {{ username }}</p>
+                                <p style="margin: 0;"><strong>Temp Password:</strong> <code style="background: #e2e8f0; padding: 2px 4px; border-radius: 4px;">{{ temp_password }}</code></p>
+                            </div>
+
+                            <div style="text-align: center;">
+                                <a href="{{ login_url }}" style="display: inline-block; background-color: #2563eb; color: #ffffff; padding: 16px 32px; border-radius: 8px; font-weight: bold; text-decoration: none; width: 100%; box-sizing: border-box;">
+                                    Sign In to Your Dashboard
+                                </a>
+                                <p style="margin-top: 15px; font-size: 13px; color: #94a3b8;">
+                                    Or visit: <a href="{{ dashboard_url }}" style="color: #94a3b8;">app.skandage.com/dashboard</a>
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td align="center" style="padding: 20px; border-top: 1px solid #f1f5f9;">
+                            <p style="color: #94a3b8; font-size: 11px; margin: 0;">&copy; 2026 Skandage Technologies. All rights reserved.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
