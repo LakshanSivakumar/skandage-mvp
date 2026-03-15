@@ -1,0 +1,24 @@
+{
+  "name": "skandage_profile",
+  "version": "1.0.0",
+  "description": "",
+  "main": "tailwind.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LakshanSivakumar/skandage-mvp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LakshanSivakumar/skandage-mvp/issues"
+  },
+  "homepage": "https://github.com/LakshanSivakumar/skandage-mvp#readme",
+  "devDependencies": {
+    "tailwindcss": "^4.2.1"
+  }
+}

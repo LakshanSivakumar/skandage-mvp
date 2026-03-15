@@ -4,10 +4,14 @@
 
 <head>
     <title>Agent Hub - Skandage</title>
-    <link rel="stylesheet" href="{% static 'css/output.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/output.css' %}?v={% now 'U' %}">
+
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         main { animation: fadeIn 0.4s ease-out; }
@@ -21,7 +25,15 @@
         #mobile-drawer { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, border-color 0.2s ease; }
     </style>
 </head>
+{% load static %}
+    <link rel="stylesheet" href="{% static 'css/output.css' %}?v={% now 'U' %}">
 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+      }
+    </script>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen flex selection:bg-blue-200 dark:selection:bg-blue-900 selection:text-blue-900 dark:selection:text-blue-100">
 
     {# DESKTOP SIDEBAR #}
@@ -122,9 +134,9 @@
             <i class='bx bx-hive text-blue-600 dark:text-blue-400'></i> Skandage
         </span>
         <div class="flex items-center gap-2">
-            <button id="theme-toggle" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 bg-slate-50 dark:bg-slate-700 transition">
-                <i class='bx bx-moon text-xl dark:hidden'></i>
-                <i class='bx bx-sun text-xl hidden dark:block'></i>
+            <button id="theme-toggle" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 bg-slate-50 dark:bg-slate-700 transition w-10 h-10 flex items-center justify-center">
+                <span class="block dark:hidden"><i class='bx bx-moon text-xl'></i></span>
+                <span class="hidden dark:block"><i class='bx bx-sun text-xl'></i></span>
             </button>
             <button onclick="openMobileMenu()" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700 transition">
                 <i class='bx bx-menu text-xl'></i>
@@ -141,10 +153,9 @@
                     class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition">
                     <i class='bx bx-link-external'></i> View Live Site
                 </a>
-                <button id="theme-toggle-desktop"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white shadow-sm transition">
-                    <i class='bx bx-moon text-sm dark:hidden'></i>
-                    <i class='bx bx-sun text-sm hidden dark:block'></i>
+                <button id="theme-toggle-desktop" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white shadow-sm transition">
+                    <span class="block dark:hidden"><i class='bx bx-moon text-sm'></i></span>
+                    <span class="hidden dark:block"><i class='bx bx-sun text-sm'></i></span>
                 </button>
             </div>
         </div>
@@ -174,19 +185,43 @@
     </nav>
 
     <script>
+        console.log('Dashboard theme script loaded');
         function initTheme() {
             const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
             document.documentElement.classList.toggle('dark', isDark);
+            console.log('Initial dark mode set:', isDark);
         }
         initTheme();
 
         function toggleTheme() {
+            console.log('toggleTheme called');
+            const wasDark = document.documentElement.classList.contains('dark');
             document.documentElement.classList.toggle('dark');
-            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.theme = isDark ? 'dark' : 'light';
+            console.log('Theme toggled from', wasDark, 'to', isDark);
         }
 
-        document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
-        document.getElementById('theme-toggle-desktop')?.addEventListener('click', toggleTheme);
+        const mToggle = document.getElementById('theme-toggle');
+        const dToggle = document.getElementById('theme-toggle-desktop');
+        
+        console.log('Mobile toggle element:', mToggle);
+        console.log('Desktop toggle element:', dToggle);
+
+        if (mToggle) {
+            mToggle.addEventListener('click', function() {
+                console.log('Mobile toggle clicked');
+                toggleTheme();
+            });
+            console.log('Mobile listener attached');
+        }
+        if (dToggle) {
+            dToggle.addEventListener('click', function() {
+                console.log('Desktop toggle clicked');
+                toggleTheme();
+            });
+            console.log('Desktop listener attached');
+        }
 
         function openMobileMenu() {
             document.getElementById('mobile-drawer').classList.remove('-translate-x-full');

@@ -1,87 +1,114 @@
 {% load static %}
 {% load markdown_extras %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About {{ agent.name }}</title>
-    {% load static %}
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&family=Plus+Jakarta+Sans:wght@400;600;700&family=Inter:wght@300;400;600&display=swap"
-        rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
+    {% if agent.theme == 'executive' %}
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    {% else %}
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&family=Plus+Jakarta+Sans:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         /* --- DYNAMIC THEME VARIABLES --- */
         :root {
-            --bg-page: {
-                    {
-                    theme.bg_page
-                }
-            }
-
-            ;
-
-            --text-main: {
-                    {
-                    theme.text_main
-                }
-            }
-
-            ;
-
-            --text-muted: {
-                    {
-                    theme.text_muted
-                }
-            }
-
-            ;
-
-            --accent: {
-                    {
-                    theme.accent
-                }
-            }
-
-            ;
-
-            --font-heading: {
-                    {
-                    theme.font_heading|safe
-                }
-            }
-
-            ;
-
-            --font-body: {
-                    {
-                    theme.font_body|safe
-                }
-            }
-
-            ;
+            --bg-page: {{ theme.bg_page }};
+            --text-main: {{ theme.text_main }};
+            --text-muted: {{ theme.text_muted }};
+            --accent: {{ theme.accent }};
+            --font-heading: {{ theme.font_heading|safe }};
+            --font-body: {{ theme.font_body|safe }};
         }
-
-        body {
-            font-family: var(--font-body);
-            background-color: var(--bg-page);
-            color: var(--text-main);
-        }
-
-        h1,
-        h2,
-        h3,
-        .serif-font {
-            font-family: var(--font-heading);
-        }
+        body { font-family: var(--font-body); background-color: var(--bg-page); color: var(--text-main); }
+        h1, h2, h3, .serif-font { font-family: var(--font-heading); }
     </style>
+    {% endif %}
 </head>
 
+{% if agent.theme == 'executive' %}
+<body class="min-h-screen bg-[#0a0a0a] text-white font-serif selection:bg-[#fbbf24] selection:text-black">
+
+    <nav class="border-b border-white/10 px-6 py-4 flex justify-between items-center bg-[#0a0a0a]/90 backdrop-blur-md sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-[#fbbf24] flex items-center justify-center text-black font-bold font-sans rounded-sm">
+                {{ agent.name|slice:":1" }}
+            </div>
+            <span class="text-[10px] md:text-sm tracking-[0.2em] uppercase font-sans text-white/80">Private Client</span>
+        </div>
+
+        <a href="{% url 'agent_profile' agent.slug %}"
+            class="hidden md:flex items-center gap-2 text-xs font-sans font-bold uppercase tracking-widest border border-transparent text-gray-400 hover:text-[#fbbf24] hover:border-[#fbbf24] px-6 py-2 transition">
+            <i class='bx bx-left-arrow-alt text-lg'></i> Return to Portfolio
+        </a>
+        <a href="{% url 'agent_profile' agent.slug %}"
+            class="md:hidden text-2xl text-gray-400 hover:text-[#fbbf24] transition">
+            <i class='bx bx-x'></i>
+        </a>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-6 py-20 md:py-24 min-h-[80vh]">
+
+        <div data-aos="fade-up">
+            <p class="text-[#fbbf24] font-sans text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
+                <span class="w-8 h-[1px] bg-[#fbbf24]"></span> The Biography
+            </p>
+            <h1 class="text-5xl md:text-7xl font-medium leading-[0.9] mb-12 text-white">
+                My Story.
+            </h1>
+        </div>
+
+        {% if agent.headshot %}
+        <div class="mb-16 relative group" data-aos="fade-up" data-aos-delay="100">
+            <div class="absolute -inset-1 bg-[#fbbf24] opacity-20 blur-lg rounded-2xl transition duration-1000 group-hover:opacity-40"></div>
+            
+            <img src="{{ agent.headshot.url }}"
+                class="relative w-full h-auto rounded-xl opacity-90 contrast-110 saturate-[1.1] border border-white/10 shadow-2xl">
+        </div>
+        {% endif %}
+
+        <div class="prose prose-invert prose-lg md:prose-xl font-light text-gray-400 leading-loose font-sans mx-auto" data-aos="fade-up" data-aos-delay="200">
+            {{ agent.bio|markdown|safe }}
+        </div>
+
+        {% if credentials %}
+        <div class="mt-24 border-t border-white/10 pt-16" data-aos="fade-up">
+            <h3 class="text-3xl font-serif text-white mb-10 flex items-center gap-4">
+                <span class="text-[#fbbf24] text-xl"><i class='bx bxs-trophy'></i></span> Accolades & Credentials
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 font-sans">
+                {% for cred in credentials %}
+                <div class="border-l-2 border-white/10 pl-6 hover:border-[#fbbf24] transition duration-500">
+                    <div class="text-xl md:text-2xl font-bold text-white mb-2 leading-tight">{{ cred.title }}</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest">
+                        {{ cred.issuer }}{% if cred.year %} <span class="text-[#fbbf24] ml-2 font-bold">{{ cred.year }}</span>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </main>
+
+    <footer class="py-12 border-t border-white/5 text-center bg-[#0a0a0a]">
+        <p class="text-xs text-gray-600 font-sans uppercase tracking-widest mb-4">&copy; {% now "Y" %} {{ agent.name }}. All Rights Reserved.</p>
+        <p class="text-[10px] text-gray-700 max-w-2xl mx-auto px-6 leading-relaxed">{{ agent.disclaimer }}</p>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() { AOS.init({ once: true, offset: 50, duration: 800, easing: 'ease-out-cubic' }); });
+    </script>
+
+</body>
+
+{% else %}
 <body class="antialiased transition-colors duration-500">
 
     <nav class="p-6 sticky top-0 backdrop-blur-md z-50 border-b"
@@ -170,5 +197,6 @@
     </footer>
 
 </body>
+{% endif %}
 
 </html>
