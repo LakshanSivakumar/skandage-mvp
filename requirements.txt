@@ -2,6 +2,7 @@ asgiref==3.11.0
 beautifulsoup4==4.14.3
 boto3==1.42.39
 botocore==1.42.39
+cbor2==5.8.0
 certifi==2026.2.25
 cffi==2.0.0
 charset-normalizer==3.4.5
@@ -22,8 +23,10 @@ pandas==3.0.1
 pillow==12.1.0
 playwright==1.58.0
 psycopg2-binary==2.9.11
+pyasn1==0.6.2
 pycparser==3.0
 pyee==13.0.0
+pyOpenSSL==25.3.0
 python-dateutil==2.9.0.post0
 pytz==2025.2
 requests==2.32.5
@@ -35,4 +38,5 @@ stripe==14.4.1
 typing_extensions==4.15.0
 urllib3==2.6.3
 vobject==0.9.9
+webauthn==2.7.1
 whitenoise==6.11.0
