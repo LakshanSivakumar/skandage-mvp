@@ -45,7 +45,7 @@ class Agent(models.Model):
     # Profile Details
     headshot = models.ImageField(upload_to='headshots/', blank=True, null=True)
     bio = models.TextField(blank=True)
-
+    skip_passkey_prompt = models.BooleanField(default=False)
     # --- THEMES & LAYOUTS ---
     # In core/models.py
 
@@ -668,3 +668,16 @@ class DailyProfileView(models.Model):
     class Meta:
         unique_together = ('agent', 'date')
         ordering = ['-date']
+
+class PasskeyCredential(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='passkeys')
+    name = models.CharField(max_length=255, help_text="e.g. 'iPhone 15' or 'MacBook Pro'")
+    
+    # WebAuthn specific fields
+    credential_id = models.BinaryField(unique=True)
+    public_key = models.BinaryField()
+    sign_count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.name}"

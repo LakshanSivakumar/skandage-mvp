@@ -5,50 +5,133 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agent Login - Skandage</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <link rel="stylesheet" href="{% static 'css/output.css' %}?v={% now 'U' %}">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
 </head>
-<body class="bg-slate-100 h-screen flex items-center justify-center">
+<body class="bg-slate-50 dark:bg-slate-900 h-screen flex items-center justify-center transition-colors duration-300">
 
-    <div class="bg-white p-8 rounded-xl shadow-lg max-w-sm w-full border border-slate-200">
-        <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold text-slate-800">Welcome Back</h1>
-            <p class="text-slate-500 text-sm">Login to manage your profile</p>
+    <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-xl max-w-sm w-full border border-slate-200 dark:border-slate-700">
+        <div class="text-center mb-8">
+            <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white text-2xl mx-auto mb-4 shadow-lg shadow-blue-600/20">
+                <i class='bx bx-hive'></i>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Welcome Back</h1>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Sign in to your agent command center</p>
         </div>
 
-        <form method="post" class="space-y-4">
+        <form id="login-form" method="post" class="space-y-5">
             {% csrf_token %}
             
             {% if messages %}
-    {% for message in messages %}
-        <div class="bg-red-50 text-red-600 p-3 rounded text-sm text-center mb-4">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endif %}
-
-            <div>
-                <label class="block text-sm font-bold text-slate-700 mb-1">Username</label>
-                <input type="text" name="username" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
-            </div>
-
-            <div>
-                <div class="flex justify-between items-center mb-1">
-                    <label class="block text-sm font-bold text-slate-700">Password</label>
-                    <a href="{% url 'password_reset' %}" class="text-xs text-blue-600 hover:text-blue-800 font-bold transition">Forgot password?</a>
+            <div class="space-y-2">
+                {% for message in messages %}
+                <div class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg text-xs font-medium border border-red-100 dark:border-red-900/30 flex items-center gap-2">
+                    <i class='bx bx-error-circle text-base'></i>
+                    {{ message }}
                 </div>
-                <input type="password" name="password" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                {% endfor %}
             </div>
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded transition">
-                Sign In
+            {% endif %}
+
+            <div>
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Username</label>
+                <input type="text" name="username" id="username" 
+                    class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none transition" 
+                    placeholder="Enter your username"
+                    required>
+            </div>
+
+            <div class="relative">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Password</label>
+                    <a href="{% url 'password_reset' %}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-bold transition">Forgot?</a>
+                </div>
+                <input type="password" name="password" id="password"
+                    class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none transition" 
+                    placeholder="••••••••"
+                    required>
+            </div>
+
+            <button type="button" onclick="handleLogin()" 
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-600/20 transition flex items-center justify-center gap-2">
+                <span>Sign In</span>
+                <i class='bx bx-right-arrow-alt text-xl'></i>
             </button>
             
             <input type="hidden" name="next" value="{{ next }}">
         </form>
         
-        <div class="mt-6 text-center text-xs text-slate-400">
-            <p>&copy; 2026 Skandage Technologies</p>
+        <div class="mt-8 text-center">
+            <p class="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold">&copy; 2026 Skandage Technologies</p>
         </div>
     </div>
 
+    <script>
+        async function handleLogin() {
+            const { startAuthentication } = SimpleWebAuthnBrowser;
+            const username = document.getElementById('username').value;
+            const form = document.getElementById('login-form');
+
+            if (!username) {
+                form.reportValidity();
+                return;
+            }
+
+            try {
+                // 1. Check if user has a passkey registered
+                const resp = await fetch(`/passkey/login/options/?username=${username}`);
+                const opts = await resp.json();
+
+                // If user doesn't have a passkey, fall back to standard password/OTP flow
+                if (opts.status === 'no_passkey' || !opts.challenge) {
+                    console.log("No passkey found, proceeding with password login.");
+                    form.submit();
+                    return;
+                }
+
+                // 2. Trigger the browser's biometric prompt (FaceID/TouchID)
+                let authResp;
+                try {
+                    authResp = await startAuthentication(opts);
+                } catch (error) {
+                    // If user cancels or biometrics fail, fall back to standard login
+                    console.log("Passkey authentication failed or cancelled:", error);
+                    form.submit();
+                    return;
+                }
+
+                // 3. Verify the biometric signature with the backend
+                const verifyResp = await fetch('/passkey/login/verify/', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-CSRFToken': '{{ csrf_token }}' 
+                    },
+                    body: JSON.stringify({ ...authResp, username }),
+                });
+
+                const result = await verifyResp.json();
+                if (result.status === 'success') {
+                    window.location.href = '{% if next %}{{ next }}{% else %}/dashboard/{% endif %}';
+                } else {
+                    // If verification fails, try standard password login
+                    console.warn("Passkey verification failed on server:", result.message);
+                    form.submit();
+                }
+
+            } catch (err) {
+                console.error("Critical login error:", err);
+                form.submit();
+            }
+        }
+
+        // Allow pressing 'Enter' to trigger the handleLogin logic
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+    </script>
 </body>
 </html>

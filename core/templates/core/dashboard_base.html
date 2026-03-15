@@ -244,5 +244,58 @@
         ['mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evt => window.addEventListener(evt, resetTimer));
         setInterval(() => { if (++idleTime >= IDLE_TIMEOUT_MINUTES) window.location.reload(); }, 60000);
     </script>
+    {% if not request.user.passkeys.exists and not request.user.agent.skip_passkey_prompt and request.resolver_match.url_name != 'account_settings' %}
+    <div id="passkey-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md"></div>
+        
+        <div class="relative bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-8 text-center overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
+            
+            <div class="relative z-10">
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-sm">
+                    <i class='bx bx-fingerprint'></i>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Upgrade to Passkeys</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8">
+                    Skip the Email OTP every time you log in. Use FaceID or TouchID for a faster, more secure experience.
+                </p>
+                
+                <div class="space-y-3">
+                    <a href="{% url 'account_settings' %}#biometric-section" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-600/20">
+                        Set Up Now
+                    </a>
+                    
+                    <div class="flex flex-col gap-2">
+                        <button onclick="closePasskeyModal()" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition uppercase tracking-widest py-2">
+                            Maybe Later
+                        </button>
+                        <button onclick="permanentlyDismiss()" class="text-[10px] text-slate-300 dark:text-slate-600 hover:text-red-400 transition uppercase tracking-[0.2em]">
+                            Don't remind me again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function closePasskeyModal() {
+            document.getElementById('passkey-modal').classList.add('hidden');
+        }
+    
+        async function permanentlyDismiss() {
+            try {
+                const response = await fetch('{% url "dismiss_passkey_prompt" %}', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                });
+                if (response.ok) closePasskeyModal();
+            } catch (err) {
+                closePasskeyModal();
+            }
+        }
+    </script>
+    {% endif %}
 </body>
 </html>

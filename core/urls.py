@@ -122,4 +122,12 @@ urlpatterns = [
     path('review/submit/<str:token>/', views.client_review_submission, name='submit_review'),
     path('unsubscribe/<uuid:token>/', views.unsubscribe_client, name='unsubscribe'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('passkey/register/options/', views.passkey_registration_options, name='passkey_registration_options'),
+    path('passkey/register/verify/', views.passkey_registration_verify, name='passkey_registration_verify'),
+
+    # Passkey Authentication (Login Page)
+    path('passkey/login/options/', views.passkey_login_options, name='passkey_login_options'),
+    path('passkey/login/verify/', views.passkey_login_verify, name='passkey_login_verify'),
+    path('dashboard/passkey/dismiss/', views.dismiss_passkey_prompt, name='dismiss_passkey_prompt'),
+
 ]

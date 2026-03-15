@@ -8,7 +8,7 @@ from django.contrib.auth import update_session_auth_hash, logout, authenticate, 
 from django.contrib import messages
 from django.template import TemplateDoesNotExist
 from django.urls import reverse
-from .models import Agent, Testimonial, Lead, Article, Credential, Service, ReviewLink, Agency, AgencyImage, AgencyReview, PendingAgentOnboarding, DailyProfileView
+from .models import Agent, Testimonial, Lead, Article, Credential, Service, ReviewLink, Agency, AgencyImage, AgencyReview, PendingAgentOnboarding, DailyProfileView, PasskeyCredential
 from .forms import AgentProfileForm, TestimonialForm, LeadForm, ArticleForm, CredentialForm, UserUpdateForm, ServiceForm, ClientSubmissionForm, AgencySiteForm, AgencyReviewForm, AgencyImageForm
 from .themes import THEMES
 from django.http import HttpResponse, JsonResponse
@@ -44,7 +44,14 @@ from django.utils.text import slugify
 import string, random
 import stripe
 import os
-
+import base64
+from webauthn import generate_authentication_options, verify_authentication_response
+from webauthn import (
+    generate_registration_options,
+    verify_registration_response,
+    options_to_json,
+)
+from webauthn.helpers.structs import RegistrationCredential, PublicKeyCredentialDescriptor
 def get_client_ip(request):
     """Extracts the real IP address, bypassing Render/Cloudflare load balancers."""
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -2568,3 +2575,117 @@ def unsubscribe_client(request, token):
         return render(request, 'core/unsubscribe_success.html', {'subscriber': subscriber})
 
     return render(request, 'core/unsubscribe_confirm.html', {'subscriber': subscriber})
+
+@login_required
+def passkey_registration_options(request):
+    options = generate_registration_options(
+        rp_id=request.get_host().split(':')[0],
+        rp_name="Skandage Technologies",
+        user_id=str(request.user.id).encode(),
+        user_name=request.user.username,
+    )
+    # FIX: Base64 encode the bytes to a string for session storage
+    request.session['registration_challenge'] = base64.b64encode(options.challenge).decode('utf-8')
+    return HttpResponse(options_to_json(options), content_type='application/json')
+
+@login_required
+@require_POST
+def passkey_registration_verify(request):
+    try:
+        data = json.loads(request.body)
+        challenge_b64 = request.session.get('registration_challenge')
+        
+        if not challenge_b64:
+            return JsonResponse({'status': 'error', 'message': 'Session expired.'}, status=400)
+        
+        challenge = base64.b64decode(challenge_b64)
+        
+        host = request.get_host().split(':')[0]
+        rp_id = "localhost" if host == "127.0.0.1" else host
+        origin = f"{request.scheme}://{request.get_host()}"
+
+        verification = verify_registration_response(
+            credential=data,
+            expected_challenge=challenge,
+            expected_origin=origin,
+            expected_rp_id=rp_id,
+        )
+        
+        # FIX: Access the properties using the updated library attribute names
+        PasskeyCredential.objects.create(
+            user=request.user,
+            name=request.headers.get('User-Agent', 'My Device')[:50],
+            credential_id=verification.credential_id,           # Correct
+            public_key=verification.credential_public_key,      # CHANGED from .public_key
+            sign_count=verification.sign_count                  # Correct for registration
+        )
+        
+        return JsonResponse({'status': 'success'})
+
+    except Exception as e:
+        print(f"--- PASSKEY ERROR: {str(e)} ---")
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+# --- AUTHENTICATION INTERCEPT ---
+
+def passkey_login_options(request):
+    """Step A: Check if username has passkeys and send a challenge."""
+    username = request.GET.get('username')
+    user = User.objects.filter(username=username).first()
+    
+    if not user or not user.passkeys.exists():
+        return JsonResponse({'status': 'no_passkey'})
+
+    # FIX: Wrap the credential data in PublicKeyCredentialDescriptor objects
+    allow_credentials = [
+        PublicKeyCredentialDescriptor(id=pk.credential_id) 
+        for pk in user.passkeys.all()
+    ]
+
+    options = generate_authentication_options(
+        rp_id="localhost" if request.get_host().split(':')[0] == "127.0.0.1" else request.get_host().split(':')[0],
+        allow_credentials=allow_credentials
+    )
+    
+    # Base64 encode the challenge for session storage
+    request.session['authentication_challenge'] = base64.b64encode(options.challenge).decode('utf-8')
+    
+    return HttpResponse(options_to_json(options), content_type='application/json')
+
+@require_POST
+def passkey_login_verify(request):
+    data = json.loads(request.body)
+    username = data.get('username')
+    user = get_object_or_404(User, username=username)
+    
+    # FIX: Decode the Base64 challenge
+    challenge_b64 = request.session.get('authentication_challenge')
+    challenge = base64.b64decode(challenge_b64)
+
+    try:
+        credential_id_raw = base64.urlsafe_b64decode(data['id'] + '==')
+        db_key = PasskeyCredential.objects.get(credential_id=credential_id_raw, user=user)
+
+        verification = verify_authentication_response(
+            credential=data,
+            expected_challenge=challenge,
+            expected_origin=f"{request.scheme}://{request.get_host()}",
+            expected_rp_id=request.get_host().split(':')[0],
+            credential_public_key=db_key.public_key,
+            credential_current_sign_count=db_key.sign_count,
+        )
+
+        db_key.sign_count = verification.new_sign_count
+        db_key.save()
+        login(request, user)
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
+@login_required
+@require_POST
+def dismiss_passkey_prompt(request):
+    agent = request.user.agent
+    agent.skip_passkey_prompt = True
+    agent.save()
+    return JsonResponse({'status': 'success'})
